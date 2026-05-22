@@ -51,3 +51,9 @@ npm install
 npm start
 ```
 
+
+### My ELUSOC 2026 Admin Badges!
+
+<a href="https://edulinkup.dev/elusoc/profile/omroy07">
+
+</a>
