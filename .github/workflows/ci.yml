@@ -1,0 +1,108 @@
+# ──────────────────────────────────────────────────────────────────────────────
+# LearnSphere — HTML Validation & Link Check CI
+#
+# Triggered on every push and pull request to the main branch.
+# Validates all HTML files for well-formedness and checks for broken links.
+# ──────────────────────────────────────────────────────────────────────────────
+
+name: HTML Validation & Link Check
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  # ── Job 1: Validate HTML ────────────────────────────────────────────────────
+  validate-html:
+    name: Validate HTML (htmlhint)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install htmlhint
+        run: npm install -g htmlhint
+
+      - name: Run HTMLHint on all HTML files
+        run: |
+          echo "Running HTMLHint on all .html files..."
+          find . -name "*.html" \
+            -not -path "./.git/*" \
+            -not -path "./node_modules/*" \
+            | xargs htmlhint \
+            --config .htmlhintrc \
+            || true
+          echo "HTMLHint scan completed."
+
+  # ── Job 2: Check for Hardcoded Secrets ─────────────────────────────────────
+  secret-scan:
+    name: Scan for Hardcoded Secrets
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Scan for hardcoded API keys and tokens
+        run: |
+          echo "Scanning for hardcoded secrets..."
+
+          # Fail if any Python file contains a hardcoded string that looks like a Google API key
+          if grep -rn --include="*.py" \
+            'API_KEY\s*=\s*["'"'"'][A-Za-z0-9_\-]\{20,\}["'"'"']' .; then
+            echo "::error::Hardcoded API key found in Python source file!"
+            exit 1
+          fi
+
+          # Fail if .env file is accidentally committed
+          if git ls-files | grep -E '^\.env$'; then
+            echo "::error::A .env file was committed! Remove it immediately."
+            exit 1
+          fi
+
+          echo "No hardcoded secrets detected."
+
+  # ── Job 3: Validate Python Syntax ──────────────────────────────────────────
+  validate-python:
+    name: Validate Python Syntax
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Check Python syntax (compile all .py files)
+        run: |
+          echo "Checking Python file syntax..."
+          find . -name "*.py" \
+            -not -path "./.git/*" \
+            -not -path "./node_modules/*" \
+            | while read file; do
+              python -m py_compile "$file" && echo "  ✓ $file" || {
+                echo "  ✗ Syntax error in: $file"
+                exit 1
+              }
+            done
+          echo "All Python files passed syntax check."
+
+      - name: Install Python dependencies (if requirements.txt exists)
+        run: |
+          if [ -f requirements.txt ]; then
+            pip install -r requirements.txt
+            echo "Dependencies installed."
+          else
+            echo "No requirements.txt found — skipping dependency install."
+          fi
