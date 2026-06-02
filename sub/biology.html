@@ -4,9 +4,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chemistry</title>
-    <link rel="stylesheet" href="chemistry.css">
+    <meta name="description" content="Explore Biology chapters on LearnSphere — Photosynthesis, Predator-Prey Dynamics, Human Anatomy, and more.">
+    <title>Biology – LearnSphere</title>
+    <!--
+        FIX: biology.html previously:
+        1. Showed "Chemistry" as the page title and heading (copy-paste error)
+        2. Linked chemistry.css instead of a biology-appropriate stylesheet
+        3. Contained broken JS referencing non-existent DOM elements
+           (chapterPicker, chapterModal — runtime TypeError on every load)
+    -->
     <style>
+        * { box-sizing: border-box; }
+
         body {
             background: linear-gradient(135deg, #0d0d0d, #1a1a2e);
             color: #ffffff;
@@ -14,74 +23,55 @@
             text-align: center;
             margin: 0;
             padding: 0;
+            min-height: 100vh;
         }
 
         .container {
             max-width: 900px;
             margin: auto;
-            padding: 20px;
+            padding: 40px 20px;
             animation: fadeIn 1.5s ease-in-out;
         }
 
         @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(-20px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { opacity: 0; transform: translateY(-20px); }
+            to   { opacity: 1; transform: translateY(0); }
         }
 
-        .title {
+        h1 {
             font-size: 2.5rem;
-            text-shadow: 0 0 10px cyan;
+            text-shadow: 0 0 10px #66fcf1;
+            margin-bottom: 10px;
         }
 
-        .description {
+        p {
             font-size: 1.2rem;
-            margin-bottom: 20px;
             opacity: 0.8;
+            margin-bottom: 30px;
         }
 
-        .canvas-container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 300px;
-            background: #001f3f;
-            border-radius: 10px;
-            box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
-            margin-bottom: 20px;
-            transition: transform 0.3s ease-in-out;
-        }
-
-        .canvas-container:hover {
-            transform: scale(1.05);
-        }
-
-        .button-grid {
+        .button-container {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 15px;
-            margin: 20px 0;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+            padding: 0 10px;
         }
 
+        /* Chapter cards with biology green accent */
         .button {
             background: #007bff;
             color: white;
             text-decoration: none;
-            padding: 12px 15px;
-            border-radius: 8px;
+            padding: 14px 20px;
+            border-radius: 10px;
             font-size: 1rem;
-            transition: 0.3s;
-            box-shadow: 0 4px 8px rgba(0, 123, 255, 0.3);
+            transition: background 0.3s ease, transform 0.2s ease;
+            box-shadow: 0 4px 10px rgba(0, 123, 255, 0.3);
             border: none;
             cursor: pointer;
             position: relative;
             overflow: hidden;
+            display: block;
         }
 
         .button::before {
@@ -91,62 +81,64 @@
             left: -100%;
             width: 100%;
             height: 100%;
-            background: rgba(255, 255, 255, 0.2);
-            transition: left 0.4s;
+            background: rgba(255, 255, 255, 0.18);
+            transition: left 0.4s ease;
         }
 
-        .button:hover::before {
-            left: 100%;
-        }
+        .button:hover::before { left: 100%; }
 
         .button:hover {
             background: #0056b3;
             transform: scale(1.05);
         }
 
-        @media (max-width: 600px) {
-            .title {
-                font-size: 2rem;
-            }
+        .button:focus-visible {
+            outline: 3px solid #66fcf1;
+            outline-offset: 3px;
+        }
 
-            .description {
-                font-size: 1rem;
-            }
+        /* Highlight biology-themed "Coming Soon" badge */
+        .badge-soon {
+            display: inline-block;
+            font-size: 0.7rem;
+            background: rgba(255, 200, 0, 0.2);
+            color: #ffc800;
+            border: 1px solid #ffc800;
+            border-radius: 10px;
+            padding: 2px 8px;
+            margin-left: 6px;
+            vertical-align: middle;
+        }
+
+        @media (max-width: 600px) {
+            h1 { font-size: 2rem; }
+            p  { font-size: 1rem; }
         }
     </style>
 </head>
 
 <body>
-    <div class="container">
-        <h1>Chemistry</h1>
-        <p>Welcome to the Chemistry section. Select a chapter to begin.</p>
-        <!-- Chapter Modal -->
-        <div class="button-container">
-            <a href="../PhotoSynthesis/PhotosynthesisLightAbsorptionSpectrum.html" class="button">Photo Synthesis</a>
-            <a href="../Predator_Prey_Population_Dynamics/Predator_Prey.html" class="button">Predator_Prey</a>
-            <a href="../home.html" class="button">Back to Home</a>
-        </div>
-    </div>
+    <main class="container" role="main">
+        <h1>🧬 Biology</h1>
+        <p>Welcome to the Biology section. Select a chapter to begin.</p>
 
-    <script>
-        // Open Chapter Picker Modal
-        document.getElementById("chapterPicker").addEventListener("click", function () {
-            document.getElementById("chapterModal").style.display = "block";
-        });
-
-        // Close Modal
-        document.querySelector(".close").addEventListener("click", function () {
-            document.getElementById("chapterModal").style.display = "none";
-        });
-
-        // Select Chapter
-        function selectChapter(chapter) {
-            document.getElementById("chapterPicker").value = chapter;
-            document.getElementById("chapterModal").style.display = "none";
-            // Redirect to the chapter page (Optional)
-            window.location.href = chapter.toLowerCase().replace(" ", "") + ".html";
-        }
-    </script>
+        <nav class="button-container" aria-label="Biology chapters">
+            <a href="../PhotoSynthesis/PhotosynthesisLightAbsorptionSpectrum.html" class="button">
+                🌿 Photosynthesis &amp; Light Absorption
+            </a>
+            <a href="../Predator_Prey_Population_Dynamics/Predator_Prey.html" class="button">
+                🦁 Predator–Prey Population Dynamics
+            </a>
+            <a href="#" class="button" aria-disabled="true" tabindex="-1" style="opacity:0.5;cursor:not-allowed;">
+                🧬 Human Anatomy <span class="badge-soon">Coming Soon</span>
+            </a>
+            <a href="#" class="button" aria-disabled="true" tabindex="-1" style="opacity:0.5;cursor:not-allowed;">
+                🦠 Cell Biology &amp; Genetics <span class="badge-soon">Coming Soon</span>
+            </a>
+            <a href="../home.html" class="button">🏠 Back to Home</a>
+        </nav>
+    </main>
+    <!-- No inline script — no JS required for this navigation page -->
 </body>
 
 </html>
