@@ -6,32 +6,37 @@ body {
     font-family: Arial, sans-serif;
     margin: 0;
     padding: 0;
-    background-color: #121212; /* Dark background */
-    color: #e0e0e0; /* Light text */
+    background-color: var(--bg-color);
+    background: var(--bg-gradient);
+    color: var(--text-color);
     min-height: 100vh;
+    transition: var(--theme-transition);
 }
 
 /* Study Progress & Chatbot Section */
 .study-progress, .chatbot {
-    background: #1e1e1e; /* Dark background */
+    background: var(--tracker-bg);
     padding: 20px;
     margin: 20px auto;
     width: 50%;
     border-radius: 8px;
-    box-shadow: 0px 4px 8px rgba(255, 255, 255, 0.1);
+    box-shadow: var(--card-shadow);
+    border: 1px solid var(--card-border);
+    transition: var(--theme-transition);
 }
 
 .study-progress h2, .chatbot h2 {
-    color: #66fcf1; /* Soft Cyan for contrast */
+    color: var(--accent-color);
 }
 
 /* Progress List */
 #progressList li {
-    background: #2a2a2a; /* Slightly lighter dark */
+    background: var(--progress-item-bg);
     padding: 10px;
     margin: 5px;
     border-radius: 5px;
-    color: #ffffff;
+    color: var(--text-color);
+    transition: var(--theme-transition);
 }
 
 /* Chatbox */
@@ -39,11 +44,13 @@ body {
     width: 90%;
     height: 200px;
     overflow-y: auto;
-    background: #2a2a2a; /* Darker background */
+    background: var(--progress-item-bg);
     padding: 10px;
     margin-bottom: 10px;
     border-radius: 5px;
-    color: white;
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+    transition: var(--theme-transition);
 }
 
 /* User Input */
@@ -51,21 +58,36 @@ body {
     width: 80%;
     padding: 10px;
     margin-bottom: 10px;
-    background: #333; /* Dark input field */
-    color: white;
-    border: 1px solid #444;
+    background: var(--progress-item-bg);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+    border-radius: 5px;
+    transition: var(--theme-transition);
 }
 
 /* Buttons */
-button {
-    background-color: #66fcf1;
-    color: #121212;
+button, .logout-button {
+    background-color: var(--btn-primary-bg);
+    color: white;
     border: none;
     padding: 10px 15px;
     border-radius: 5px;
     cursor: pointer;
+    font-weight: bold;
+    transition: var(--theme-transition);
 }
 
-button:hover {
-    background-color: #45a29e;
+button:hover, .logout-button:hover {
+    background-color: var(--btn-primary-hover);
 }
+
+.logout-button {
+    background-color: var(--btn-secondary-bg);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+}
+
+.logout-button:hover {
+    background-color: var(--btn-secondary-hover);
+}
+

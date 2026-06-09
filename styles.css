@@ -3,13 +3,14 @@
 }
 
 body {
-    background: linear-gradient(135deg, #0d0d0d, #1a1a2e);
-    color: #ffffff;
-    font-family: 'Arial', sans-serif;
+    background: var(--bg-gradient);
+    color: var(--text-color);
+    font-family: 'Poppins', 'Inter', 'Arial', sans-serif;
     text-align: center;
     margin: 0;
     padding: 0;
     min-height: 100vh;
+    transition: var(--theme-transition);
 }
 
 /* ─── Navbar ──────────────────────────────────────────────────────────────── */
@@ -17,18 +18,23 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background: #002244;
+    background: var(--navbar-bg);
     padding: 15px 20px;
-    box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
+    box-shadow: var(--card-shadow);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--card-border);
     position: relative;
     z-index: 100;
+    transition: var(--theme-transition);
 }
 
 .logo {
     font-size: 1.8rem;
     font-weight: bold;
-    color: cyan;
+    color: var(--logo-color);
     flex-shrink: 0;
+    transition: var(--theme-transition);
 }
 
 .logo a {
@@ -50,15 +56,15 @@ body {
 
 .navbar ul li a {
     text-decoration: none;
-    color: white;
+    color: var(--nav-link);
     font-size: 1.2rem;
-    transition: color 0.3s;
+    transition: var(--theme-transition);
 }
 
 .navbar ul li a:hover,
 .navbar ul li a:focus {
-    color: cyan;
-    outline: 2px solid cyan;
+    color: var(--nav-link-hover);
+    outline: 2px solid var(--nav-link-hover);
     outline-offset: 2px;
     border-radius: 2px;
 }
@@ -70,14 +76,14 @@ body {
 }
 
 .buttons button {
-    background: #007bff;
+    background: var(--btn-primary-bg);
     color: white;
     padding: 10px 15px;
     border: none;
     border-radius: 5px;
     cursor: pointer;
     font-size: 1rem;
-    transition: background 0.3s;
+    transition: var(--theme-transition);
 }
 
 .buttons button a {
@@ -86,7 +92,35 @@ body {
 }
 
 .buttons button:hover {
-    background: #0056b3;
+    background: var(--btn-primary-hover);
+}
+
+/* ─── Theme Toggle Button ─────────────────────────────────────────────────── */
+.theme-btn {
+    background: var(--btn-secondary-bg);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+    padding: 10px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: bold;
+    transition: var(--theme-transition);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+}
+
+.theme-btn:hover {
+    background: var(--btn-secondary-hover);
+    transform: translateY(-1px);
+    box-shadow: var(--card-shadow);
+}
+
+.theme-btn:focus-visible {
+    outline: 2px solid var(--accent-color);
+    outline-offset: 2px;
 }
 
 /* ─── Hamburger Menu Button ───────────────────────────────────────────────── */
@@ -107,7 +141,7 @@ body {
     display: block;
     height: 3px;
     width: 100%;
-    background: #ffffff;
+    background: var(--text-color);
     border-radius: 3px;
     transition: transform 0.3s ease, opacity 0.3s ease;
 }
@@ -140,17 +174,20 @@ body {
 
 .hero h1 {
     font-size: 2.5rem;
-    text-shadow: 0 0 10px cyan;
+    text-shadow: var(--hero-title-shadow);
+    transition: var(--theme-transition);
 }
 
 .hero h2 {
     font-size: 2rem;
-    color: #00d9ff;
+    color: var(--hero-subtitle-color);
+    transition: var(--theme-transition);
 }
 
 .hero p {
     font-size: 1.2rem;
-    opacity: 0.8;
+    color: var(--text-muted);
+    transition: var(--theme-transition);
 }
 
 .cta-buttons {
@@ -158,7 +195,7 @@ body {
 }
 
 .cta {
-    background: #007bff;
+    background: var(--btn-primary-bg);
     color: white;
     padding: 12px 18px;
     margin: 5px;
@@ -166,11 +203,12 @@ body {
     font-size: 1rem;
     cursor: pointer;
     border: none;
-    transition: background 0.3s;
+    transition: var(--theme-transition);
 }
 
 .cta:hover {
-    background: #0056b3;
+    background: var(--btn-primary-hover);
+    transform: translateY(-2px);
 }
 
 .cta a {
@@ -200,10 +238,12 @@ body {
         top: 100%;
         left: 0;
         right: 0;
-        background: #002244;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+        background: var(--navbar-bg);
+        box-shadow: var(--card-shadow);
         padding: 12px 0;
         z-index: 99;
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
     }
 
     .navbar nav.is-open {
@@ -226,7 +266,7 @@ body {
         padding: 12px 20px;
         text-align: center;
         font-size: 1.1rem;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        border-bottom: 1px solid var(--border-color);
     }
 
     /* Hide auth buttons on very small screens to save space */

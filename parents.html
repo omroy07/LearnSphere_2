@@ -4,13 +4,29 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Parents – LearnSphere</title>
+    <link rel="stylesheet" href="variables.css">
+    <script src="theme.js"></script>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
-    <header class="navbar">
-        <div class="logo"><a href="index.html">LearnSphere</a></div>
-        <nav>
+        <header class="navbar" role="banner">
+        <div class="logo"><a href="index.html" aria-label="LearnSphere Home">LearnSphere</a></div>
+
+        <!-- Hamburger button — visible only on mobile -->
+        <button
+            class="hamburger"
+            id="hamburgerBtn"
+            aria-label="Toggle navigation menu"
+            aria-expanded="false"
+            aria-controls="navMenu"
+        >
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+
+        <nav id="navMenu" role="navigation" aria-label="Main navigation">
             <ul>
                 <li><a href="explore.html">Explore</a></li>
                 <li><a href="courses.html">Courses</a></li>
@@ -18,6 +34,9 @@
                 <li><a href="community.html">Community</a></li>
             </ul>
         </nav>
+
+        <button id="themeToggleBtn" class="theme-btn" aria-label="Toggle theme"></button>
+
         <div class="buttons">
             <button class="login"><a href="log/login.html">Log in</a></button>
             <button class="signup"><a href="log/register.html">Sign up</a></button>
@@ -40,6 +59,7 @@
         <button class="cta">Start Learning</button>
     </section>
 
+    <script src="navbar.js"></script>
     <script src="script.js"></script>
 </body>
 </html>

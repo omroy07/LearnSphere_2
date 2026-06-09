@@ -4,6 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Photosynthesis Light Absorption Spectrum Simulator</title>
+    <link rel="stylesheet" href="../variables.css">
+    <script src="../theme.js"></script>
   <style>
     :root {
       --chlorophyll-a: #4CAF50;
@@ -197,7 +199,7 @@
   </style>
 </head>
 <body class="dark-mode">
-  <button class="theme-toggle" onclick="toggleTheme()">🌗 Toggle Theme</button>
+  <button class="theme-toggle" onclick="toggleTheme()" id="themeToggleBtn" aria-label="Toggle theme"></button>
   <header>
     <h1>Photosynthesis Light Absorption Spectrum Simulator</h1>
     <p>Explore how plants absorb different wavelengths of light for photosynthesis</p>

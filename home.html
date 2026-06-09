@@ -5,15 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Your LearnSphere Dashboard — choose a subject, track your progress, and chat with the AI tutor.">
     <title>Dashboard – LearnSphere</title>
+    <link rel="stylesheet" href="variables.css">
     <link rel="stylesheet" href="home.css">
     <style>
         body {
-            background: linear-gradient(135deg, #0d0d0d, #1a1a2e);
-            color: #ffffff;
-            font-family: 'Arial', sans-serif;
+            background: var(--bg-gradient);
+            color: var(--text-color);
+            font-family: 'Poppins', 'Inter', 'Arial', sans-serif;
             text-align: center;
             margin: 0;
             padding: 0;
+            transition: var(--theme-transition);
         }
 
         .container {
@@ -28,8 +30,8 @@
             to   { opacity: 1; transform: translateY(0); }
         }
 
-        .title { font-size: 2.5rem; text-shadow: 0 0 10px cyan; }
-        .description { font-size: 1.2rem; margin-bottom: 20px; opacity: 0.8; }
+        .title { font-size: 2.5rem; text-shadow: var(--hero-title-shadow); }
+        .description { font-size: 1.2rem; margin-bottom: 20px; color: var(--text-muted); }
 
         .button-container {
             display: grid;
@@ -39,21 +41,21 @@
         }
 
         .button {
-            background: #007bff;
+            background: var(--btn-primary-bg);
             color: white;
             text-decoration: none;
             padding: 12px 15px;
             border-radius: 8px;
             font-size: 1rem;
-            transition: 0.3s;
-            box-shadow: 0 4px 8px rgba(0, 123, 255, 0.3);
+            transition: var(--theme-transition);
+            box-shadow: var(--card-shadow);
             border: none;
             cursor: pointer;
             position: relative;
             overflow: hidden;
         }
 
-        .button:hover { background: #0056b3; transform: scale(1.05); }
+        .button:hover { background: var(--btn-primary-hover); transform: scale(1.05); }
 
         @media (max-width: 600px) {
             .title { font-size: 2rem; }
@@ -62,35 +64,37 @@
 
         /* ── Progress Tracker ─────────────────────────────────────────────── */
         .progress-overview {
-            background: #1a1a2e;
+            background: var(--tracker-bg);
             border-radius: 10px;
             padding: 20px;
             margin: 20px auto;
-            box-shadow: 0 0 15px rgba(0,255,255,0.15);
+            box-shadow: var(--card-shadow);
+            transition: var(--theme-transition);
         }
 
-        .progress-overview h2 { color: #66fcf1; margin-bottom: 10px; }
+        .progress-overview h2 { color: var(--accent-color); margin-bottom: 10px; }
 
         /* Completion bar */
         .progress-bar-track {
-            background: #2a2a2a;
+            background: var(--border-color);
             border-radius: 50px;
             height: 12px;
             overflow: hidden;
             margin-bottom: 8px;
+            transition: var(--theme-transition);
         }
 
         #progress-bar-fill {
             height: 100%;
             width: 0%;
-            background: linear-gradient(90deg, #007bff, #66fcf1);
+            background: var(--progress-bar-fill);
             border-radius: 50px;
             transition: width 0.5s ease;
         }
 
         #progress-summary {
             font-size: 0.85rem;
-            color: rgba(255,255,255,0.6);
+            color: var(--text-muted);
             margin-bottom: 14px;
         }
 
@@ -106,17 +110,18 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background: #2a2a2a;
+            background: var(--progress-item-bg);
             padding: 10px 14px;
             margin: 6px 0;
             border-radius: 6px;
-            border-left: 4px solid #444;
-            transition: border-color 0.3s;
+            border-left: 4px solid var(--border-color);
+            transition: var(--theme-transition);
+            color: var(--text-color);
         }
 
-        #progressList li.progress-completed  { border-color: #66fcf1; }
-        #progressList li.progress-in-progress { border-color: #f0a500; }
-        #progressList li.progress-not-started { border-color: #555; }
+        #progressList li.progress-completed  { border-color: var(--completed-color); }
+        #progressList li.progress-in-progress { border-color: var(--in-progress-color); }
+        #progressList li.progress-not-started { border-color: var(--not-started-color); }
 
         .progress-label { font-size: 0.95rem; flex: 1; }
 
@@ -136,10 +141,11 @@
         .progress-badge:active { transform: scale(0.95); }
 
         .progress-badge:focus-visible {
-            outline: 2px solid cyan;
+            outline: 2px solid var(--accent-color);
             outline-offset: 2px;
         }
     </style>
+    <script src="theme.js"></script>
 </head>
 <body>
 
@@ -205,11 +211,14 @@
             </div>
         </section>
 
-        <button
-            id="logoutButton"
-            class="logout-button"
-            aria-label="Log out of LearnSphere"
-        >Logout</button>
+        <div class="footer-actions" style="margin-top: 30px; display: flex; justify-content: center; gap: 15px; align-items: center;">
+            <button id="themeToggleBtn" class="theme-btn" aria-label="Toggle theme" style="background: var(--btn-secondary-bg); color: var(--text-color); border: 1px solid var(--border-color); padding: 10px 15px; border-radius: 5px; cursor: pointer; font-size: 1rem; font-weight: bold; transition: var(--theme-transition);"></button>
+            <button
+                id="logoutButton"
+                class="logout-button"
+                aria-label="Log out of LearnSphere"
+            >Logout</button>
+        </div>
     </div>
 
     <script src="progress.js"></script>

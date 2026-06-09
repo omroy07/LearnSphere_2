@@ -6,12 +6,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="LearnSphere – An AI-powered educational platform providing world-class education to everyone, anywhere.">
     <title>LearnSphere - Quality Education</title>
+    <link rel="stylesheet" href="variables.css">
+    <script src="theme.js"></script>
     <link rel="stylesheet" href="styles.css">
 </head>
 
 <body>
 
-    <header class="navbar" role="banner">
+        <header class="navbar" role="banner">
         <div class="logo"><a href="index.html" aria-label="LearnSphere Home">LearnSphere</a></div>
 
         <!-- Hamburger button — visible only on mobile -->
@@ -35,6 +37,8 @@
                 <li><a href="community.html">Community</a></li>
             </ul>
         </nav>
+
+        <button id="themeToggleBtn" class="theme-btn" aria-label="Toggle theme"></button>
 
         <div class="buttons">
             <button class="login"><a href="log/login.html">Log in</a></button>
@@ -60,37 +64,9 @@
         </section>
     </main>
 
+    <script src="navbar.js"></script>
     <script src="script.js"></script>
-    <script>
-        // Hamburger menu toggle
-        const hamburgerBtn = document.getElementById("hamburgerBtn");
-        const navMenu = document.getElementById("navMenu");
-
-        hamburgerBtn.addEventListener("click", () => {
-            const isOpen = navMenu.classList.toggle("is-open");
-            hamburgerBtn.classList.toggle("is-open", isOpen);
-            hamburgerBtn.setAttribute("aria-expanded", isOpen.toString());
-        });
-
-        // Close menu when a nav link is clicked (single-page anchor behaviour)
-        navMenu.querySelectorAll("a").forEach(link => {
-            link.addEventListener("click", () => {
-                navMenu.classList.remove("is-open");
-                hamburgerBtn.classList.remove("is-open");
-                hamburgerBtn.setAttribute("aria-expanded", "false");
-            });
-        });
-
-        // Close menu on Escape key
-        document.addEventListener("keydown", (e) => {
-            if (e.key === "Escape" && navMenu.classList.contains("is-open")) {
-                navMenu.classList.remove("is-open");
-                hamburgerBtn.classList.remove("is-open");
-                hamburgerBtn.setAttribute("aria-expanded", "false");
-                hamburgerBtn.focus();
-            }
-        });
-    </script>
+    
 </body>
 
 </html>

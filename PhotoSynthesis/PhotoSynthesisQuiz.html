@@ -4,6 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Photosynthesis Quiz</title>
+    <link rel="stylesheet" href="../variables.css">
+    <script src="../theme.js"></script>
   <style>
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -154,7 +156,7 @@ body.dark-mode .theme-toggle {
   </style>
 </head>
 <body class="dark-mode">
-  <button class="theme-toggle" onclick="toggleTheme()">🌗 Toggle Theme</button>
+  <button class="theme-toggle" onclick="toggleTheme()" id="themeToggleBtn" aria-label="Toggle theme"></button>
   <h1>🧪 Photosynthesis Quiz</h1>
 
   <form id="quizForm">

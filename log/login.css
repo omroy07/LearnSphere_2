@@ -3,9 +3,9 @@
 }
 
 body {
-    background: linear-gradient(135deg, #0d0d0d, #1a1a2e);
-    color: #ffffff;
-    font-family: 'Arial', sans-serif;
+    background: var(--bg-gradient);
+    color: var(--text-color);
+    font-family: 'Poppins', 'Inter', 'Arial', sans-serif;
     text-align: center;
     margin: 0;
     padding: 0;
@@ -13,6 +13,7 @@ body {
     justify-content: center;
     align-items: center;
     min-height: 100vh;
+    transition: var(--theme-transition);
 }
 
 /* ── Accessibility: Screen-reader only text ───────────────────────────────── */
@@ -30,13 +31,15 @@ body {
 
 /* ── Auth Container ───────────────────────────────────────────────────────── */
 .auth-container {
-    background: #1a1a2e;
+    background: var(--card-bg);
     padding: 30px;
     border-radius: 10px;
-    box-shadow: 0 0 20px rgba(0, 255, 255, 0.3);
+    box-shadow: var(--card-shadow);
+    border: 1px solid var(--card-border);
     width: 350px;
     text-align: center;
     animation: fadeIn 0.5s ease-out;
+    transition: var(--theme-transition);
 }
 
 @keyframes fadeIn {
@@ -48,7 +51,8 @@ body {
 h2 {
     font-size: 1.8rem;
     margin-bottom: 15px;
-    text-shadow: 0 0 10px cyan;
+    text-shadow: var(--hero-title-shadow);
+    transition: var(--theme-transition);
 }
 
 /* ── Form Groups ──────────────────────────────────────────────────────────── */
@@ -68,21 +72,21 @@ input {
     width: 100%;
     padding: 10px 12px;
     border-radius: 5px;
-    border: 1px solid transparent;
-    background: #0d0d0d;
-    color: white;
+    border: 1px solid var(--border-color);
+    background: var(--progress-item-bg);
+    color: var(--text-color);
     font-size: 1rem;
-    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    transition: var(--theme-transition), border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 input:focus {
     outline: none;
-    border-color: cyan;
-    box-shadow: 0 0 0 3px rgba(0, 255, 255, 0.25);
+    border-color: var(--accent-color);
+    box-shadow: 0 0 0 3px var(--glass-border);
 }
 
 input::placeholder {
-    color: rgba(255, 255, 255, 0.4);
+    color: var(--text-muted);
 }
 
 /* ── Password field with toggle button ───────────────────────────────────── */
@@ -112,27 +116,27 @@ input::placeholder {
 
 .toggle-password:hover,
 .toggle-password:focus {
-    color: cyan;
-    outline: 2px solid cyan;
+    color: var(--accent-color);
+    outline: 2px solid var(--accent-color);
     outline-offset: 2px;
 }
 
 /* ── Submit Button ────────────────────────────────────────────────────────── */
 .auth-button {
     width: 100%;
-    background: #007bff;
+    background: var(--btn-primary-bg);
     color: white;
     padding: 12px;
     border: none;
     border-radius: 8px;
     font-size: 1rem;
     cursor: pointer;
-    transition: background 0.3s ease, transform 0.2s ease;
+    transition: var(--theme-transition), transform 0.2s ease;
     margin-top: 4px;
 }
 
 .auth-button:hover {
-    background: #0056b3;
+    background: var(--btn-primary-hover);
 }
 
 .auth-button:focus-visible {

@@ -1,0 +1,147 @@
+/* variables.css — LearnSphere Global Design System Tokens */
+
+:root {
+    /* --- Dark Theme (Default) --- */
+    --bg-gradient: linear-gradient(135deg, #0b0f19, #111827);
+    --bg-color: #0b0f19;
+    --text-color: #f8fafc;
+    --text-muted: #94a3b8;
+    
+    --navbar-bg: rgba(17, 24, 39, 0.85);
+    --logo-color: #38bdf8;
+    --nav-link: #cbd5e1;
+    --nav-link-hover: #38bdf8;
+    
+    --btn-primary-bg: #0284c7;
+    --btn-primary-hover: #0369a1;
+    --btn-secondary-bg: #1e293b;
+    --btn-secondary-hover: #334155;
+    
+    --card-bg: rgba(30, 41, 59, 0.7);
+    --card-border: rgba(255, 255, 255, 0.08);
+    --card-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+    --border-color: #334155;
+    --accent-color: #38bdf8;
+    
+    --hero-title-shadow: 0 0 15px rgba(56, 189, 248, 0.6);
+    --hero-subtitle-color: #38bdf8;
+    --glass-bg: rgba(17, 24, 39, 0.7);
+    --glass-border: rgba(255, 255, 255, 0.08);
+    
+    /* Progress Tracker & Chatbot */
+    --tracker-bg: rgba(30, 41, 59, 0.7);
+    --progress-item-bg: rgba(15, 23, 42, 0.6);
+    --progress-bar-fill: linear-gradient(90deg, #0284c7, #38bdf8);
+    --completed-color: #10b981;
+    --in-progress-color: #f59e0b;
+    --not-started-color: #64748b;
+    
+    --theme-transition: background 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease, text-shadow 0.3s ease;
+}
+
+[data-theme="light"] {
+    /* --- Light Theme --- */
+    --bg-gradient: linear-gradient(135deg, #f1f5f9, #e2e8f0);
+    --bg-color: #f1f5f9;
+    --text-color: #0f172a;
+    --text-muted: #475569;
+    
+    --navbar-bg: rgba(255, 255, 255, 0.85);
+    --logo-color: #0284c7;
+    --nav-link: #334155;
+    --nav-link-hover: #0284c7;
+    
+    --btn-primary-bg: #0284c7;
+    --btn-primary-hover: #0369a1;
+    --btn-secondary-bg: #e2e8f0;
+    --btn-secondary-hover: #cbd5e1;
+    
+    --card-bg: rgba(255, 255, 255, 0.8);
+    --card-border: rgba(0, 0, 0, 0.06);
+    --card-shadow: 0 10px 25px -5px rgba(148, 163, 184, 0.15), 0 8px 10px -6px rgba(148, 163, 184, 0.1);
+    --border-color: #cbd5e1;
+    --accent-color: #0284c7;
+    
+    --hero-title-shadow: none;
+    --hero-subtitle-color: #0284c7;
+    --glass-bg: rgba(255, 255, 255, 0.8);
+    --glass-border: rgba(0, 0, 0, 0.06);
+    
+    /* Progress Tracker & Chatbot */
+    --tracker-bg: rgba(255, 255, 255, 0.8);
+    --progress-item-bg: rgba(241, 245, 249, 0.9);
+    --progress-bar-fill: linear-gradient(90deg, #0284c7, #06b6d4);
+    --completed-color: #059669;
+    --in-progress-color: #d97706;
+    --not-started-color: #94a3b8;
+}
+
+/* ==========================================
+   GLOBAL OVERRIDES FOR LIGHT MODE INHERITANCE
+   ========================================== */
+[data-theme="light"] body {
+    background: var(--bg-gradient) !important;
+    background-color: var(--bg-color) !important;
+    color: var(--text-color) !important;
+}
+
+[data-theme="light"] .container,
+[data-theme="light"] .dashboard-container,
+[data-theme="light"] .auth-container,
+[data-theme="light"] .study-progress,
+[data-theme="light"] .progress-overview,
+[data-theme="light"] .chatbot,
+[data-theme="light"] .feedback-card,
+[data-theme="light"] .feedback-popup,
+[data-theme="light"] .content {
+    background: var(--card-bg) !important;
+    background-color: var(--card-bg) !important;
+    color: var(--text-color) !important;
+    border: 1px solid var(--card-border) !important;
+    box-shadow: var(--card-shadow) !important;
+}
+
+[data-theme="light"] h1,
+[data-theme="light"] h2,
+[data-theme="light"] h3,
+[data-theme="light"] h4,
+[data-theme="light"] h5,
+[data-theme="light"] h6,
+[data-theme="light"] .title {
+    color: var(--text-color) !important;
+    text-shadow: var(--hero-title-shadow) !important;
+}
+
+[data-theme="light"] p,
+[data-theme="light"] .description,
+[data-theme="light"] .subtitle,
+[data-theme="light"] label,
+[data-theme="light"] .switch-auth {
+    color: var(--text-muted) !important;
+}
+
+[data-theme="light"] input,
+[data-theme="light"] textarea,
+[data-theme="light"] select,
+[data-theme="light"] #user-input,
+[data-theme="light"] #chat-box,
+[data-theme="light"] #userInput,
+[data-theme="light"] #chatbox,
+[data-theme="light"] #feedbackInput {
+    background: var(--progress-item-bg) !important;
+    background-color: var(--progress-item-bg) !important;
+    color: var(--text-color) !important;
+    border: 1px solid var(--border-color) !important;
+}
+
+[data-theme="light"] #progressList li,
+[data-theme="light"] #progressList li.progress-item {
+    background: var(--progress-item-bg) !important;
+    color: var(--text-color) !important;
+}
+
+[data-theme="light"] .canvas-container {
+    background: var(--progress-item-bg) !important;
+    box-shadow: var(--card-shadow) !important;
+    border: 1px solid var(--border-color) !important;
+}

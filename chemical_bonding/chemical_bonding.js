@@ -63,15 +63,9 @@ function submitFeedback() {
   }
 }
 
-function toggleDarkMode() {
-  document.body.classList.toggle("dark-mode");
-  localStorage.setItem("darkMode", document.body.classList.contains("dark-mode"));
-}
+/* Unified Theme Manager overrides */
 
-function loadTheme() {
-  if (localStorage.getItem("darkMode") === "true") {
-    document.body.classList.add("dark-mode");
-  }
+/* Unified Theme Manager overrides */
 }
 
 const canvas = document.getElementById('moleculeCanvas');

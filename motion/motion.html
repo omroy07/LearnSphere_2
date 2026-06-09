@@ -5,6 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Motion Simulation - LearnSphere</title>
+    <link rel="stylesheet" href="../variables.css">
+    <script src="../theme.js"></script>
     <link rel="stylesheet" href="motion.css">
     <style>
         body {
@@ -202,8 +204,8 @@
     </style>
 </head>
 
-<body onload="loadTheme()">
-    <button class="dark-toggle" onclick="toggleDarkMode()">🌙 Dark Mode</button>
+<body >
+    <button class="dark-toggle" id="themeToggleBtn" class="dark-toggle" id="themeToggleBtn" aria-label="Toggle theme" aria-label="Toggle theme"></button>
 
     <div class="container">
         <h1 class="title">Motion Simulation</h1>
@@ -369,16 +371,9 @@
             }, 100);  // Small delay to ensure canvas is loaded
         }
 
-        function toggleDarkMode() {
-            let body = document.body;
-            body.classList.toggle("dark-mode");
-            localStorage.setItem("darkMode", body.classList.contains("dark-mode"));
-        }
+        
 
-        function loadTheme() {
-            if (localStorage.getItem("darkMode") === "true") {
-                document.body.classList.add("dark-mode");
-            }
+        
         }
     </script>
 
