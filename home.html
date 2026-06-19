@@ -146,6 +146,8 @@
         }
     </style>
     <script src="theme.js"></script>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#0f1115">
 </head>
 <body>
 
@@ -223,5 +225,16 @@
 
     <script src="progress.js"></script>
     <script src="home.js"></script>
+
+    <script>
+      (function () {
+        if (!('serviceWorker' in navigator)) return;
+        window.addEventListener('load', function () {
+          navigator.serviceWorker.register('/sw.js').catch(function (err) {
+            console.warn('LearnSphere: Service Worker registration failed:', err);
+          });
+        });
+      })();
+    </script>
 </body>
 </html>

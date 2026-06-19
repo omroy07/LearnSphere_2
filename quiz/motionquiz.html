@@ -64,6 +64,17 @@
 
     <script src="../../quizProgress.js"></script>
     <script src="motionquiz.js"></script>
+
+    <script>
+      (function () {
+        if (!('serviceWorker' in navigator)) return;
+        window.addEventListener('load', function () {
+          navigator.serviceWorker.register('/sw.js').catch(function (err) {
+            console.warn('LearnSphere: Service Worker registration failed:', err);
+          });
+        });
+      })();
+    </script>
 </body>
 
 </html>

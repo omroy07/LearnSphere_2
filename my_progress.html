@@ -8,7 +8,10 @@
     <link rel="stylesheet" href="variables.css">
     <script src="theme.js"></script>
   <link rel="stylesheet" href="styles.css" />
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0f1115">
   <style>
+
     .progress-wrap {
       max-width: 980px;
       margin: 24px auto;
@@ -182,6 +185,17 @@
   <script src="quizProgress.js"></script>
   <script src="my_progress.js"></script>
     <script src="navbar.js"></script>
+
+    <script>
+      (function () {
+        if (!('serviceWorker' in navigator)) return;
+        window.addEventListener('load', function () {
+          navigator.serviceWorker.register('/sw.js').catch(function (err) {
+            console.warn('LearnSphere: Service Worker registration failed:', err);
+          });
+        });
+      })();
+    </script>
 </body>
 
 </html>

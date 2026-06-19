@@ -1,0 +1,17 @@
+{
+  "name": "LearnSphere",
+  "short_name": "LearnSphere",
+  "start_url": "/index.html",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#0f1115",
+  "theme_color": "#0f1115",
+  "icons": [
+    {
+      "src": "/student.png",
+      "sizes": "256x256",
+      "type": "image/png"
+    }
+  ]
+}
+

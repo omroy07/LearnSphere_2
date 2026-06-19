@@ -26,6 +26,9 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <script src="theme.js" defer></script>
     <link rel="stylesheet" href="styles.css">
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="/student.png">
+    <meta name="theme-color" content="#0f1115">
 
     <!-- Performance: Hero image priority for above-the-fold content -->
     <link rel="preload" as="image" href="student.png">
@@ -94,6 +97,17 @@
 
     <script src="navbar.js" defer></script>
     <script src="script.js" defer></script>
+
+    <script>
+      (function () {
+        if (!('serviceWorker' in navigator)) return;
+        window.addEventListener('load', function () {
+          navigator.serviceWorker.register('/sw.js').catch(function (err) {
+            console.warn('LearnSphere: Service Worker registration failed:', err);
+          });
+        });
+      })();
+    </script>
 
 </body>
 
