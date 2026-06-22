@@ -86,11 +86,66 @@
     // Ensure FontAwesome is loaded for icons
     injectFontAwesome();
 
-    // Wire up toggle button after DOM is parsed
-    if (document.readyState === "loading") {
-        document.addEventListener("DOMContentLoaded", initToggle);
-    } else {
+    function updateOfflineBadge() {
+        let badge = document.getElementById("offline-mode-badge");
+        if (navigator.onLine === false) {
+            if (!badge) {
+                badge = document.createElement("div");
+                badge.id = "offline-mode-badge";
+                badge.innerHTML = "<i class='fa-solid fa-wifi-slash'></i> Offline mode active";
+                
+                // Style properties
+                badge.style.position = "fixed";
+                badge.style.bottom = "20px";
+                badge.style.right = "20px";
+                badge.style.background = "#ef4444";
+                badge.style.color = "white";
+                badge.style.padding = "10px 16px";
+                badge.style.borderRadius = "50px";
+                badge.style.fontWeight = "bold";
+                badge.style.boxShadow = "0 4px 12px rgba(0, 0, 0, 0.25)";
+                badge.style.zIndex = "100000";
+                badge.style.fontSize = "0.85rem";
+                badge.style.display = "flex";
+                badge.style.alignItems = "center";
+                badge.style.gap = "8px";
+                badge.style.fontFamily = "'Poppins', 'Inter', sans-serif";
+                badge.style.animation = "slideIn 0.3s ease-out";
+                
+                // Add keyframe style
+                if (!document.getElementById("offline-badge-style")) {
+                    const style = document.createElement("style");
+                    style.id = "offline-badge-style";
+                    style.textContent = `
+                        @keyframes slideIn {
+                            from { transform: translateY(50px); opacity: 0; }
+                            to { transform: translateY(0); opacity: 1; }
+                        }
+                    `;
+                    document.head.appendChild(style);
+                }
+                
+                document.body.appendChild(badge);
+            } else {
+                badge.style.display = "flex";
+            }
+        } else {
+            if (badge) {
+                badge.remove();
+            }
+        }
+    }
+
+    // Wire up toggle button and offline badge after DOM is parsed
+    function init() {
         initToggle();
+        updateOfflineBadge();
+    }
+
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", init);
+    } else {
+        init();
     }
 
     // Listen for OS-level theme changes
@@ -99,4 +154,8 @@
             applyTheme(e.matches ? "light" : "dark");
         }
     });
+
+    // Listen for connection changes
+    window.addEventListener("online", updateOfflineBadge);
+    window.addEventListener("offline", updateOfflineBadge);
 })();

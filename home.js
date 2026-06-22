@@ -86,6 +86,55 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         }
     }
+
+    // Wire up offline preloading
+    const preloadBtn = document.getElementById("preloadOfflineBtn");
+    if (preloadBtn) {
+        preloadBtn.addEventListener("click", () => {
+            if (!navigator.serviceWorker || !navigator.serviceWorker.controller) {
+                alert("Service Worker is not active yet. Please refresh the page and try again.");
+                return;
+            }
+            
+            preloadBtn.disabled = true;
+            preloadBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Preloading...`;
+            
+            navigator.serviceWorker.controller.postMessage({ action: "preload" });
+        });
+
+        // Listen for messages from service worker
+        navigator.serviceWorker.addEventListener("message", (event) => {
+            if (event.data && event.data.action === "preload-complete") {
+                preloadBtn.disabled = false;
+                if (event.data.success) {
+                    preloadBtn.style.borderColor = "var(--completed-color)";
+                    preloadBtn.style.color = "var(--completed-color)";
+                    preloadBtn.style.background = "rgba(16, 185, 129, 0.08)";
+                    preloadBtn.innerHTML = `<i class="fa-solid fa-circle-check"></i> Practice Ready ✅`;
+                    
+                    // Reset styling after 4 seconds
+                    setTimeout(() => {
+                        preloadBtn.style.borderColor = "var(--border-color)";
+                        preloadBtn.style.color = "var(--text-color)";
+                        preloadBtn.style.background = "var(--btn-secondary-bg)";
+                        preloadBtn.innerHTML = `<i class="fa-solid fa-download"></i> Preload for offline`;
+                    }, 4000);
+                } else {
+                    preloadBtn.style.borderColor = "#ef4444";
+                    preloadBtn.style.color = "#ef4444";
+                    preloadBtn.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> Preload Failed`;
+                    console.error("SW preloading error:", event.data.error);
+                    
+                    setTimeout(() => {
+                        preloadBtn.style.borderColor = "var(--border-color)";
+                        preloadBtn.style.color = "var(--text-color)";
+                        preloadBtn.style.background = "var(--btn-secondary-bg)";
+                        preloadBtn.innerHTML = `<i class="fa-solid fa-download"></i> Preload for offline`;
+                    }, 4000);
+                }
+            }
+        });
+    }
 });
 
 // ── Chatbot ───────────────────────────────────────────────────────────────────

@@ -255,7 +255,12 @@
 
         <!-- Study Progress Section -->
         <section class="progress-overview" aria-labelledby="progress-heading">
-            <h2 id="progress-heading">📊 Your Study Progress</h2>
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 8px;">
+                <h2 id="progress-heading" style="margin: 0; font-size: 1.4rem;">📊 Your Study Progress</h2>
+                <button id="preloadOfflineBtn" style="background: var(--btn-secondary-bg); color: var(--text-color); border: 1px solid var(--border-color); padding: 8px 14px; border-radius: 6px; cursor: pointer; font-size: 0.85rem; font-weight: bold; transition: var(--theme-transition); display: flex; align-items: center; gap: 6px;">
+                    <i class="fa-solid fa-download"></i> Preload for offline
+                </button>
+            </div>
 
             <!-- Overall completion bar -->
             <div
