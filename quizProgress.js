@@ -93,9 +93,34 @@ function recordAttempt({ topicId, score, totalQuestions, correctCount, timeTaken
 
   const total = Number(totalQuestions) || 0;
   const got = Number(score) || 0;
-  const correct = typeof correctCount === "number" ? correctCount : got;
+
+  // Determine correctness count used for accuracy analytics.
+  // Priority:
+  // 1) If caller provides correctCount as a number -> trust it.
+  // 2) Else, try to infer correct answers from score only when it looks like an accuracy metric:
+  //    - score is ratio: 0..1
+  //    - score is percent: 0..100
+  //    In those cases, correct = round(score * total).
+  // 3) Otherwise, we cannot infer correct answers safely -> set null.
+  //    (Prevents corrupting accuracy trend charts when score is points/marks.)
+  let correct = null;
+  if (typeof correctCount === "number" && Number.isFinite(correctCount)) {
+    correct = correctCount;
+  } else {
+    // Some quiz pages historically pass a percentage/ratio as `score` and omit `correctCount`.
+
+    const looksLikeRatio = got >= 0 && got <= 1;
+    const looksLikePercent = got > 1 && got <= 100;
+    if (total > 0 && (looksLikeRatio || looksLikePercent)) {
+      const ratio = looksLikeRatio ? got : got / 100;
+      correct = Math.round(ratio * total);
+    }
+  }
+
+
 
   const timeMs = typeof timeTakenMs === "number" && timeTakenMs >= 0 ? timeTakenMs : null;
+
 
   // Topic aggregate init
   if (!state.byTopic[topicId]) {
@@ -115,7 +140,10 @@ function recordAttempt({ topicId, score, totalQuestions, correctCount, timeTaken
   agg.attempts += 1;
   agg.bestScore = agg.bestScore === null ? got : Math.max(agg.bestScore, got);
   agg.latestScore = got;
-  agg.correctTotal += correct;
+  if (typeof correct === "number" && Number.isFinite(correct)) {
+    agg.correctTotal += correct;
+  }
+
   agg.questionsTotal += total;
   agg.lastAttemptAt = now;
   if (timeMs !== null) {
@@ -130,7 +158,8 @@ function recordAttempt({ topicId, score, totalQuestions, correctCount, timeTaken
     score: got,
     totalQuestions: total,
     correctCount: correct,
-    accuracy: total > 0 ? correct / total : null,
+    accuracy: total > 0 && typeof correct === "number" && Number.isFinite(correct) ? correct / total : null,
+
     timeTakenMs: timeMs,
     startedAt: null,
     finishedAt: now,
