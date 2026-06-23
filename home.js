@@ -51,8 +51,15 @@ document.addEventListener("DOMContentLoaded", () => {
         const pct = Math.min(100, Math.round((days / nextMilestone) * 100));
         if (barFillEl) barFillEl.style.width = `${pct}%`;
         
-        const todayStr = new Date().toLocaleDateString('en-CA');
+        // Streak dates are stored in quizProgress.js as local YYYY-MM-DD.
+        // Avoid toLocaleDateString formatting mismatches across browsers/timezones.
+        const d = new Date();
+        const yyyy = d.getFullYear();
+        const mm = String(d.getMonth() + 1).padStart(2, "0");
+        const dd = String(d.getDate()).padStart(2, "0");
+        const todayStr = `${yyyy}-${mm}-${dd}`;
         const practicedToday = streak.lastPracticeDate === todayStr;
+
         
         if (descEl) {
             if (practicedToday) {
