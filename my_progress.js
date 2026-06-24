@@ -243,8 +243,173 @@ function init() {
   }
 }
 
+function initMasteryDashboard() {
+  const masteryListEl = document.getElementById("masterySkillsList");
+  const weakSkillsEl = document.getElementById("weakSkillsRecommendations");
+  if (!masteryListEl || !weakSkillsEl) return;
+
+  const mastery = window.quizProgress.getMasteryStats();
+  const taxonomy = window.quizProgress.SKILL_TAXONOMY || {};
+
+  // Group all unique skills from taxonomy
+  const skillMap = new Map();
+  for (const [qText, tax] of Object.entries(taxonomy)) {
+    if (!skillMap.has(tax.skillId)) {
+      skillMap.set(tax.skillId, {
+        skillId: tax.skillId,
+        label: tax.label,
+        topicId: tax.topicId,
+        quizUrl: tax.quizUrl,
+        attempts: 0,
+        correct: 0
+      });
+    }
+  }
+
+  // Populate actual attempts and correct values
+  let totalAttempts = 0;
+  for (const [sId, m] of Object.entries(mastery)) {
+    totalAttempts += m.attempts || 0;
+    if (skillMap.has(sId)) {
+      const entry = skillMap.get(sId);
+      entry.attempts = m.attempts || 0;
+      entry.correct = m.correct || 0;
+    } else {
+      // Fallback for dynamically generated or legacy general skills
+      skillMap.set(sId, {
+        skillId: sId,
+        label: sId.replace("-general", " General Concepts"),
+        topicId: sId.split("-")[0],
+        quizUrl: null,
+        attempts: m.attempts || 0,
+        correct: m.correct || 0
+      });
+    }
+  }
+
+  const skillsArray = Array.from(skillMap.values());
+
+  // Render Left Column: Concept Mastery Details
+  // Sort attempted first, then alphabetical by label
+  skillsArray.sort((a, b) => {
+    if (a.attempts !== b.attempts) {
+      return b.attempts - a.attempts; // attempted first
+    }
+    return a.label.localeCompare(b.label);
+  });
+
+  if (totalAttempts === 0) {
+    masteryListEl.innerHTML = `<div class="muted" style="padding: 12px; text-align: center;">No mastery data recorded yet. Complete quizzes to see concept-wise stats!</div>`;
+  } else {
+    masteryListEl.innerHTML = "";
+    skillsArray.forEach(s => {
+      // Only render if attempted to keep the dashboard clean and focused on progress
+      if (s.attempts === 0) return;
+
+      const accuracy = s.attempts > 0 ? s.correct / s.attempts : 0;
+      const pctValue = Math.round(accuracy * 100);
+      
+      // Determine premium color based on accuracy
+      let barColor = "#ef4444"; // red for <50%
+      if (pctValue >= 80) {
+        barColor = "#66fcf1"; // teal for >=80%
+      } else if (pctValue >= 50) {
+        barColor = "#f59e0b"; // orange/yellow for 50-80%
+      }
+
+      const row = document.createElement("div");
+      row.className = "topic-row";
+      row.style.marginBottom = "8px";
+      row.innerHTML = `
+        <div style="min-width: 210px; font-weight: 600; font-size: 0.9rem;">${s.label}</div>
+        <div class="bar" aria-label="mastery bar" style="background: rgba(255, 255, 255, 0.05); margin: 0 12px; height: 8px;">
+          <i style="width:${pctValue}%; background:${barColor}; border-radius: 999px;"></i>
+        </div>
+        <div style="min-width: 90px; text-align:right; font-size: 0.9rem;">
+          <div style="font-weight:700; color: ${barColor};">${pctValue}%</div>
+          <div class="muted" style="font-size:11px;">${s.correct}/${s.attempts} correct</div>
+        </div>
+      `;
+      masteryListEl.appendChild(row);
+    });
+
+    if (masteryListEl.children.length === 0) {
+      masteryListEl.innerHTML = `<div class="muted" style="padding: 12px; text-align: center;">Complete quizzes to see concept-wise stats!</div>`;
+    }
+  }
+
+  // Render Right Column: Weakest Concepts & Recommended Practice
+  const weakSkills = window.quizProgress.getWeakestSkills({ limit: 3 });
+  
+  weakSkillsEl.innerHTML = "";
+  if (!weakSkills || weakSkills.length === 0) {
+    weakSkillsEl.innerHTML = `<div class="muted">No weak concepts identified yet. Keep practicing!</div>`;
+  } else {
+    weakSkills.forEach(ws => {
+      const accuracyPct = ws.attempts > 0 ? `${Math.round(ws.accuracy * 100)}%` : "Not attempted";
+      
+      const card = document.createElement("div");
+      card.style.background = "rgba(255, 255, 255, 0.02)";
+      card.style.border = "1px solid rgba(255, 255, 255, 0.06)";
+      card.style.borderRadius = "8px";
+      card.style.padding = "12px 14px";
+      card.style.display = "flex";
+      card.style.justifyContent = "space-between";
+      card.style.alignItems = "center";
+      card.style.transition = "all 0.2s ease";
+      
+      card.addEventListener("mouseenter", () => {
+        card.style.background = "rgba(255, 255, 255, 0.04)";
+        card.style.borderColor = "rgba(102, 252, 241, 0.3)";
+      });
+      card.addEventListener("mouseleave", () => {
+        card.style.background = "rgba(255, 255, 255, 0.02)";
+        card.style.borderColor = "rgba(255, 255, 255, 0.06)";
+      });
+
+      const practiceUrl = ws.quizUrl ? ws.quizUrl : "#";
+
+      let statusColor = "#ff5e5e";
+      if (ws.attempts === 0) {
+        statusColor = "#a0aec0";
+      } else if (ws.accuracy >= 0.8) {
+        statusColor = "#66fcf1";
+      } else if (ws.accuracy >= 0.5) {
+        statusColor = "#f59e0b";
+      }
+
+      card.innerHTML = `
+        <div style="display:flex; flex-direction:column; gap:4px; text-align:left;">
+          <div style="font-weight: 600; font-size: 0.95rem; color: #fff;">${ws.label}</div>
+          <div style="font-size: 0.8rem; color: rgba(255, 255, 255, 0.65);">
+            Accuracy: <span style="font-weight:bold; color: ${statusColor}">${accuracyPct}</span> 
+            ${ws.attempts > 0 ? `(${ws.attempts} attempts)` : ""}
+          </div>
+        </div>
+        ${ws.quizUrl ? `
+          <a href="${practiceUrl}" style="
+            background: rgba(102, 252, 241, 0.08); 
+            border: 1px solid rgba(102, 252, 241, 0.4); 
+            color: #66fcf1;
+            padding: 6px 12px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 0.8rem;
+            font-weight: bold;
+            transition: all 0.2s ease;
+          " onmouseover="this.style.background='#66fcf1'; this.style.color='#0f1115'" onmouseout="this.style.background='rgba(102, 252, 241, 0.08)'; this.style.color='#66fcf1'">
+            Practice ➔
+          </a>
+        ` : ""}
+      `;
+      weakSkillsEl.appendChild(card);
+    });
+  }
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   init();
+  initMasteryDashboard();
   initReviewQueueWidget();
   if (window.achievements?.renderBadges) {
     window.achievements.renderBadges("badgesContainerMyProgress");

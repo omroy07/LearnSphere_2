@@ -170,6 +170,29 @@
         <div id="recommendedTopics" style="margin-top:8px"></div>
         <div class="muted" style="font-size:13px; margin-top:14px">
           Recommendations focus on weaker or less-attempted topics.
+      </div>
+    </div>
+
+    <!-- New Section: Personalized Mastery Dashboard -->
+    <div class="card" style="margin-top:16px">
+      <h2 style="margin-top:0; display:flex; align-items:center; gap:8px;">
+        🎯 Personalized Mastery Dashboard
+      </h2>
+      <p class="muted" style="margin-bottom:16px;">Track your mastery levels per specific sub-skill/concept. Recommendations adapt to your weakest areas.</p>
+      
+      <div class="grid-2" style="grid-template-columns: 1.1fr 0.9fr;">
+        <div>
+          <h3 style="margin-top:0; font-size:1.1rem; color: var(--accent-color);">Concept Mastery Details</h3>
+          <div id="masterySkillsList" class="topic-list">
+            <div class="muted">No mastery data recorded yet. Complete quizzes to see concept-wise stats!</div>
+          </div>
+        </div>
+        
+        <div style="border-left: 1px solid rgba(255, 255, 255, 0.08); padding-left: 20px;">
+          <h3 style="margin-top:0; font-size:1.1rem; color: #ff5e5e;">Top Weak Concepts & Practice</h3>
+          <div id="weakSkillsRecommendations" style="display:flex; flex-direction:column; gap:12px; margin-top:12px;">
+            <div class="muted">No weak concepts identified yet.</div>
+          </div>
         </div>
       </div>
     </div>

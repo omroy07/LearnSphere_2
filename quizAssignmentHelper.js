@@ -259,6 +259,15 @@
     }
 
     function init() {
+        // Normalize questions (convert integer index answers to string options)
+        if (window.questions && Array.isArray(window.questions)) {
+            window.questions.forEach(q => {
+                if (typeof q.answer === 'number' && Array.isArray(q.options)) {
+                    q.answer = q.options[q.answer];
+                }
+            });
+        }
+
         const originalShowResults = window.showResults;
         if (typeof originalShowResults === 'function') {
             window.showResults = wrapShowResults(originalShowResults);
@@ -269,6 +278,16 @@
                 checkCount++;
                 if (typeof window.showResults === 'function' && window.showResults !== window._wrappedShowResults) {
                     clearInterval(checkInterval);
+                    
+                    // Normalize dynamically loaded questions as well
+                    if (window.questions && Array.isArray(window.questions)) {
+                        window.questions.forEach(q => {
+                            if (typeof q.answer === 'number' && Array.isArray(q.options)) {
+                                q.answer = q.options[q.answer];
+                            }
+                        });
+                    }
+
                     window.showResults = wrapShowResults(window.showResults);
                     window._wrappedShowResults = window.showResults;
                     console.log("LearnSphere: Hooked into dynamically loaded showResults function.");

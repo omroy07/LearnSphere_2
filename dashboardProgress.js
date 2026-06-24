@@ -214,6 +214,142 @@
     });
   }
 
+  function renderMastery(root) {
+    const masteryListEl = root.querySelector("#masterySkillsList");
+    const weakSkillsEl = root.querySelector("#weakSkillsRecommendations");
+    if (!masteryListEl || !weakSkillsEl) return;
+
+    const mastery = window.quizProgress.getMasteryStats();
+    const taxonomy = window.quizProgress.SKILL_TAXONOMY || {};
+
+    const skillMap = new Map();
+    for (const [qText, tax] of Object.entries(taxonomy)) {
+      if (!skillMap.has(tax.skillId)) {
+        skillMap.set(tax.skillId, {
+          skillId: tax.skillId,
+          label: tax.label,
+          topicId: tax.topicId,
+          quizUrl: tax.quizUrl,
+          attempts: 0,
+          correct: 0
+        });
+      }
+    }
+
+    let totalAttempts = 0;
+    for (const [sId, m] of Object.entries(mastery)) {
+      totalAttempts += m.attempts || 0;
+      if (skillMap.has(sId)) {
+        const entry = skillMap.get(sId);
+        entry.attempts = m.attempts || 0;
+        entry.correct = m.correct || 0;
+      } else {
+        skillMap.set(sId, {
+          skillId: sId,
+          label: sId.replace("-general", " General Concepts"),
+          topicId: sId.split("-")[0],
+          quizUrl: null,
+          attempts: m.attempts || 0,
+          correct: m.correct || 0
+        });
+      }
+    }
+
+    const skillsArray = Array.from(skillMap.values());
+
+    skillsArray.sort((a, b) => {
+      if (a.attempts !== b.attempts) {
+        return b.attempts - a.attempts;
+      }
+      return a.label.localeCompare(b.label);
+    });
+
+    if (totalAttempts === 0) {
+      masteryListEl.innerHTML = `<div class="muted" style="padding: 12px; text-align: center; font-size:13px; color:rgba(255,255,255,0.72)">No mastery data recorded yet.</div>`;
+    } else {
+      masteryListEl.innerHTML = "";
+      skillsArray.forEach(s => {
+        if (s.attempts === 0) return;
+
+        const accuracy = s.attempts > 0 ? s.correct / s.attempts : 0;
+        const pctValue = Math.round(accuracy * 100);
+        
+        let barColor = "#ef4444";
+        if (pctValue >= 80) {
+          barColor = "#66fcf1";
+        } else if (pctValue >= 50) {
+          barColor = "#f59e0b";
+        }
+
+        const row = document.createElement("div");
+        row.className = "topic-row";
+        row.style.marginBottom = "8px";
+        row.style.display = "flex";
+        row.style.alignItems = "center";
+        row.style.justifyContent = "space-between";
+        row.style.padding = "10px 12px";
+        row.style.borderRadius = "10px";
+        row.style.background = "rgba(255,255,255,0.03)";
+        row.style.border = "1px solid rgba(255,255,255,0.06)";
+        row.innerHTML = `
+          <div style="min-width: 210px; font-weight: 600; font-size: 0.9rem; color: #fff;">${s.label}</div>
+          <div class="bar" aria-label="mastery bar" style="flex: 1; height: 8px; background: rgba(255, 255, 255, 0.05); margin: 0 12px; border-radius: 999px; overflow: hidden;">
+            <i style="display: block; height: 100%; width:${pctValue}%; background:${barColor}; border-radius: 999px;"></i>
+          </div>
+          <div style="min-width: 90px; text-align:right; font-size: 0.9rem;">
+            <div style="font-weight:700; color: ${barColor};">${pctValue}%</div>
+            <div class="muted" style="font-size:11px; color:rgba(255,255,255,0.72);">${s.correct}/${s.attempts} correct</div>
+          </div>
+        `;
+        masteryListEl.appendChild(row);
+      });
+
+      if (masteryListEl.children.length === 0) {
+        masteryListEl.innerHTML = `<div class="muted" style="padding: 12px; text-align: center; font-size:13px; color:rgba(255,255,255,0.72)">No concept stats available yet.</div>`;
+      }
+    }
+
+    const weakSkills = window.quizProgress.getWeakestSkills({ limit: 3 });
+    
+    weakSkillsEl.innerHTML = "";
+    if (!weakSkills || weakSkills.length === 0) {
+      weakSkillsEl.innerHTML = `<div class="muted" style="font-size:13px; color:rgba(255,255,255,0.72)">No weak concepts identified yet.</div>`;
+    } else {
+      weakSkills.forEach(ws => {
+        const accuracyPct = ws.attempts > 0 ? `${Math.round(ws.accuracy * 100)}%` : "Not attempted";
+        
+        const card = document.createElement("div");
+        card.style.background = "rgba(255, 255, 255, 0.02)";
+        card.style.border = "1px solid rgba(255, 255, 255, 0.06)";
+        card.style.borderRadius = "8px";
+        card.style.padding = "12px 14px";
+        card.style.display = "flex";
+        card.style.justifyContent = "space-between";
+        card.style.alignItems = "center";
+
+        let statusColor = "#ff5e5e";
+        if (ws.attempts === 0) {
+          statusColor = "#a0aec0";
+        } else if (ws.accuracy >= 0.8) {
+          statusColor = "#66fcf1";
+        } else if (ws.accuracy >= 0.5) {
+          statusColor = "#f59e0b";
+        }
+
+        card.innerHTML = `
+          <div style="display:flex; flex-direction:column; gap:4px; text-align:left;">
+            <div style="font-weight: 600; font-size: 0.95rem; color: #fff;">${ws.label}</div>
+            <div style="font-size: 0.8rem; color: rgba(255, 255, 255, 0.65);">
+              Accuracy: <span style="font-weight:bold; color: ${statusColor}">${accuracyPct}</span> 
+              ${ws.attempts > 0 ? `(${ws.attempts} attempts)` : ""}
+            </div>
+          </div>
+        `;
+        weakSkillsEl.appendChild(card);
+      });
+    }
+  }
+
   function renderAll(root) {
     // Guard: quizProgress must be loaded
     if (!window.quizProgress) {
@@ -226,6 +362,7 @@
     renderAccuracyChart(root);
     renderRecommendations(root);
     renderTopicStats(root);
+    renderMastery(root);
   }
 
   function initByRole() {
