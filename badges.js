@@ -1,176 +1,86 @@
 /*
- * badges.js — Unified “Achievements & Badges” system (Milestones)
+ * badges.js — Badge System 2.0 (Rules-based achievement unlocking)
  *
- * Computes milestones from existing quiz stats stored by quizProgress.js:
- *   localStorage key: learnsphere_quiz_progress_v1
- *
- * Badges are persisted once unlocked in:
- *   localStorage key: learnsphere_achievements_v1
+ * Requirements implemented:
+ * - Rule schema: { id, title, condition: { type, params }, reward }
+ * - Achievement evaluator runs via existing call-sites:
+ *     window.achievements.checkAndNotify() (triggered after quiz + mastery updates)
+ * - State:
+ *     unlockedBadges: []
+ *     badgeProgress: { [badgeId]: {...} }
+ * - UI:
+ *     locked vs unlocked + progress toward badge
+ * - Persistence: localStorage key learnsphere_achievements_v1
  */
 
 (function () {
-  const QUIZ_PROGRESS_KEY = "learnsphere_quiz_progress_v1"; // for visibility in devtools
   const ACHIEVEMENTS_KEY = "learnsphere_achievements_v1";
+  const QUIZ_PROGRESS_KEY = "learnsphere_quiz_progress_v1";
 
-  const BADGES = [
+  // ---------------------------
+  // 1) Badge rule schema
+  // ---------------------------
+  const BADGE_RULES = [
     {
-      id: "first_quiz_attempt",
-      title: "First quiz attempt",
-      description: "Complete your first quiz.",
-      icon: "🏁",
-      getProgress: (stats) => {
-        const firstAttempt = (stats.attemptCount || 0) >= 1;
-        return {
-          unlocked: firstAttempt,
-          progressText: firstAttempt ? "Unlocked" : "0/1"
-        };
-      }
+      id: "perfect_3_quizzes_in_week",
+      title: "3 perfect quizzes in a week",
+      icon: "🏆",
+      reward: { type: "badge" },
+      condition: {
+        type: "perfect_quizzes_in_week",
+        params: { targetPerfectQuizzes: 3, window: "week", perfectAccuracy: 1.0 }
+      },
+      description: "Achieve 100% accuracy in 3 quizzes within the same week."
     },
     {
-      id: "five_topics_completed",
-      title: "5 topics completed",
-      description: "Attempt quizzes in at least 5 topics.",
-      icon: "📚",
-      getProgress: (stats) => {
-        const target = 5;
-        const done = stats.topicAttemptedCount || 0;
-        return {
-          unlocked: done >= target,
-          progressText: `${Math.min(done, target)}/${target}`
-        };
-      }
-    },
-    {
-      id: "three_day_streak",
-      title: "3-day practice streak",
-      description: "Practice every day for 3 days.",
-      icon: "⚡",
-      getProgress: (stats) => {
-        const target = 3;
-        const done = stats.currentStreak || 0;
-        return {
-          unlocked: done >= target,
-          progressText: `${Math.min(done, target)}/${target}`
-        };
-      }
-    },
-    {
-      id: "seven_day_streak",
-      title: "7-day practice streak",
-      description: "Practice every day for 7 days.",
-      icon: "🔥",
-      getProgress: (stats) => {
-        const target = 7;
-        const done = stats.currentStreak || 0;
-        return {
-          unlocked: done >= target,
-          progressText: `${Math.min(done, target)}/${target}`
-        };
-      }
-    },
-    {
-      id: "fourteen_day_streak",
-      title: "14-day practice streak",
-      description: "Practice every day for 14 days.",
-      icon: "👑",
-      getProgress: (stats) => {
-        const target = 14;
-        const done = stats.currentStreak || 0;
-        return {
-          unlocked: done >= target,
-          progressText: `${Math.min(done, target)}/${target}`
-        };
-      }
-    },
-    {
-      id: "weekend_warrior",
-      title: "Weekend Warrior",
-      description: "Complete a quiz on a weekend (Saturday or Sunday).",
-      icon: "⚔️",
-      getProgress: (stats) => {
-        const unlocked = !!stats.hasWeekendAttempt;
-        return {
-          unlocked,
-          progressText: unlocked ? "Unlocked" : "0/1"
-        };
-      }
-    },
-    {
-      id: "weekly_badge",
-      title: "Weekly Scholar",
-      description: "Complete at least one quiz this week.",
-      icon: "🎓",
-      getProgress: (stats) => {
-        const unlocked = !!stats.hasWeeklyAttempt;
-        return {
-          unlocked,
-          progressText: unlocked ? "Unlocked" : "0/1"
-        };
-      }
-    },
-    {
-      id: "ninety_percent_accuracy",
-      title: "90%+ accuracy",
-      description: "Maintain 90% accuracy across your attempts.",
+      id: "mastery_gt_80_any_skill",
+      title: "Mastery > 80% in any skill",
       icon: "🎯",
-      getProgress: (stats) => {
-        const target = 0.9;
-        const total = stats.overallTotalAnswers || 0;
-        const acc = stats.overallAccuracy;
-        const unlocked = typeof acc === "number" && acc >= target && total > 0;
-
-        let progressText;
-        if (total <= 0 || typeof acc !== "number") {
-          progressText = "No attempts";
-        } else {
-          progressText = `${Math.round(acc * 100)}%`;
-        }
-
-        return {
-          unlocked,
-          progressText
-        };
-      }
-    },
-    {
-      id: "daily_goal_hero",
-      title: "Daily Goal Hero",
-      description: "Complete your daily learning goal today.",
-      icon: "🔥",
-      getProgress: (stats) => {
-        const unlocked = stats.dailyGoalCompleted || false;
-        return {
-          unlocked,
-          progressText: unlocked ? "Unlocked" : "0/1"
-        };
-      }
+      reward: { type: "badge" },
+      condition: {
+        type: "mastery_threshold_any_skill",
+        params: { threshold: 0.8 }
+      },
+      description: "Reach at least 80% accuracy in any skill."
     }
   ];
 
-
+  // ---------------------------
+  // 2) Persistence
+  // ---------------------------
   function loadAchievements() {
     try {
       const raw = localStorage.getItem(ACHIEVEMENTS_KEY);
-      if (!raw) return { unlocked: {} };
+      if (!raw) {
+        return { unlockedBadges: [], badgeProgress: {} };
+      }
       const parsed = JSON.parse(raw);
-      if (!parsed || typeof parsed !== "object") return { unlocked: {} };
-      if (!parsed.unlocked || typeof parsed.unlocked !== "object") parsed.unlocked = {};
+      if (!parsed || typeof parsed !== "object") {
+        return { unlockedBadges: [], badgeProgress: {} };
+      }
+      if (!Array.isArray(parsed.unlockedBadges)) parsed.unlockedBadges = [];
+      if (!parsed.badgeProgress || typeof parsed.badgeProgress !== "object") parsed.badgeProgress = {};
       return parsed;
     } catch {
-      return { unlocked: {} };
+      return { unlockedBadges: [], badgeProgress: {} };
     }
   }
 
-  function saveAchievements(ach) {
+  function saveAchievements(data) {
     try {
-      localStorage.setItem(ACHIEVEMENTS_KEY, JSON.stringify(ach));
+      localStorage.setItem(ACHIEVEMENTS_KEY, JSON.stringify(data));
     } catch (e) {
       console.warn("LearnSphere: Could not save achievements.", e);
     }
   }
 
-  function safeNumber(n) {
-    return typeof n === "number" && !Number.isNaN(n) ? n : null;
+  // ---------------------------
+  // 3) Date helpers
+  // ---------------------------
+  function safeDateKey(d) {
+    const dt = new Date(d);
+    if (Number.isNaN(dt.getTime())) return null;
+    return dt.toISOString();
   }
 
   function getWeekNumber(date) {
@@ -182,111 +92,187 @@
     return `${d.getFullYear()}-W${weekNo}`;
   }
 
-  function buildStatsFromQuizProgress() {
-    if (!window.quizProgress) {
+  // ---------------------------
+  // 4) Stats extraction
+  // ---------------------------
+  function getQuizAttemptsRaw() {
+    try {
+      const raw = localStorage.getItem(QUIZ_PROGRESS_KEY);
+      if (!raw) return [];
+      const parsed = JSON.parse(raw);
+      return Array.isArray(parsed.attempts) ? parsed.attempts : [];
+    } catch {
+      return [];
+    }
+  }
+
+  function getPerfectAttemptsInWindow({ windowType = "week", perfectAccuracy = 1.0 } = {}) {
+    const attempts = getQuizAttemptsRaw();
+    if (!attempts.length) {
+      return { perfectCount: 0, totalConsidered: 0, perfectAttemptDates: [] };
+    }
+
+    const now = new Date();
+    const currentWindowKey = windowType === "week" ? getWeekNumber(now) : null;
+
+    let perfectCount = 0;
+    let totalConsidered = 0;
+    const perfectAttemptDates = [];
+
+    for (const a of attempts) {
+      if (!a || !a.finishedAt) continue;
+      if (typeof a.accuracy !== "number" || Number.isNaN(a.accuracy)) continue;
+
+      if (windowType === "week") {
+        if (getWeekNumber(a.finishedAt) !== currentWindowKey) continue;
+      }
+
+      // Considered (within window)
+      totalConsidered++;
+
+      const isPerfect = a.accuracy >= perfectAccuracy;
+      if (isPerfect) {
+        perfectCount++;
+        perfectAttemptDates.push(a.finishedAt);
+      }
+    }
+
+    return { perfectCount, totalConsidered, perfectAttemptDates };
+  }
+
+  function getAnySkillMasteryAccuracy() {
+    // Uses quizProgress.js mastery stats
+    if (!window.quizProgress || typeof window.quizProgress.getMasteryStats !== "function") {
+      return { bestAccuracy: null, bestSkillId: null };
+    }
+
+    const mastery = window.quizProgress.getMasteryStats();
+    if (!mastery || typeof mastery !== "object") {
+      return { bestAccuracy: null, bestSkillId: null };
+    }
+
+    let bestAccuracy = null;
+    let bestSkillId = null;
+
+    for (const [skillId, m] of Object.entries(mastery)) {
+      const attempts = m?.attempts || 0;
+      const correct = m?.correct || 0;
+      if (!attempts || attempts <= 0) continue;
+      const acc = correct / attempts;
+      if (typeof acc === "number" && !Number.isNaN(acc)) {
+        if (bestAccuracy == null || acc > bestAccuracy) {
+          bestAccuracy = acc;
+          bestSkillId = skillId;
+        }
+      }
+    }
+
+    return { bestAccuracy, bestSkillId };
+  }
+
+  // ---------------------------
+  // 5) Rule evaluator + progress
+  // ---------------------------
+  function evaluateBadge(rule, derived) {
+    const { type, params } = rule.condition || {};
+
+    // Progress objects are used for UI. unlocked is boolean.
+    if (type === "perfect_quizzes_in_week") {
+      const target = Number(params?.targetPerfectQuizzes) || 0;
+      const perfectAccuracy = typeof params?.perfectAccuracy === "number" ? params.perfectAccuracy : 1.0;
+      const windowType = params?.window || "week";
+
+      const { perfectCount } = derived.perfectAttemptsInWindow;
+      const pct = target > 0 ? Math.min(1, perfectCount / target) : 0;
       return {
-        attemptCount: 0,
-        topicAttemptedCount: 0,
-        currentStreak: 0,
-        overallAccuracy: null,
-        overallTotalAnswers: 0,
-        hasWeekendAttempt: false,
-        hasWeeklyAttempt: false
+        unlocked: perfectCount >= target && target > 0,
+        progress: {
+          kind: "count",
+          current: perfectCount,
+          target,
+          percent: pct
+        },
+        progressText: target > 0 ? `${Math.min(perfectCount, target)}/${target}` : "—"
       };
     }
 
-    // Streak
-    let currentStreak = 0;
-    if (window.studyProgress && typeof window.studyProgress.loadStreakState === "function") {
-      currentStreak = window.studyProgress.loadStreakState().currentStreak || 0;
-    } else if (window.quizProgress && typeof window.quizProgress.getStreak === "function") {
-      const streak = window.quizProgress.getStreak();
-      currentStreak = streak.currentStreak || 0;
+    if (type === "mastery_threshold_any_skill") {
+      const threshold = typeof params?.threshold === "number" ? params.threshold : 0.8;
+      const bestAccuracy = derived.anySkillBestAccuracy.bestAccuracy;
+      const bestSkillId = derived.anySkillBestAccuracy.bestSkillId;
+
+      const safeBest = typeof bestAccuracy === "number" && !Number.isNaN(bestAccuracy) ? bestAccuracy : 0;
+      const pct = Math.min(1, safeBest / threshold);
+      const unlocked = typeof bestAccuracy === "number" && bestAccuracy >= threshold && safeBest > 0;
+
+      return {
+        unlocked,
+        progress: {
+          kind: "ratio",
+          current: safeBest,
+          target: threshold,
+          percent: pct,
+          bestSkillId
+        },
+        progressText: typeof bestAccuracy === "number" && !Number.isNaN(bestAccuracy)
+          ? `${Math.round(bestAccuracy * 100)}% / ${Math.round(threshold * 100)}%`
+          : `0% / ${Math.round(threshold * 100)}%`
+      };
     }
-
-    // Daily Goal
-    let dailyGoalCompleted = false;
-    if (window.studyProgress && typeof window.studyProgress.loadStreakState === "function") {
-      const state = window.studyProgress.loadStreakState();
-      const qDone = state.dailyGoalProgress.quizzesCompleted || 0;
-      const rDone = state.dailyGoalProgress.questionsReviewed || 0;
-      if (qDone >= 1 || rDone >= 10) {
-        dailyGoalCompleted = true;
-      }
-    } else {
-      const STREAK_KEY = "learnsphere_streak_state_v1";
-      try {
-        const raw = localStorage.getItem(STREAK_KEY);
-        if (raw) {
-          const parsed = JSON.parse(raw);
-          if (parsed && parsed.dailyGoalProgress) {
-            const qDone = parsed.dailyGoalProgress.quizzesCompleted || 0;
-            const rDone = parsed.dailyGoalProgress.questionsReviewed || 0;
-            if (qDone >= 1 || rDone >= 10) {
-              dailyGoalCompleted = true;
-            }
-          }
-        }
-      } catch (e) {}
-    }
-
-
-    // Overall accuracy
-    const overall = window.quizProgress.getOverallAccuracy ? window.quizProgress.getOverallAccuracy() : { accuracy: null, total: 0 };
-
-    // Topic completion proxy
-    const byTopic = window.quizProgress.getAllTopicStats ? window.quizProgress.getAllTopicStats() : {};
-    const topics = window.quizProgress.QUIZ_TOPICS || [];
-    let topicAttemptedCount = 0;
-    for (const t of topics) {
-      const a = byTopic[t.id];
-      const attempts = a?.attempts || 0;
-      if (attempts >= 1) topicAttemptedCount++;
-    }
-
-    let attemptCount = 0;
-    for (const tId of Object.keys(byTopic || {})) {
-      attemptCount += (byTopic[tId]?.attempts || 0);
-    }
-
-    // Load raw attempts from localStorage for weekend/weekly checks
-    let attempts = [];
-    try {
-      const raw = localStorage.getItem(QUIZ_PROGRESS_KEY);
-      if (raw) {
-        attempts = JSON.parse(raw).attempts || [];
-      }
-    } catch (e) {}
-
-    const currentWeek = getWeekNumber(new Date());
-    let hasWeekendAttempt = false;
-    let hasWeeklyAttempt = false;
-
-    attempts.forEach(a => {
-      if (!a.finishedAt) return;
-      const d = new Date(a.finishedAt);
-      const day = d.getDay();
-      if (day === 0 || day === 6) {
-        hasWeekendAttempt = true;
-      }
-      if (getWeekNumber(a.finishedAt) === currentWeek) {
-        hasWeeklyAttempt = true;
-      }
-    });
 
     return {
-      attemptCount,
-      topicAttemptedCount,
-      currentStreak: safeNumber(currentStreak) ?? 0,
-      dailyGoalCompleted,
-      overallAccuracy: overall?.accuracy == null ? null : safeNumber(overall.accuracy),
-      overallTotalAnswers: safeNumber(overall?.total) ?? 0,
-      hasWeekendAttempt,
-      hasWeeklyAttempt
+      unlocked: false,
+      progress: { kind: "unknown", current: 0, target: 0, percent: 0 },
+      progressText: "—"
     };
   }
 
+  function buildDerived() {
+    return {
+      perfectAttemptsInWindow: getPerfectAttemptsInWindow({
+        windowType: "week",
+        perfectAccuracy: 1.0
+      }),
+      anySkillBestAccuracy: getAnySkillMasteryAccuracy()
+    };
+  }
 
+  function getUnlockedSet(ach) {
+    const set = new Set(Array.isArray(ach.unlockedBadges) ? ach.unlockedBadges : []);
+    return set;
+  }
+
+  function unlockBadgeIfNeeded(ach, rule, evaluation) {
+    const unlockedSet = getUnlockedSet(ach);
+    if (unlockedSet.has(rule.id)) {
+      return { changed: false, unlockedNow: false };
+    }
+
+    if (evaluation.unlocked) {
+      ach.unlockedBadges.push(rule.id);
+      if (!ach.badgeProgress) ach.badgeProgress = {};
+      ach.badgeProgress[rule.id] = {
+        ...evaluation.progress,
+        unlockedAt: new Date().toISOString(),
+        progressText: evaluation.progressText
+      };
+      return { changed: true, unlockedNow: true };
+    }
+
+    // Not unlocked: still update progress cache
+    if (!ach.badgeProgress) ach.badgeProgress = {};
+    ach.badgeProgress[rule.id] = {
+      ...evaluation.progress,
+      unlockedAt: ach.badgeProgress?.[rule.id]?.unlockedAt || null,
+      progressText: evaluation.progressText
+    };
+
+    return { changed: true, unlockedNow: false };
+  }
+
+  // ---------------------------
+  // 6) Toast
+  // ---------------------------
   function ensureToastStyles() {
     if (document.getElementById("badge-toast-styles")) return;
     const style = document.createElement("style");
@@ -318,9 +304,7 @@
         animation: toast-slide-in 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         transition: opacity 0.3s ease, transform 0.3s ease;
       }
-      .badge-toast.fade-out {
-        animation: toast-fade-out 0.3s ease forwards;
-      }
+      .badge-toast.fade-out { animation: toast-fade-out 0.3s ease forwards; }
       .badge-toast-icon {
         font-size: 28px;
         background: rgba(102, 252, 241, 0.1);
@@ -332,10 +316,6 @@
         justify-content: center;
         border: 1px solid rgba(102, 252, 241, 0.25);
         flex-shrink: 0;
-      }
-      .badge-toast-details {
-        flex: 1;
-        min-width: 0;
       }
       .badge-toast-title {
         color: #66fcf1;
@@ -351,32 +331,20 @@
         line-height: 1.3;
       }
       @keyframes toast-slide-in {
-        from {
-          opacity: 0;
-          transform: translateY(20px) scale(0.95);
-        }
-        to {
-          opacity: 1;
-          transform: translateY(0) scale(1);
-        }
+        from { opacity: 0; transform: translateY(20px) scale(0.95); }
+        to { opacity: 1; transform: translateY(0) scale(1); }
       }
       @keyframes toast-fade-out {
-        from {
-          opacity: 1;
-          transform: translateY(0);
-        }
-        to {
-          opacity: 0;
-          transform: translateY(-20px) scale(0.95);
-        }
+        from { opacity: 1; transform: translateY(0); }
+        to { opacity: 0; transform: translateY(-20px) scale(0.95); }
       }
     `;
     document.head.appendChild(style);
   }
 
-  function showUnlockToast(badge) {
+  function showUnlockToast(rule) {
     ensureToastStyles();
-    
+
     let container = document.getElementById("badge-toast-container");
     if (!container) {
       container = document.createElement("div");
@@ -384,97 +352,56 @@
       container.className = "badge-toast-container";
       document.body.appendChild(container);
     }
-    
+
     const toast = document.createElement("div");
     toast.className = "badge-toast";
     toast.setAttribute("role", "alert");
-    
+
     toast.innerHTML = `
-      <div class="badge-toast-icon">${badge.icon}</div>
+      <div class="badge-toast-icon">${rule.icon || "🏅"}</div>
       <div class="badge-toast-details">
         <h4 class="badge-toast-title">Achievement Unlocked!</h4>
-        <p class="badge-toast-desc"><strong>${badge.title}</strong>: ${badge.description}</p>
+        <p class="badge-toast-desc"><strong>${rule.title}</strong>: ${rule.description || ""}</p>
       </div>
     `;
-    
+
     container.appendChild(toast);
-    
-    console.log(`LearnSphere Achievement Unlocked: ${badge.title}`);
-    
+
     setTimeout(() => {
       toast.classList.add("fade-out");
       toast.addEventListener("animationend", () => {
         toast.remove();
-        if (container.children.length === 0) {
-          container.remove();
-        }
+        if (container.children.length === 0) container.remove();
       });
     }, 4500);
   }
 
-  function unlockNewBadges(ach, stats) {
-    let changed = false;
-
-    for (const badge of BADGES) {
-      const already = !!ach.unlocked[badge.id];
-      const prog = badge.getProgress(stats);
-      if (!already && prog.unlocked) {
-        ach.unlocked[badge.id] = { unlockedAt: new Date().toISOString() };
-        changed = true;
-      }
-    }
-
-    if (changed) saveAchievements(ach);
-    return ach;
-  }
-
+  // ---------------------------
+  // 7) Public evaluator
+  // ---------------------------
   function checkAndNotify() {
-    const stats = buildStatsFromQuizProgress();
+    const derived = buildDerived();
     const ach = loadAchievements();
-    
+
     let changed = false;
     const newlyUnlocked = [];
 
-    for (const badge of BADGES) {
-      const already = !!ach.unlocked[badge.id];
-      const prog = badge.getProgress(stats);
-      if (!already && prog.unlocked) {
-        ach.unlocked[badge.id] = { unlockedAt: new Date().toISOString() };
-        newlyUnlocked.push(badge);
-        changed = true;
-      }
+    for (const rule of BADGE_RULES) {
+      const evaluation = evaluateBadge(rule, derived);
+      const { changed: c, unlockedNow } = unlockBadgeIfNeeded(ach, rule, evaluation);
+      if (c) changed = true;
+      if (unlockedNow) newlyUnlocked.push(rule);
     }
 
-    if (changed) {
-      saveAchievements(ach);
-      newlyUnlocked.forEach(badge => {
-        showUnlockToast(badge);
-      });
-    }
+    if (changed) saveAchievements(ach);
+    newlyUnlocked.forEach(rule => showUnlockToast(rule));
+
     return newlyUnlocked;
   }
 
-  function badgeCardHTML(badge, unlocked, progressText) {
-    const dim = unlocked ? "" : "opacity:0.55; filter: grayscale(0.3);";
-    const border = unlocked ? "border-color: rgba(102,252,241,0.55);" : "border-color: rgba(255,255,255,0.12);";
-    const shadow = unlocked ? "0 10px 26px rgba(102,252,241,0.16)" : "none";
-
-    return `
-      <div class="badge-card" style="${dim} ${border} box-shadow:${shadow}">
-        <div class="badge-top">
-          <div class="badge-icon" aria-hidden="true" style="font-size:20px">${badge.icon}</div>
-          <div style="min-width:0">
-            <div class="badge-title" style="font-weight:800">${badge.title}</div>
-            <div class="badge-desc" style="font-size:12px; opacity:0.85">${badge.description}</div>
-          </div>
-        </div>
-        <div class="badge-bottom" style="margin-top:10px; font-size:12px; opacity:0.9">
-          ${unlocked ? `<span style="color:#66fcf1; font-weight:700">Unlocked ✓</span>` : `<span>Locked • ${progressText}</span>`}
-        </div>
-      </div>
-    `;
-  }
-
+  // ---------------------------
+  // 8) UI rendering
+  // ---------------------------
   function ensureStyles(containerEl) {
     if (!containerEl) return;
     if (containerEl.dataset.badgesStylesApplied === "true") return;
@@ -488,7 +415,9 @@
         gap: 12px;
         margin-top: 10px;
       }
-      @media (max-width: 560px) { .badges-grid { grid-template-columns: 1fr; } }
+      @media (max-width: 560px) {
+        .badges-grid { grid-template-columns: 1fr; }
+      }
 
       .badge-card {
         background: rgba(255,255,255,0.04);
@@ -498,11 +427,87 @@
         transition: transform 0.15s ease, border-color 0.15s ease, opacity 0.15s ease;
       }
       .badge-card:hover { transform: translateY(-2px); }
-      .badge-top { display:flex; gap:10px; align-items:flex-start; }
-      .badge-icon { width:26px; text-align:center; }
 
+      .badge-top {
+        display:flex;
+        gap:10px;
+        align-items:flex-start;
+      }
+      .badge-icon { width:26px; text-align:center; font-size:20px; }
+      .badge-title { font-weight:800; }
+      .badge-desc { font-size:12px; opacity:0.85; margin-top:2px; }
+
+      .badge-bottom {
+        margin-top:10px;
+        font-size:12px;
+        opacity:0.9;
+        display:flex;
+        flex-direction:column;
+        gap:8px;
+      }
+
+      .badge-progressbar {
+        width:100%;
+        height:8px;
+        background: rgba(255,255,255,0.08);
+        border-radius: 999px;
+        overflow:hidden;
+      }
+      .badge-progressbar > i {
+        display:block;
+        height:100%;
+        width:0%;
+        background: #66fcf1;
+        border-radius: 999px;
+      }
     `;
     document.head.appendChild(style);
+  }
+
+  function badgeCardHTML(rule, unlocked, progressEntry) {
+    const dim = unlocked ? "" : "opacity:0.55; filter: grayscale(0.3);";
+    const border = unlocked ? "border-color: rgba(102,252,241,0.55);" : "border-color: rgba(255,255,255,0.12);";
+    const shadow = unlocked ? "0 10px 26px rgba(102,252,241,0.16)" : "none";
+
+    const progressText = progressEntry?.progressText || "";
+    const percent = typeof progressEntry?.percent === "number" ? Math.max(0, Math.min(1, progressEntry.percent)) : 0;
+    const barW = Math.round(percent * 100);
+
+    return `
+      <div class="badge-card" style="${dim} ${border} box-shadow:${shadow}">
+        <div class="badge-top">
+          <div class="badge-icon" aria-hidden="true">${rule.icon || "🏅"}</div>
+          <div style="min-width:0">
+            <div class="badge-title" style="font-weight:800">${rule.title}</div>
+            <div class="badge-desc">${rule.description || ""}</div>
+          </div>
+        </div>
+        <div class="badge-bottom">
+          ${unlocked
+            ? `<span style="color:#66fcf1; font-weight:700">Unlocked ✓</span>`
+            : `<span>Locked • ${progressText || "Progress"}</span>`}
+          <div class="badge-progressbar" aria-hidden="true">
+            <i style="width:${barW}%; background:${unlocked ? "#66fcf1" : "#66fcf1"}"></i>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  function getTopUnlocked(ach, limit = 3) {
+    const unlockedSet = new Set(ach.unlockedBadges || []);
+    const progress = ach.badgeProgress || {};
+
+    const unlockedRules = BADGE_RULES.filter(r => unlockedSet.has(r.id));
+
+    // Sort unlocked by unlockedAt desc if present; else keep order.
+    unlockedRules.sort((a, b) => {
+      const atA = progress?.[a.id]?.unlockedAt ? new Date(progress[a.id].unlockedAt).getTime() : 0;
+      const atB = progress?.[b.id]?.unlockedAt ? new Date(progress[b.id].unlockedAt).getTime() : 0;
+      return atB - atA;
+    });
+
+    return unlockedRules.slice(0, limit);
   }
 
   function renderBadges(containerId) {
@@ -511,30 +516,57 @@
 
     ensureStyles(container);
 
-    const stats = buildStatsFromQuizProgress();
-    const ach = loadAchievements();
-    unlockNewBadges(ach, stats);
+    // Re-evaluate
+    checkAndNotify();
 
-    const unlockedSet = ach.unlocked || {};
+    const ach = loadAchievements();
+    const unlockedSet = getUnlockedSet(ach);
+    const progress = ach.badgeProgress || {};
 
     container.innerHTML = `
       <div class="badges-grid" role="list" aria-label="Achievements and badges">
-        ${BADGES.map((badge) => {
-          const unlocked = !!unlockedSet[badge.id];
-          const prog = badge.getProgress(stats);
-          const progressText = prog.progressText || "";
-          return `<div role="listitem">${badgeCardHTML(badge, unlocked, progressText)}</div>`;
+        ${BADGE_RULES.map(rule => {
+          const unlocked = unlockedSet.has(rule.id);
+          const entry = progress[rule.id] || {};
+          return `<div role="listitem">${badgeCardHTML(rule, unlocked, entry)}</div>`;
         }).join("")}
       </div>
       <div style="margin-top:10px; font-size:12px; opacity:0.8">
-        Badges are based on your quiz attempts, streak, and accuracy.
+        Achievements are based on your quiz accuracy and mastery progress.
       </div>
     `;
   }
 
+  function renderTopUnlocked(containerId) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+
+    const ach = loadAchievements();
+    const unlocked = getTopUnlocked(ach, 3);
+
+    if (!unlocked.length) {
+      container.innerHTML = `<div class="muted" style="font-size:13px; opacity:0.8">No achievements unlocked yet.</div>`;
+      return;
+    }
+
+    container.innerHTML = `
+      <div style="display:flex; gap:10px; flex-wrap:wrap;">
+        ${unlocked.map(r => `
+          <div style="display:flex; align-items:center; gap:8px; padding:8px 10px; border-radius:999px;
+                      background:rgba(102,252,241,0.10); border:1px solid rgba(102,252,241,0.35);">
+            <span aria-hidden="true">${r.icon || "🏅"}</span>
+            <span style="font-weight:800; color:#66fcf1; font-size:13px;">${r.title}</span>
+          </div>
+        `).join("")}
+      </div>
+    `;
+  }
+
+  // Expose
   window.achievements = {
-    BADGES,
+    BADGE_RULES,
     renderBadges,
+    renderTopUnlocked,
     checkAndNotify
   };
 })();

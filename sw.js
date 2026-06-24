@@ -3,12 +3,60 @@
  * Offline-first app shell caching + runtime caching for same-origin assets.
  */
 
-const CACHE_VERSION = "v1";
+// Increment this value to invalidate older caches
+const CACHE_VERSION = "v2";
 const CACHE_NAME = `learnsphere-static-${CACHE_VERSION}`;
 
-// App shell URLs to cache at install time.
+// For runtime image caching
+const RUNTIME_IMAGE_CACHE_NAME = `learnsphere-images-${CACHE_VERSION}`;
+
+// App shell URLs
 // Keep this list conservative; runtime caching covers the rest.
 const APP_SHELL_URLS = [
+  // Quiz pages (offline-first)
+  "/quiz/motionquiz.html",
+  "/quiz/nlmquiz.html",
+  "/quiz/projectilequiz.html",
+  "/quiz/rayquiz.html",
+  "/mathsquiz/calculusquiz.html",
+  "/mathsquiz/geometryquiz.html",
+  "/mathsquiz/probabilityquiz.html",
+  "/mathsquiz/vectorquiz.html",
+  "/chemistryquiz/atomic_structurequiz.html",
+  "/chemistryquiz/chemical_bondingquiz.html",
+  "/chemistryquiz/equilibriumquiz.html",
+  "/chemistryquiz/thermoquiz.html",
+
+  // Quizzes scripts
+  "/quiz/motionquiz.js",
+  "/quiz/nlmquiz.js",
+  "/quiz/projectilequiz.js",
+  "/quiz/rayquiz.js",
+  "/quiz/adaptiveQuiz.js",
+  "/mathsquiz/calculusquiz.js",
+  "/mathsquiz/geometryquiz.js",
+  "/mathsquiz/probabilityquiz.js",
+  "/mathsquiz/vectorquiz.js",
+  "/chemistryquiz/atomic_structurequiz.js",
+  "/chemistryquiz/chemical_bondingquiz.js",
+  "/chemistryquiz/equilibriumquiz.js",
+  "/chemistryquiz/thermoquiz.js",
+  "/quizAssignmentHelper.js",
+
+  // Quizzes styles
+  "/quiz/motionquiz.css",
+  "/quiz/nlmquiz.css",
+  "/quiz/projectilequiz.css",
+  "/quiz/rayquiz.css",
+  "/mathsquiz/calculusquiz.css",
+  "/mathsquiz/geometryquiz.css",
+  "/mathsquiz/probabilityquiz.css",
+  "/mathsquiz/vectorquiz.css",
+  "/chemistryquiz/atomic_structurequiz.css",
+  "/chemistryquiz/chemical_bondingquiz.css",
+  "/chemistryquiz/equilibriumquiz.css",
+  "/chemistryquiz/thermoquiz.css",
+
   "/",
   "/index.html",
   "/home.html",
@@ -89,7 +137,7 @@ self.addEventListener("fetch", (event) => {
   // Only handle GET requests
   if (req.method !== "GET") return;
 
-  // Navigation: offline fallback to cached index / 404
+// Navigation: offline fallback to cached index / 404
   if (req.mode === "navigate" || (req.destination === "document")) {
     event.respondWith(
       (async () => {
@@ -101,7 +149,14 @@ self.addEventListener("fetch", (event) => {
           }
           return fresh;
         } catch {
-          const cachedIndex = await cache.match("/index.html") || await cache.match("/home.html");
+          // Prefer the specific cached HTML for quiz routes if present.
+          if (req.url.includes("/quiz/") && req.url.includes(".html")) {
+            const cachedQuizHtml = await cache.match(req, { ignoreVary: true });
+            if (cachedQuizHtml) return cachedQuizHtml;
+          }
+
+          const cachedIndex =
+            (await cache.match("/index.html")) || (await cache.match("/home.html"));
           const cached404 = await cache.match("/404.html");
           return cachedIndex || cached404 || new Response("Offline", { status: 503 });
         }
@@ -110,32 +165,59 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // Same-origin static assets: Cache-First strategy
+  // Same-origin static assets
   if (url && isSameOrigin(url)) {
-    const isAsset =
-      req.destination === "script" ||
-      req.destination === "style" ||
-      req.destination === "image" ||
-      req.destination === "font" ||
-      req.destination === "worker" ||
-      req.destination === "document" ||
-      req.destination === "fetch";
-
     const pathname = url.pathname;
-    const fileLike =
-      pathname.endsWith(".js") ||
-      pathname.endsWith(".css") ||
+
+    // Images: runtime cache-first (images/ and img/)
+    const isImagePath = pathname.startsWith("/images/") || pathname.startsWith("/img/");
+    const isImageRequest = req.destination === "image" ||
       pathname.endsWith(".png") ||
       pathname.endsWith(".jpg") ||
       pathname.endsWith(".jpeg") ||
       pathname.endsWith(".gif") ||
       pathname.endsWith(".svg") ||
-      pathname.endsWith(".webp") ||
+      pathname.endsWith(".webp");
+
+    if (isImagePath && isImageRequest) {
+      event.respondWith(
+        (async () => {
+          const cache = await caches.open(RUNTIME_IMAGE_CACHE_NAME);
+          const cached = await cache.match(req, { ignoreVary: true });
+          if (cached) return cached;
+
+          try {
+            const fresh = await fetch(req);
+            if (fresh && fresh.status === 200) {
+              cache.put(req, fresh.clone()).catch(() => {});
+            }
+            return fresh;
+          } catch {
+            return new Response("Offline Image Not Available", { status: 503 });
+          }
+        })()
+      );
+      return;
+    }
+
+    // Other assets: cache-first (existing behavior)
+    const isAsset =
+      req.destination === "script" ||
+      req.destination === "style" ||
+      req.destination === "font" ||
+      req.destination === "worker" ||
+      req.destination === "document" ||
+      req.destination === "fetch";
+
+    const fileLike =
+      pathname.endsWith(".js") ||
+      pathname.endsWith(".css") ||
       pathname.endsWith(".woff") ||
       pathname.endsWith(".woff2") ||
       pathname.endsWith(".ttf") ||
       pathname.endsWith(".eot") ||
-      pathname.endsWith(".html");
+      pathname.endsWith(".html") ||
+      pathname.endsWith(".json");
 
     if (isAsset || fileLike) {
       event.respondWith(

@@ -36,7 +36,12 @@
 
 <body>
 
+    <div id="offline-banner" style="display:none;position:fixed;top:0;left:0;right:0;z-index:9999;background:#b00020;color:#fff;padding:10px 14px;font-weight:600;text-align:center;">
+        You are offline. Quiz pages are cached for offline use.
+    </div>
+
         <header class="navbar" role="banner">
+
         <div class="logo"><a href="index.html" aria-label="LearnSphere Home">LearnSphere</a></div>
 
         <!-- Hamburger button — visible only on mobile -->
@@ -101,6 +106,19 @@
 
     <script>
       (function () {
+        // Offline banner
+        const banner = document.getElementById('offline-banner');
+        function updateBanner() {
+          if (!banner) return;
+          const isOnline = navigator.onLine;
+          banner.style.display = isOnline ? 'none' : 'block';
+        }
+
+        window.addEventListener('online', updateBanner);
+        window.addEventListener('offline', updateBanner);
+        updateBanner();
+
+        // Service Worker registration
         if (!('serviceWorker' in navigator)) return;
         window.addEventListener('load', function () {
           navigator.serviceWorker.register('/sw.js').catch(function (err) {
@@ -113,3 +131,4 @@
 </body>
 
 </html>
+
