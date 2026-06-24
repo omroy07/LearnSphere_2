@@ -168,8 +168,14 @@ function recordReviewResult({ topicId, scorePct, answeredCount = 0 }) {
     };
 
     saveReviewSchedule(scheduleMap);
+
+    if (window.studyProgress && typeof window.studyProgress.recordActivity === "function") {
+        window.studyProgress.recordActivity("review", answeredCount);
+    }
+
     return scheduleMap[topicId];
 }
+
 
 function formatDaysUntil(isoDate) {
     if (!isoDate) return "";
@@ -271,7 +277,92 @@ function updateProgressSummary() {
     summaryEl.textContent = `${completed} of ${TOPICS.length} topics completed (${pct}%)`;
 }
 
+// ── Unified Streaks & Daily Goals API ─────────────────────────────────────────
+
+window.studyProgress = {
+    STREAK_KEY: "learnsphere_streak_state_v1",
+
+    loadStreakState() {
+        try {
+            const raw = localStorage.getItem(this.STREAK_KEY);
+            if (!raw) return { lastActiveDate: null, currentStreak: 0, dailyGoalProgress: { quizzesCompleted: 0, questionsReviewed: 0 } };
+            const parsed = JSON.parse(raw);
+            if (!parsed || typeof parsed !== "object") {
+                return { lastActiveDate: null, currentStreak: 0, dailyGoalProgress: { quizzesCompleted: 0, questionsReviewed: 0 } };
+            }
+            if (!parsed.dailyGoalProgress || typeof parsed.dailyGoalProgress !== "object") {
+                parsed.dailyGoalProgress = { quizzesCompleted: 0, questionsReviewed: 0 };
+            }
+            
+            const today = _todayLocalISODate();
+            if (parsed.lastActiveDate) {
+                const todayToken = _parseISODateToUTCStart(today);
+                const lastToken = _parseISODateToUTCStart(parsed.lastActiveDate);
+                if (todayToken > lastToken + 1) {
+                    parsed.currentStreak = 0;
+                }
+                if (parsed.lastActiveDate !== today) {
+                    parsed.dailyGoalProgress = { quizzesCompleted: 0, questionsReviewed: 0 };
+                }
+            } else {
+                parsed.dailyGoalProgress = { quizzesCompleted: 0, questionsReviewed: 0 };
+            }
+            return parsed;
+        } catch {
+            return { lastActiveDate: null, currentStreak: 0, dailyGoalProgress: { quizzesCompleted: 0, questionsReviewed: 0 } };
+        }
+    },
+
+    saveStreakState(state) {
+        try {
+            localStorage.setItem(this.STREAK_KEY, JSON.stringify(state));
+        } catch (e) {
+            console.warn("LearnSphere: Could not save streak state.", e);
+        }
+    },
+
+    recordActivity(type, value = 1) {
+        const today = _todayLocalISODate();
+        const state = this.loadStreakState();
+
+        const lastActive = state.lastActiveDate;
+        const todayToken = _parseISODateToUTCStart(today);
+        const lastToken = lastActive ? _parseISODateToUTCStart(lastActive) : null;
+
+        if (!lastActive) {
+            state.currentStreak = 1;
+            state.lastActiveDate = today;
+            state.dailyGoalProgress = { quizzesCompleted: 0, questionsReviewed: 0 };
+        } else if (lastActive === today) {
+            // Already active today, no change to streak date or count
+        } else if (lastToken !== null && todayToken === lastToken + 1) {
+            state.currentStreak += 1;
+            state.lastActiveDate = today;
+            state.dailyGoalProgress = { quizzesCompleted: 0, questionsReviewed: 0 };
+        } else {
+            state.currentStreak = 1;
+            state.lastActiveDate = today;
+            state.dailyGoalProgress = { quizzesCompleted: 0, questionsReviewed: 0 };
+        }
+
+        if (type === "quiz") {
+            state.dailyGoalProgress.quizzesCompleted += value;
+        } else if (type === "review") {
+            state.dailyGoalProgress.questionsReviewed += value;
+        }
+
+        this.saveStreakState(state);
+
+        if (window.achievements && typeof window.achievements.checkAndNotify === "function") {
+            window.achievements.checkAndNotify();
+        }
+
+        return state;
+    }
+};
+
 // ── Init ──────────────────────────────────────────────────────────────────────
+
 
 document.addEventListener("DOMContentLoaded", () => {
     renderProgressList();

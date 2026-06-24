@@ -31,10 +31,14 @@ document.addEventListener("DOMContentLoaded", () => {
         window.achievements.renderBadges("badgesContainerHome");
     }
 
-    // Render Daily Streak stats
-    if (window.quizProgress && typeof window.quizProgress.getStreak === "function") {
-        const streak = window.quizProgress.getStreak();
-        const days = streak.currentStreak || 0;
+    // Render Daily Streak & Daily Goal stats
+    if (window.studyProgress && typeof window.studyProgress.loadStreakState === "function") {
+        const streakState = window.studyProgress.loadStreakState();
+        const days = streakState.currentStreak || 0;
+        
+        // Update streak elements
+        const headerCountEl = document.getElementById("headerStreakCount");
+        if (headerCountEl) headerCountEl.textContent = String(days);
         
         const daysEl = document.getElementById("streakDaysText");
         const barFillEl = document.getElementById("streakProgressBarFill");
@@ -51,16 +55,13 @@ document.addEventListener("DOMContentLoaded", () => {
         const pct = Math.min(100, Math.round((days / nextMilestone) * 100));
         if (barFillEl) barFillEl.style.width = `${pct}%`;
         
-        // Streak dates are stored in quizProgress.js as local YYYY-MM-DD.
-        // Avoid toLocaleDateString formatting mismatches across browsers/timezones.
         const d = new Date();
         const yyyy = d.getFullYear();
         const mm = String(d.getMonth() + 1).padStart(2, "0");
         const dd = String(d.getDate()).padStart(2, "0");
         const todayStr = `${yyyy}-${mm}-${dd}`;
-        const practicedToday = streak.lastPracticeDate === todayStr;
+        const practicedToday = streakState.lastActiveDate === todayStr;
 
-        
         if (descEl) {
             if (practicedToday) {
                 descEl.innerHTML = `🔥 Streak safe for today! Practice tomorrow to build toward your <strong>${nextMilestone}-day</strong> milestone.`;
@@ -68,6 +69,29 @@ document.addEventListener("DOMContentLoaded", () => {
                 descEl.innerHTML = `⚡ Practice today to keep your streak alive and reach your <strong>${nextMilestone}-day</strong> milestone!`;
             } else {
                 descEl.innerHTML = `🏁 Start a quiz today to begin your daily practice streak! Next milestone: <strong>3 days</strong>.`;
+            }
+        }
+
+        // Render Daily Goal card
+        const dailyGoalPercentEl = document.getElementById("dailyGoalPercentText");
+        const dailyGoalBarFillEl = document.getElementById("dailyGoalProgressBarFill");
+        const dailyGoalStatusEl = document.getElementById("dailyGoalStatusText");
+
+        const qDone = streakState.dailyGoalProgress.quizzesCompleted || 0;
+        const rDone = streakState.dailyGoalProgress.questionsReviewed || 0;
+        
+        const quizGoalProgress = qDone / 1;
+        const reviewGoalProgress = rDone / 10;
+        const goalPercent = Math.min(100, Math.round(Math.max(quizGoalProgress, reviewGoalProgress) * 100));
+
+        if (dailyGoalPercentEl) dailyGoalPercentEl.textContent = `${goalPercent}%`;
+        if (dailyGoalBarFillEl) dailyGoalBarFillEl.style.width = `${goalPercent}%`;
+
+        if (dailyGoalStatusEl) {
+            if (goalPercent >= 100) {
+                dailyGoalStatusEl.innerHTML = `🎉 <strong>Daily Goal Achieved!</strong> Great job keeping up your learning momentum today! (${qDone}/1 quiz, ${rDone}/10 questions reviewed)`;
+            } else {
+                dailyGoalStatusEl.textContent = `Completed ${qDone}/1 quiz or reviewed ${rDone}/10 questions today. Keep going!`;
             }
         }
     }

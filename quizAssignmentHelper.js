@@ -156,6 +156,7 @@
                 if (finalScore !== null && !isNaN(finalScore)) {
                     handleQuizCompletion(finalScore, totalQs);
                     injectExplainMistakeButtons();
+                    injectSessionSummary();
                 } else {
                     console.warn("LearnSphere: Could not determine final score for submission / tracking.");
                 }
@@ -259,6 +260,21 @@
     }
 
     function init() {
+        // Normalize questions (convert integer index answers to string options)
+        if (window.questions && Array.isArray(window.questions)) {
+            window.questions.forEach(q => {
+                if (typeof q.answer === 'number' && Array.isArray(q.options)) {
+                    q.answer = q.options[q.answer];
+                }
+            });
+        }
+
+        const topicId = getTopicIdFromPath();
+        if (topicId) {
+            injectStartScreenStyles();
+            showStartScreen();
+        }
+
         const originalShowResults = window.showResults;
         if (typeof originalShowResults === 'function') {
             window.showResults = wrapShowResults(originalShowResults);
@@ -269,6 +285,16 @@
                 checkCount++;
                 if (typeof window.showResults === 'function' && window.showResults !== window._wrappedShowResults) {
                     clearInterval(checkInterval);
+                    
+                    // Normalize dynamically loaded questions as well
+                    if (window.questions && Array.isArray(window.questions)) {
+                        window.questions.forEach(q => {
+                            if (typeof q.answer === 'number' && Array.isArray(q.options)) {
+                                q.answer = q.options[q.answer];
+                            }
+                        });
+                    }
+
                     window.showResults = wrapShowResults(window.showResults);
                     window._wrappedShowResults = window.showResults;
                     console.log("LearnSphere: Hooked into dynamically loaded showResults function.");
@@ -276,6 +302,254 @@
                 if (checkCount > 30) clearInterval(checkInterval); // stop checking after 3s
             }, 100);
         }
+    }
+
+    function injectStartScreenStyles() {
+        const style = document.createElement("style");
+        style.textContent = `
+            .quiz-start-card {
+                background: #0f1115;
+                border: 1px solid rgba(255, 255, 255, 0.08);
+                border-radius: 12px;
+                padding: 24px;
+                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+                text-align: center;
+                max-width: 500px;
+                margin: 40px auto;
+            }
+            .mode-option-card {
+                background: rgba(255, 255, 255, 0.02);
+                border: 1px solid rgba(255, 255, 255, 0.06);
+                border-radius: 8px;
+                padding: 16px;
+                margin-bottom: 16px;
+                cursor: pointer;
+                text-align: left;
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                transition: all 0.2s ease;
+            }
+            .mode-option-card:hover {
+                background: rgba(255, 255, 255, 0.04);
+                border-color: rgba(102, 252, 241, 0.3);
+            }
+            .mode-option-card.selected {
+                background: rgba(102, 252, 241, 0.06);
+                border-color: #66fcf1;
+            }
+            .mode-radio {
+                accent-color: #66fcf1;
+                width: 18px;
+                height: 18px;
+            }
+            .start-btn {
+                background: #0284c7;
+                color: #fff;
+                border: none;
+                border-radius: 8px;
+                padding: 12px 24px;
+                font-size: 1rem;
+                font-weight: bold;
+                cursor: pointer;
+                transition: all 0.2s ease;
+                box-shadow: 0 4px 12px rgba(2, 132, 199, 0.3);
+                width: 100%;
+            }
+            .start-btn:hover {
+                transform: scale(1.02);
+                background: #0369a1;
+            }
+        `;
+        document.head.appendChild(style);
+    }
+
+    function showStartScreen() {
+        const quizBox = document.getElementById("quiz-box");
+        if (!quizBox) return;
+
+        // Hide quiz box initially
+        quizBox.style.display = "none";
+
+        // Create start screen
+        const startScreen = document.createElement("div");
+        startScreen.id = "quiz-start-screen";
+        startScreen.className = "quiz-start-card";
+
+        const topicId = getTopicIdFromPath();
+        let topicLabel = "Practice Quiz";
+        if (window.quizProgress && topicId) {
+            const t = window.quizProgress.QUIZ_TOPICS.find(x => x.id === topicId);
+            if (t) topicLabel = t.label;
+        }
+
+        startScreen.innerHTML = `
+            <h2 style="margin-top: 0; color: #fff; font-size: 1.6rem;">${topicLabel} 🎯</h2>
+            <p class="muted" style="font-size: 0.9rem; margin-bottom: 24px; color: rgba(255,255,255,0.72)">Choose your quiz mode below to begin.</p>
+            
+            <div class="mode-option-card selected" id="standard-mode-card">
+                <input type="radio" name="quiz-mode" id="mode-standard" class="mode-radio" checked style="cursor:pointer">
+                <div style="flex: 1;">
+                    <label for="mode-standard" style="font-weight: bold; color: #fff; cursor: pointer; display:block; margin-bottom: 4px;">Standard Mode</label>
+                    <span style="font-size: 0.8rem; color: rgba(255,255,255,0.65);">Practice concepts in default difficulty progression.</span>
+                </div>
+            </div>
+            
+            <div class="mode-option-card" id="weakness-mode-card">
+                <input type="radio" name="quiz-mode" id="mode-weakness" class="mode-radio" style="cursor:pointer">
+                <div style="flex: 1;">
+                    <label for="mode-weakness" style="font-weight: bold; color: #fff; cursor: pointer; display:block; margin-bottom: 4px;">Practice Mode: Weakness Focus</label>
+                    <span style="font-size: 0.8rem; color: rgba(255,255,255,0.65);">Adapts questions dynamically to focus on your weakest concepts.</span>
+                </div>
+            </div>
+            
+            <button class="start-btn" id="start-quiz-action-btn" style="margin-top: 8px;">Start Quiz ➔</button>
+        `;
+
+        quizBox.parentNode.insertBefore(startScreen, quizBox);
+
+        const stdCard = startScreen.querySelector("#standard-mode-card");
+        const weakCard = startScreen.querySelector("#weakness-mode-card");
+        const stdRadio = startScreen.querySelector("#mode-standard");
+        const weakRadio = startScreen.querySelector("#mode-weakness");
+
+        stdCard.addEventListener("click", () => {
+            stdRadio.checked = true;
+            stdCard.classList.add("selected");
+            weakCard.classList.remove("selected");
+        });
+
+        weakCard.addEventListener("click", () => {
+            weakRadio.checked = true;
+            weakCard.classList.add("selected");
+            stdCard.classList.remove("selected");
+        });
+
+        startScreen.querySelector("#start-quiz-action-btn").addEventListener("click", () => {
+            const isWeakness = weakRadio.checked;
+            window.isWeaknessFocusMode = isWeakness;
+
+            startScreen.remove();
+            quizBox.style.display = "";
+
+            if (isWeakness) {
+                if (window.questions && Array.isArray(window.questions) && window.quizProgress && typeof window.quizProgress.getQuestionWeaknessWeight === 'function') {
+                    window.questions.sort((a, b) => {
+                        const weightA = window.quizProgress.getQuestionWeaknessWeight(a);
+                        const weightB = window.quizProgress.getQuestionWeaknessWeight(b);
+                        return weightB - weightA;
+                    });
+                }
+                if (typeof window.restartQuiz === 'function') {
+                    window.restartQuiz();
+                }
+            }
+        });
+    }
+
+    function injectSessionSummary() {
+        const scoreEl = document.getElementById("score");
+        if (!scoreEl) return;
+
+        let resolvedQuestions = [];
+        let resolvedAnswers = [];
+        if (window.adaptiveSteps && window.adaptiveSteps.length > 0) {
+            resolvedQuestions = window.adaptiveSteps;
+            resolvedAnswers = window.userSelectionsByStep || [];
+        } else if (window.questions && window.questions.length > 0) {
+            resolvedQuestions = window.questions;
+            resolvedAnswers = window.userAnswers || [];
+        }
+
+        const improvedSkills = new Set();
+        resolvedQuestions.forEach((q, idx) => {
+            const ans = resolvedAnswers[idx];
+            if (ans !== undefined && ans !== null) {
+                const correctOption = typeof q.answer === 'number' && Array.isArray(q.options) ? q.options[q.answer] : q.answer;
+                const isCorrect = ans === correctOption;
+                if (isCorrect) {
+                    const taxonomy = window.quizProgress?.SKILL_TAXONOMY;
+                    const tax = taxonomy ? taxonomy[q.question?.trim()] : null;
+                    if (tax) {
+                        improvedSkills.add(tax.label);
+                    }
+                }
+            }
+        });
+
+        let nextRecText = "";
+        let nextRecUrl = "";
+        if (window.quizProgress && typeof window.quizProgress.getWeakestSkills === 'function') {
+            const weak = window.quizProgress.getWeakestSkills({ limit: 1 });
+            if (weak && weak.length > 0) {
+                nextRecText = weak[0].label;
+                nextRecUrl = weak[0].quizUrl;
+            }
+        }
+
+        const summaryContainer = document.createElement("div");
+        summaryContainer.className = "session-summary-card";
+        summaryContainer.style.marginTop = "20px";
+        summaryContainer.style.padding = "16px";
+        summaryContainer.style.borderRadius = "12px";
+        summaryContainer.style.background = "rgba(255, 255, 255, 0.03)";
+        summaryContainer.style.border = "1px solid rgba(255, 255, 255, 0.08)";
+        summaryContainer.style.textAlign = "left";
+
+        let improvedHtml = "";
+        if (improvedSkills.size > 0) {
+            improvedHtml = `
+                <h4 style="margin: 0 0 8px 0; color: #66fcf1; font-size: 1rem; display:flex; align-items:center; gap:6px;">
+                    Concepts Improved
+                </h4>
+                <ul style="margin: 0 0 16px 0; padding-left: 20px; font-size: 0.9rem; line-height: 1.4; color: rgba(255,255,255,0.8);">
+                    ${Array.from(improvedSkills).map(skill => `<li>${skill}</li>`).join("")}
+                </ul>
+            `;
+        } else {
+            improvedHtml = `
+                <h4 style="margin: 0 0 16px 0; color: #ff5e5e; font-size: 1rem;">
+                    No concepts improved this session. Keep practicing to level up!
+                </h4>
+            `;
+        }
+
+        let recHtml = "";
+        if (nextRecText) {
+            const path = window.location.pathname;
+            let prefix = "./";
+            if (path.includes("/quiz/") || path.includes("/mathsquiz/") || path.includes("/chemistryquiz/") || path.includes("/sub/")) {
+                prefix = "../";
+            }
+            const practiceUrl = nextRecUrl ? prefix + nextRecUrl : "#";
+
+            recHtml = `
+                <h4 style="margin: 0 0 8px 0; color: var(--accent-color); font-size: 1rem; display:flex; align-items:center; gap:6px;">
+                    Recommended Next Concept
+                </h4>
+                <p style="margin: 0 0 12px 0; font-size: 0.9rem; color: rgba(255,255,255,0.85);">
+                    We recommend focusing on: <strong>${nextRecText}</strong>
+                </p>
+                ${nextRecUrl ? `
+                    <a href="${practiceUrl}" style="
+                        display: inline-block;
+                        background: var(--accent-color);
+                        color: #0f1115;
+                        padding: 8px 16px;
+                        border-radius: 6px;
+                        text-decoration: none;
+                        font-size: 0.85rem;
+                        font-weight: bold;
+                        transition: all 0.2s ease;
+                    " onmouseover="this.style.transform='scale(1.03)'" onmouseout="this.style.transform='scale(1)'">
+                        Practice Next Concept ➔
+                    </a>
+                ` : ""}
+            `;
+        }
+
+        summaryContainer.innerHTML = improvedHtml + recHtml;
+        scoreEl.appendChild(summaryContainer);
     }
 
     // Initialize

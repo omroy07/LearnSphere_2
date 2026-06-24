@@ -38,12 +38,21 @@
       buckets[di].push({ ...q, __qid: idx });
     });
 
-    // Shuffle each bucket for variety.
+    // Shuffle or sort each bucket based on mode.
     Object.keys(buckets).forEach(k => {
       const arr = buckets[k];
-      for (let i = arr.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [arr[i], arr[j]] = [arr[j], arr[i]];
+      if (window.isWeaknessFocusMode && window.quizProgress && typeof window.quizProgress.getQuestionWeaknessWeight === 'function') {
+        arr.sort((a, b) => {
+          const weightA = window.quizProgress.getQuestionWeaknessWeight(a);
+          const weightB = window.quizProgress.getQuestionWeaknessWeight(b);
+          return weightB - weightA; // weakest first
+        });
+      } else {
+        // Shuffle each bucket for variety.
+        for (let i = arr.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [arr[i], arr[j]] = [arr[j], arr[i]];
+        }
       }
     });
 

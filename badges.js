@@ -131,8 +131,22 @@
           progressText
         };
       }
+    },
+    {
+      id: "daily_goal_hero",
+      title: "Daily Goal Hero",
+      description: "Complete your daily learning goal today.",
+      icon: "🔥",
+      getProgress: (stats) => {
+        const unlocked = stats.dailyGoalCompleted || false;
+        return {
+          unlocked,
+          progressText: unlocked ? "Unlocked" : "0/1"
+        };
+      }
     }
   ];
+
 
   function loadAchievements() {
     try {
@@ -182,7 +196,40 @@
     }
 
     // Streak
-    const streak = window.quizProgress.getStreak ? window.quizProgress.getStreak() : { currentStreak: 0 };
+    let currentStreak = 0;
+    if (window.studyProgress && typeof window.studyProgress.loadStreakState === "function") {
+      currentStreak = window.studyProgress.loadStreakState().currentStreak || 0;
+    } else if (window.quizProgress && typeof window.quizProgress.getStreak === "function") {
+      const streak = window.quizProgress.getStreak();
+      currentStreak = streak.currentStreak || 0;
+    }
+
+    // Daily Goal
+    let dailyGoalCompleted = false;
+    if (window.studyProgress && typeof window.studyProgress.loadStreakState === "function") {
+      const state = window.studyProgress.loadStreakState();
+      const qDone = state.dailyGoalProgress.quizzesCompleted || 0;
+      const rDone = state.dailyGoalProgress.questionsReviewed || 0;
+      if (qDone >= 1 || rDone >= 10) {
+        dailyGoalCompleted = true;
+      }
+    } else {
+      const STREAK_KEY = "learnsphere_streak_state_v1";
+      try {
+        const raw = localStorage.getItem(STREAK_KEY);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (parsed && parsed.dailyGoalProgress) {
+            const qDone = parsed.dailyGoalProgress.quizzesCompleted || 0;
+            const rDone = parsed.dailyGoalProgress.questionsReviewed || 0;
+            if (qDone >= 1 || rDone >= 10) {
+              dailyGoalCompleted = true;
+            }
+          }
+        }
+      } catch (e) {}
+    }
+
 
     // Overall accuracy
     const overall = window.quizProgress.getOverallAccuracy ? window.quizProgress.getOverallAccuracy() : { accuracy: null, total: 0 };
@@ -230,13 +277,15 @@
     return {
       attemptCount,
       topicAttemptedCount,
-      currentStreak: safeNumber(streak?.currentStreak) ?? 0,
+      currentStreak: safeNumber(currentStreak) ?? 0,
+      dailyGoalCompleted,
       overallAccuracy: overall?.accuracy == null ? null : safeNumber(overall.accuracy),
       overallTotalAnswers: safeNumber(overall?.total) ?? 0,
       hasWeekendAttempt,
       hasWeeklyAttempt
     };
   }
+
 
   function ensureToastStyles() {
     if (document.getElementById("badge-toast-styles")) return;

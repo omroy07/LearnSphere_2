@@ -96,7 +96,88 @@
     }
   }
 
+  function _updateUnifiedStreakAndGoal(type, value = 1) {
+    if (window.studyProgress && typeof window.studyProgress.recordActivity === "function") {
+      window.studyProgress.recordActivity(type, value);
+      return;
+    }
+
+    const STREAK_KEY = "learnsphere_streak_state_v1";
+    const today = (function() {
+      const d = new Date();
+      const yyyy = d.getFullYear();
+      const mm = String(d.getMonth() + 1).padStart(2, "0");
+      const dd = String(d.getDate()).padStart(2, "0");
+      return `${yyyy}-${mm}-${dd}`;
+    })();
+
+    function parseISODateToUTCStart(isoDateYYYYMMDD) {
+      const [y, m, d] = isoDateYYYYMMDD.split("-").map(Number);
+      const dt = new Date(y, m - 1, d, 0, 0, 0, 0);
+      return Math.floor(dt.getTime() / 86400000);
+    }
+
+    let state = { lastActiveDate: null, currentStreak: 0, dailyGoalProgress: { quizzesCompleted: 0, questionsReviewed: 0 } };
+
+    try {
+      const raw = localStorage.getItem(STREAK_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed && typeof parsed === "object") {
+          state = parsed;
+        }
+      }
+    } catch (e) {}
+
+    if (!state.dailyGoalProgress || typeof state.dailyGoalProgress !== "object") {
+      state.dailyGoalProgress = { quizzesCompleted: 0, questionsReviewed: 0 };
+    }
+
+    const lastActive = state.lastActiveDate;
+    const todayToken = parseISODateToUTCStart(today);
+    const lastToken = lastActive ? parseISODateToUTCStart(lastActive) : null;
+
+    if (lastActive) {
+      if (todayToken > lastToken + 1) {
+        state.currentStreak = 0;
+        state.dailyGoalProgress = { quizzesCompleted: 0, questionsReviewed: 0 };
+      } else if (lastActive !== today) {
+        state.dailyGoalProgress = { quizzesCompleted: 0, questionsReviewed: 0 };
+      }
+    } else {
+      state.dailyGoalProgress = { quizzesCompleted: 0, questionsReviewed: 0 };
+    }
+
+    if (!lastActive) {
+      state.currentStreak = 1;
+      state.lastActiveDate = today;
+    } else if (lastActive === today) {
+      // Same day
+    } else if (lastToken !== null && todayToken === lastToken + 1) {
+      state.currentStreak += 1;
+      state.lastActiveDate = today;
+    } else {
+      state.currentStreak = 1;
+      state.lastActiveDate = today;
+    }
+
+    if (type === "quiz") {
+      state.dailyGoalProgress.quizzesCompleted += value;
+    } else if (type === "review") {
+      state.dailyGoalProgress.questionsReviewed += value;
+    }
+
+    try {
+      localStorage.setItem(STREAK_KEY, JSON.stringify(state));
+    } catch (e) {}
+
+    if (window.achievements && typeof window.achievements.checkAndNotify === "function") {
+      window.achievements.checkAndNotify();
+    }
+  }
+
   function recordReviewResult({ topicId, scorePct, answeredCount = 0 }) {
+
     if (!topicId) return;
 
     const today = _todayLocalISODate();
@@ -145,8 +226,12 @@
     }
     saveHistory(history);
 
+    // Update unified daily streak & daily goal state
+    _updateUnifiedStreakAndGoal("review", answeredCount);
+
     return schedule[topicId];
   }
+
 
   function skipTopic(topicId) {
     if (!topicId) return;
