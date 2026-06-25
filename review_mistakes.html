@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Review missed questions and retry only what you got wrong." />
+  <title>Review Mistakes – LearnSphere</title>
+
+  <link rel="stylesheet" href="variables.css" />
+  <link rel="stylesheet" href="styles.css" />
+  <script src="theme.js"></script>
+
+  <style>
+    .wrap {
+      max-width: 1000px;
+      margin: auto;
+      padding: 30px 20px;
+      text-align: left;
+      animation: fadeIn 0.8s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(15px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .title-section {
+      margin-bottom: 25px;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 15px;
+    }
+
+    .title-section h1 {
+      font-size: 2.1rem;
+      margin: 0 0 8px 0;
+      color: var(--text-color);
+    }
+
+    .title-section p {
+      color: var(--text-muted);
+      margin: 0;
+      font-size: 1.05rem;
+    }
+
+    .section-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 24px;
+      box-shadow: var(--card-shadow);
+      margin-bottom: 25px;
+      transition: var(--theme-transition);
+    }
+
+    .section-card h2 {
+      margin-top: 0;
+      font-size: 1.25rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      padding-bottom: 12px;
+      margin-bottom: 18px;
+    }
+
+    .review-mistakes-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .review-mistake-item {
+      background: var(--progress-item-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 16px;
+      transition: var(--theme-transition);
+    }
+
+    .review-mistake-q {
+      font-weight: 700;
+      margin-bottom: 10px;
+      color: var(--text-color);
+      line-height: 1.35;
+    }
+
+    .review-mistake-meta {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      margin-bottom: 8px;
+    }
+
+    .review-mistake-expl {
+      color: var(--text-muted);
+      line-height: 1.5;
+      font-size: 0.95rem;
+      white-space: pre-wrap;
+    }
+
+    .actions-row {
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+      flex-wrap: wrap;
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 1px solid var(--border-color);
+    }
+
+    .action-btn {
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-weight: 800;
+      cursor: pointer;
+      border: none;
+      transition: var(--theme-transition);
+    }
+
+    .action-btn.primary {
+      background: var(--btn-primary-bg);
+      color: white;
+    }
+
+    .action-btn.primary:hover {
+      background: var(--btn-primary-hover);
+    }
+
+    .action-btn.secondary {
+      background: var(--btn-secondary-bg);
+      color: var(--text-color);
+      border: 1px solid var(--border-color);
+    }
+
+    .action-btn.secondary:hover {
+      background: var(--btn-secondary-hover);
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 30px 15px;
+      color: var(--text-muted);
+      font-size: 0.95rem;
+    }
+
+    .empty-state-icon {
+      font-size: 2.5rem;
+      margin-bottom: 12px;
+      display: block;
+    }
+
+    .small-note {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      margin-top: 10px;
+    }
+
+    .top-row-kpis {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 8px;
+    }
+
+    .kpi-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      color: var(--text-muted);
+      font-weight: 700;
+      font-size: 0.9rem;
+    }
+  </style>
+</head>
+
+<body>
+  <header class="navbar" role="banner">
+    <div class="logo"><a href="index.html" aria-label="LearnSphere Home">LearnSphere</a></div>
+
+    <button
+      class="hamburger"
+      id="hamburgerBtn"
+      aria-label="Toggle navigation menu"
+      aria-expanded="false"
+      aria-controls="navMenu"
+    >
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
+
+    <nav id="navMenu" role="navigation" aria-label="Main navigation">
+      <ul>
+        <li><a href="explore.html">Explore</a></li>
+        <li><a href="courses.html">Courses</a></li>
+        <li><a href="review.html">Review Queue</a></li>
+        <li><a href="resources.html">Resources</a></li>
+        <li><a href="community.html">Community</a></li>
+      </ul>
+    </nav>
+
+    <button id="themeToggleBtn" class="theme-btn" aria-label="Toggle theme"></button>
+
+    <div class="buttons">
+      <button class="login"><a href="log/login.html">Log in</a></button>
+      <button class="signup"><a href="log/register.html">Sign up</a></button>
+    </div>
+  </header>
+
+  <main>
+    <div class="wrap">
+      <div class="title-section">
+        <h1>Review Mistakes</h1>
+        <p>See what you missed and retry only those questions.</p>
+        <div class="top-row-kpis">
+          <div class="kpi-pill">🧠 <span id="rm-total-missed">0</span> missed</div>
+          <div class="kpi-pill">📚 <span id="rm-topic-label">—</span></div>
+        </div>
+      </div>
+
+      <div class="section-card">
+        <h2>Missed questions</h2>
+        <div id="rm-list" class="review-mistakes-list">
+          <div class="empty-state">
+            <span class="empty-state-icon">🔎</span>
+            No missed questions found for this topic.
+          </div>
+        </div>
+
+        <div class="small-note" id="rm-subnote">
+          After retrying, spaced repetition + retry mastery stats will be updated.
+        </div>
+
+        <div class="actions-row">
+          <button class="action-btn secondary" id="rm-backBtn" type="button">Back to Review</button>
+          <button class="action-btn primary" id="rm-retryBtn" type="button" disabled>Retry missed</button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script src="progress.js"></script>
+  <script src="quizProgress.js"></script>
+  <script src="review_mistakes.js"></script>
+  <script src="navbar.js"></script>
+
+  <script>
+    // Close nav on mobile handled by navbar.js; keep page self-contained.
+  </script>
+
+  <script>
+    (function(){
+      const backBtn = document.getElementById('rm-backBtn');
+      if(backBtn){
+        backBtn.addEventListener('click', function(){
+          window.location.href = 'review.html';
+        });
+      }
+    })();
+  </script>
+</body>
+</html>
+
