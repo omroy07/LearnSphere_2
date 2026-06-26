@@ -283,11 +283,13 @@ function startAdaptiveSession() {
     adaptiveSteps[0] = adaptiveQuiz.takeNext();
 }
 
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener('DOMContentLoaded', () => {
     window.__quizMotionStartedAt = Date.now();
-    document.getElementById("progress-bar").style.width = "0%";
+    // Initialize accessibility utilities
+    if (window.initQuizAccessibility) {
+        window.initQuizAccessibility();
+    }
+    document.getElementById('progress-bar').style.width = "0%";
     startAdaptiveSession();
     loadQuestion();
 });
-
-

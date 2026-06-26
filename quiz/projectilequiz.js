@@ -284,6 +284,10 @@ document.addEventListener("keydown", (e) => {
 });
 
 document.addEventListener("DOMContentLoaded", () => {
+    // Initialize accessibility utilities
+    if (window.initQuizAccessibility) {
+        window.initQuizAccessibility();
+    }
     document.getElementById("progress-bar").style.width = "0%";
     loadQuestion();
 

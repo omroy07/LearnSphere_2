@@ -554,18 +554,63 @@
     const submitBtn = document.getElementById("reviewSubmitBtn");
     if (submitBtn) {
       submitBtn.onclick = function () {
+        // Compute score and update summary
         const { scorePct, correctCount, total, answeredCount } = readQuizAnswers();
         const msg = document.getElementById("reviewResultMessage");
         if (msg) msg.textContent = `Score: ${correctCount}/${total} (${scorePct}%).`;
 
+        // Render detailed per‑question results with an Ask button
+        const container = document.getElementById("reviewQuizContainer");
+        if (container) {
+          container.innerHTML = "";
+          const quiz = getReviewQuiz(topicId);
+          quiz.forEach((item, idx) => {
+            const qDiv = document.createElement("div");
+            qDiv.className = "review-question-result";
+            qDiv.style.marginBottom = "12px";
+
+            const selected = document.querySelector(`input[name="review_q_${idx}"]:checked`);
+            const userIdx = selected ? Number(selected.value) : null;
+            const userAns = userIdx !== null ? item.options[userIdx] : "<em>No answer</em>";
+            const correct = userIdx === item.answerIndex;
+
+            qDiv.innerHTML = `
+              <div><strong>Q${idx + 1}:</strong> ${item.q}</div>
+              <div>Your answer: ${userAns} ${correct ? "✅" : "❌"}</div>
+              <div>Correct answer: ${item.options[item.answerIndex]}</div>
+            `;
+
+            const askBtn = document.createElement("button");
+            askBtn.textContent = "Ask about this question";
+            askBtn.className = "action-btn";
+            askBtn.style.marginTop = "6px";
+            askBtn.onclick = () => {
+              fetch("/chat", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ message: `Help me understand this question: ${item.q}` })
+              })
+                .then(res => res.json())
+                .then(data => {
+                  alert(data.reply || "No reply");
+                })
+                .catch(err => {
+                  console.error(err);
+                  alert("Error contacting chatbot");
+                });
+            };
+            qDiv.appendChild(askBtn);
+            container.appendChild(qDiv);
+          });
+        }
+
+        // Persist the review result
         recordReviewResult({ topicId, scorePct, answeredCount });
 
-        // Disable button while closing
+        // Disable button to prevent double submission
         submitBtn.disabled = true;
-
         setTimeout(() => {
           closeModal();
-          // Dispatch event to refresh lists in real time
           window.dispatchEvent(new Event("review-saved"));
         }, 800);
       };

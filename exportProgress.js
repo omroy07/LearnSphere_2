@@ -374,12 +374,80 @@
     a.click();
     a.remove();
 
+
     setTimeout(() => URL.revokeObjectURL(url), 5000);
+  }
+
+  // Snapshot utilities
+  async function generateSnapshot() {
+    const payload = buildProgressExportPayload({ roleContext: "learner" });
+    const exportId = `snapshot_${Date.now()}_${Math.random().toString(16).slice(2)}`;
+    const encoder = new TextEncoder();
+    const data = encoder.encode(JSON.stringify(payload));
+    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    const payloadHash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    const snapshot = { payload, payloadHash, generatedAt: new Date().toISOString() };
+    localStorage.setItem(`snapshot_${exportId}`, JSON.stringify(snapshot));
+    const index = JSON.parse(localStorage.getItem('snapshotIndex') || '[]');
+    index.push({ exportId, generatedAt: snapshot.generatedAt, payloadHash });
+    localStorage.setItem('snapshotIndex', JSON.stringify(index));
+    return exportId;
+  }
+
+  function downloadSnapshotAsImage(exportId) {
+    const snapshotStr = localStorage.getItem(`snapshot_${exportId}`);
+    if (!snapshotStr) { alert('Snapshot not found'); return; }
+    const snapshot = JSON.parse(snapshotStr);
+    const html = `<html><body><pre>${JSON.stringify(snapshot.payload, null, 2)}</pre></body></html>`;
+    const iframe = document.createElement('iframe');
+    iframe.style.position = 'fixed'; iframe.style.right = '0'; iframe.style.bottom = '0'; iframe.style.width = '0'; iframe.style.height = '0';
+    document.body.appendChild(iframe);
+    iframe.contentDocument.open(); iframe.contentDocument.write(html); iframe.contentDocument.close();
+    setTimeout(() => {
+      html2canvas(iframe.contentDocument.body).then(canvas => {
+        const link = document.createElement('a');
+        link.href = canvas.toDataURL('image/png');
+        link.download = `${exportId}.png`;
+        link.click();
+        iframe.remove();
+      });
+    }, 500);
+  }
+
+  function downloadSnapshotAsPDF(exportId) {
+    const snapshotStr = localStorage.getItem(`snapshot_${exportId}`);
+    if (!snapshotStr) { alert('Snapshot not found'); return; }
+    const snapshot = JSON.parse(snapshotStr);
+    const html = `<html><body><pre>${JSON.stringify(snapshot.payload, null, 2)}</pre></body></html>`;
+    const iframe = document.createElement('iframe');
+    iframe.style.position = 'fixed'; iframe.style.right = '0'; iframe.style.bottom = '0'; iframe.style.width = '0'; iframe.style.height = '0';
+    document.body.appendChild(iframe);
+    iframe.contentDocument.open(); iframe.contentDocument.write(html); iframe.contentDocument.close();
+    setTimeout(() => {
+      html2canvas(iframe.contentDocument.body).then(canvas => {
+        const imgData = canvas.toDataURL('image/png');
+        const pdf = new jspdf.jsPDF();
+        const imgProps = pdf.getImageProperties(imgData);
+        const pdfWidth = pdf.internal.pageSize.getWidth();
+        const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+        pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+        pdf.save(`${exportId}.pdf`);
+        iframe.remove();
+      });
+    }, 500);
+  }
+
+  function listSnapshots() {
+    return JSON.parse(localStorage.getItem('snapshotIndex') || '[]');
   }
 
   window.exportProgress = {
     buildProgressExportPayload,
     downloadJson,
-  };
-})();
+    generateSnapshot,
+    downloadSnapshotAsImage,
+    downloadSnapshotAsPDF,
+    listSnapshots
+  };})();
 

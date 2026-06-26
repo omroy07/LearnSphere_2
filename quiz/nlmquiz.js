@@ -325,11 +325,13 @@ function startAdaptiveSession() {
     // Remaining questions will be determined as user answers.
 }
 
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener('DOMContentLoaded', () => {
+    // Initialize accessibility utilities
+    if (window.initQuizAccessibility) {
+        window.initQuizAccessibility();
+    }
     window.__quizNlmStartedAt = Date.now();
-    document.getElementById("progress-bar").style.width = "0%";
+    document.getElementById('progress-bar').style.width = "0%";
     startAdaptiveSession();
     loadQuestion();
 });
-
-
