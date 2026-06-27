@@ -86,28 +86,62 @@
    * entries as synced (the data is already saved locally by quizProgress.js).
    * When a backend is added, each entry can be POSTed here before marking synced.
    */
-  function flushQueue() {
+  // Endpoint can be overridden by window.__learnsphereSyncEndpoint
+  function _syncEndpoint() {
+    if (window && window.__learnsphereSyncEndpoint) return window.__learnsphereSyncEndpoint;
+    // Default (can be changed later)
+    return "/api/sync-progress";
+  }
+
+  async function _postSyncItem(item) {
+    const endpoint = _syncEndpoint();
+    const res = await fetch(endpoint, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "same-origin",
+      body: JSON.stringify({
+        type: item.type,
+        payload: item.payload,
+        queuedAt: item.queuedAt,
+        id: item.id,
+      }),
+    });
+
+    if (!res.ok) {
+      const text = await res.text().catch(() => "");
+      throw new Error(`Sync failed: ${res.status} ${res.statusText}${text ? ": " + text : ""}`);
+    }
+  }
+
+  async function flushQueue() {
     const queue = _loadQueue();
     if (queue.length === 0) return;
 
+    // Do not attempt sync if offline
+    if (!isOnline()) {
+      _dispatchQueueChange(queue.filter((i) => !i.synced).length);
+      return;
+    }
+
+    // Simple sequential sync to keep it reliable
     let flushedCount = 0;
 
     for (const item of queue) {
       if (item.synced) continue;
 
       try {
-        // Future: POST to /api/sync-progress
-        // For now, the data is already in localStorage via quizProgress.js.
-        // We just mark the entry as synced.
+        // Retry with same item; backend should be idempotent using item.id
+        await _postSyncItem(item);
         item.synced = true;
         flushedCount++;
       } catch (e) {
-        console.warn("LearnSphere: Failed to sync queued item:", item.id, e);
         // Leave unsynced so it retries next time
+        console.warn("LearnSphere: Failed to sync queued item:", item.id, e);
+        // Stop early on first failure to reduce load
+        break;
       }
     }
 
-    // Remove synced items
     const remaining = queue.filter((item) => !item.synced);
     _saveQueue(remaining);
 

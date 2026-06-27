@@ -92,6 +92,17 @@ const APP_SHELL_URLS = [
 
   // Data
   "/quiz/bank/physics-motion.json",
+  "/quiz/bank/physics-nlm.json",
+  "/quiz/bank/physics-projectile.json",
+  "/quiz/bank/physics-ray.json",
+  "/quiz/bank/maths-calculus.json",
+  "/quiz/bank/maths-geometry.json",
+  "/quiz/bank/maths-probability.json",
+  "/quiz/bank/maths-vectors.json",
+  "/quiz/bank/chemistry-atomic.json",
+  "/quiz/bank/chemistry-bonding.json",
+  "/quiz/bank/chemistry-equilibrium.json",
+  "/quiz/bank/chemistry-thermo.json",
   "/manifest.json",
 
   // Images
@@ -324,6 +335,17 @@ self.addEventListener("message", (event) => {
 
           // Quiz data
           "/quiz/bank/physics-motion.json",
+          "/quiz/bank/physics-nlm.json",
+          "/quiz/bank/physics-projectile.json",
+          "/quiz/bank/physics-ray.json",
+          "/quiz/bank/maths-calculus.json",
+          "/quiz/bank/maths-geometry.json",
+          "/quiz/bank/maths-probability.json",
+          "/quiz/bank/maths-vectors.json",
+          "/quiz/bank/chemistry-atomic.json",
+          "/quiz/bank/chemistry-bonding.json",
+          "/quiz/bank/chemistry-equilibrium.json",
+          "/quiz/bank/chemistry-thermo.json",
 
           // Offline sync module
           "/offlineSync.js"
