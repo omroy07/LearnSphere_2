@@ -83,6 +83,14 @@ function loadQuestion() {
 
     document.getElementById("question").textContent = questionData.question;
 
+    // Reset hint UI (tier depends on attempt count)
+    const hintBox = document.getElementById("hint-box");
+    const hintText = document.getElementById("hint-text");
+    const hintTierLabel = document.getElementById("hint-tier");
+    if (hintBox) hintBox.classList.remove("hidden");
+    if (hintText) hintText.textContent = "";
+    if (hintTierLabel) hintTierLabel.textContent = "";
+
     let optionsContainer = document.getElementById("options");
     optionsContainer.innerHTML = "";
 
@@ -103,6 +111,9 @@ function loadQuestion() {
 
     const lastStep = adaptiveSteps.length - 1;
     document.getElementById("next-btn").disabled = true;
+
+    // Configure hint tier based on past attempts for this question (tracked via localStorage)
+    renderHintTierForCurrentQuestion(questionData);
     document.getElementById("prev-btn").disabled = currentStepIndex === 0;
     document.getElementById("submit-btn").classList.toggle("hidden", currentStepIndex !== lastStep);
     document.getElementById("next-btn").classList.toggle("hidden", currentStepIndex === lastStep);
@@ -323,6 +334,96 @@ function startAdaptiveSession() {
     // Fill initial first question.
     adaptiveSteps[0] = adaptiveQuiz.takeNext();
     // Remaining questions will be determined as user answers.
+}
+
+function _getHintStorageKeyForTopicQuestion(topicId, questionText){
+    const safeTopic = String(topicId || 'topic');
+    const safeQ = String(questionText || 'q');
+    return `learnsphere_hint_attempts_${safeTopic}` + '_' + encodeURIComponent(safeQ);
+}
+
+function _loadHintAttempts(topicId, questionText){
+    try{
+        const key = _getHintStorageKeyForTopicQuestion(topicId, questionText);
+        const raw = localStorage.getItem(key);
+        const n = Number(raw);
+        return Number.isFinite(n) && n >= 0 ? n : 0;
+    }catch(e){
+        return 0;
+    }
+}
+
+function _saveHintAttempts(topicId, questionText, attempts){
+    try{
+        const key = _getHintStorageKeyForTopicQuestion(topicId, questionText);
+        localStorage.setItem(key, String(Math.max(0, attempts)));
+    }catch(e){}
+}
+
+function _getHintTierFromAttempts(attempts){
+    // 0 tries: no hint shown (tier 0)
+    // first retry: tier 1, second retry: tier 2, third+: tier 3
+    if (attempts <= 0) return 0;
+    if (attempts === 1) return 1;
+    if (attempts === 2) return 2;
+    return 3;
+}
+
+function _getHintsForQuestion(questionData){
+    const hints = Array.isArray(questionData.hints) ? questionData.hints : null;
+    if (hints && hints.length >= 1) return hints;
+    // default conceptual tiers (no answer)
+    return [
+        'Think about the key idea in the law: what does the statement imply about motion/forces?',
+        'Break the law into: (1) what stays the same, and (2) what changes when a net force is present.',
+        'Eliminate wrong options by checking whether they describe inertia, equilibrium, or action–reaction correctly.'
+    ];
+}
+
+function renderHintTierForCurrentQuestion(questionData){
+    const hintBox = document.getElementById('hint-box');
+    const hintText = document.getElementById('hint-text');
+    const hintTierLabel = document.getElementById('hint-tier');
+    const hintBtn = document.getElementById('show-hint-btn');
+    if (!hintBox || !hintText || !hintTierLabel) return;
+
+    const topicId = 'physics-nlm';
+    const attempts = _loadHintAttempts(topicId, questionData.question);
+    const tier = _getHintTierFromAttempts(attempts);
+
+    if (tier === 0){
+        hintBox.classList.add('hidden');
+        return;
+    }
+
+    const hints = _getHintsForQuestion(questionData);
+    const tierIndex = Math.min(tier - 1, hints.length - 1);
+    hintText.textContent = hints[tierIndex] || '';
+    hintTierLabel.textContent = String(tier);
+    hintBox.classList.remove('hidden');
+    if (hintBtn) hintBtn.disabled = true; // once revealed, lock until next retry
+}
+
+function showHintTier(){
+    const questionData = currentQuestion();
+    if (!questionData) return;
+
+    const hintBox = document.getElementById('hint-box');
+    const hintText = document.getElementById('hint-text');
+    const hintTierLabel = document.getElementById('hint-tier');
+    const hintBtn = document.getElementById('show-hint-btn');
+    if (!hintBox || !hintText || !hintTierLabel) return;
+
+    const topicId = 'physics-nlm';
+    const attempts = _loadHintAttempts(topicId, questionData.question);
+
+    // Increment attempts when user clicks hint.
+    const nextAttempts = attempts + 1;
+    _saveHintAttempts(topicId, questionData.question, nextAttempts);
+
+    renderHintTierForCurrentQuestion(questionData);
+
+    if (hintBtn) hintBtn.disabled = true;
 }
 
 document.addEventListener('DOMContentLoaded', () => {

@@ -29,6 +29,13 @@
             <h2 id="question">Loading...</h2>
             <div id="options" class="options-grid" role="radiogroup" aria-labelledby="question"></div>
 
+            <!-- Adaptive hints -->
+            <div id="hint-box" class="hint-box hidden" aria-live="polite">
+                <p><strong>Hint tier:</strong> <span id="hint-tier"></span></p>
+                <p id="hint-text" class="hint-text"></p>
+                <button id="show-hint-btn" type="button" onclick="showHintTier()" aria-label="Show hint">Show Hint</button>
+            </div>
+
             <div class="button-group" role="group" aria-label="Quiz navigation">
                 <button id="prev-btn" onclick="prevQuestion()" disabled aria-label="Previous question">Previous</button>
                 <button id="next-btn" onclick="nextQuestion()" disabled aria-label="Next question">Next</button>

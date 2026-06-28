@@ -66,6 +66,7 @@
     let difficultyIndex = clamp(startingDifficultyIndex, 0, 2);
     let consecutiveCorrect = 0;
     let consecutiveIncorrect = 0;
+    let lastAbilityHint = 0; // for future use / debugging
 
     // Flattened remaining counts for quick fallback.
     function countRemainingAt(di) {
@@ -136,6 +137,8 @@
       updateDifficulty,
       getDifficultyIndex: () => difficultyIndex,
       getTotalSteps: () => totalSteps,
+      // abilityIndex is synonymous with difficulty bucket.
+      getAbilityIndex: () => difficultyIndex,
     };
   }
 
