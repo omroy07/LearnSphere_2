@@ -42,8 +42,49 @@
         params: { threshold: 0.8 }
       },
       description: "Reach at least 80% accuracy in any skill."
+    },
+
+    {
+      id: "streak_7_days",
+      title: "7-day study streak",
+      icon: "🔥",
+      reward: { type: "badge" },
+      condition: {
+        type: "streak_threshold",
+        params: { targetStreakDays: 7 }
+      },
+      description: "Practice every day for 7 consecutive days."
+    },
+    {
+      id: "streak_14_days",
+      title: "14-day study streak",
+      icon: "🌟",
+      reward: { type: "badge" },
+      condition: {
+        type: "streak_threshold",
+        params: { targetStreakDays: 14 }
+      },
+      description: "Practice every day for 14 consecutive days."
+    },
+
+    {
+      id: "improve_10pct_recent",
+      title: "Accuracy improvement",
+      icon: "📈",
+      reward: { type: "badge" },
+      condition: {
+        type: "accuracy_improvement",
+        params: {
+          recentDays: 3,
+          previousDays: 3,
+          improvementThreshold: 0.10,
+          minRecentAttempts: 2
+        }
+      },
+      description: "Improve your average accuracy by at least 10% (recent 3 days vs previous 3 days)."
     }
   ];
+
 
   // ---------------------------
   // 2) Persistence
@@ -170,6 +211,126 @@
     return { bestAccuracy, bestSkillId };
   }
 
+  function getCurrentStreakDerived() {
+    try {
+      if (window.studyProgress && typeof window.studyProgress.loadStreakState === "function") {
+        const s = window.studyProgress.loadStreakState();
+        const current = Number(s?.currentStreak);
+        return {
+          currentStreakDays: Number.isFinite(current) ? current : 0,
+          lastActiveDate: s?.lastActiveDate || null
+        };
+      }
+    } catch {}
+
+    try {
+      const st = window.quizProgress?.getStreak?.();
+      const current = Number(st?.currentStreak);
+      return {
+        currentStreakDays: Number.isFinite(current) ? current : 0,
+        lastActiveDate: st?.lastPracticeDate || null
+      };
+    } catch {}
+
+    return { currentStreakDays: 0, lastActiveDate: null };
+  }
+
+  function getAccuracyImprovementDerived({ recentDays = 3, previousDays = 3, minRecentAttempts = 2 } = {}) {
+    const attempts = getQuizAttemptsRaw();
+    if (!attempts.length) {
+      return {
+        recentAvg: null,
+        previousAvg: null,
+        improvement: null,
+        recentAttemptsCount: 0,
+        previousAttemptsCount: 0,
+      };
+    }
+
+    const now = new Date();
+
+    function localISODate(d) {
+      const dd = new Date(d);
+      const yyyy = dd.getFullYear();
+      const mm = String(dd.getMonth() + 1).padStart(2, "0");
+      const day = String(dd.getDate()).padStart(2, "0");
+      return `${yyyy}-${mm}-${day}`;
+    }
+
+    function parseISOToToken(isoDateYYYYMMDD) {
+      if (!isoDateYYYYMMDD || typeof isoDateYYYYMMDD !== "string") return null;
+      const [y, m, d] = isoDateYYYYMMDD.split("-").map(Number);
+      if (!y || !m || !d) return null;
+      const dt = new Date(y, m - 1, d, 0, 0, 0, 0);
+      return Math.floor(dt.getTime() / 86400000);
+    }
+
+    const todayToken = parseISOToToken(localISODate(now));
+    if (todayToken == null) {
+      return {
+        recentAvg: null,
+        previousAvg: null,
+        improvement: null,
+        recentAttemptsCount: 0,
+        previousAttemptsCount: 0,
+      };
+    }
+
+    const recentStart = todayToken - (recentDays - 1);
+    const previousStart = todayToken - (recentDays + previousDays - 1);
+    const previousEnd = todayToken - recentDays;
+
+    let recentCorrect = 0;
+    let recentTotal = 0;
+    let recentAttemptsCount = 0;
+
+    let prevCorrect = 0;
+    let prevTotal = 0;
+    let previousAttemptsCount = 0;
+
+    for (const a of attempts) {
+      if (!a || !a.practiceDate) continue;
+      const token = parseISOToToken(a.practiceDate);
+      if (token == null) continue;
+
+      // Only consider attempts where accuracy is usable (0..1)
+      const acc = typeof a.accuracy === "number" && !Number.isNaN(a.accuracy) ? a.accuracy : null;
+      const totalQ = typeof a.totalQuestions === "number" && !Number.isNaN(a.totalQuestions) ? a.totalQuestions : null;
+
+      if (acc == null || totalQ == null || totalQ <= 0) continue;
+
+      const correctFromCount = acc * totalQ;
+
+      if (token >= recentStart && token <= todayToken) {
+        recentCorrect += correctFromCount;
+        recentTotal += totalQ;
+        recentAttemptsCount += 1;
+      } else if (token >= previousStart && token <= previousEnd) {
+        prevCorrect += correctFromCount;
+        prevTotal += totalQ;
+        previousAttemptsCount += 1;
+      }
+    }
+
+    const recentAvg = recentTotal > 0 ? recentCorrect / recentTotal : null;
+    const previousAvg = prevTotal > 0 ? prevCorrect / prevTotal : null;
+
+    let improvement = null;
+    if (recentAvg != null && previousAvg != null) {
+      improvement = (recentAvg - previousAvg);
+    }
+
+    return {
+      recentAvg,
+      previousAvg,
+      improvement,
+      recentAttemptsCount,
+      previousAttemptsCount,
+      metMinRecentAttempts: recentAttemptsCount >= (minRecentAttempts || 0)
+    };
+  }
+
+
   // ---------------------------
   // 5) Rule evaluator + progress
   // ---------------------------
@@ -220,6 +381,68 @@
       };
     }
 
+    if (type === "streak_threshold") {
+      const targetDays = Number(params?.targetStreakDays) || 0;
+      const currentDays = derived.currentStreak?.currentStreakDays ?? 0;
+      const pct = targetDays > 0 ? Math.min(1, currentDays / targetDays) : 0;
+      return {
+        unlocked: targetDays > 0 && currentDays >= targetDays,
+        progress: {
+          kind: "count",
+          current: currentDays,
+          target: targetDays,
+          percent: pct
+        },
+        progressText: targetDays > 0 ? `${Math.min(currentDays, targetDays)}/${targetDays} days` : "—"
+      };
+    }
+
+    if (type === "accuracy_improvement") {
+      const recentDays = Number(params?.recentDays) || 3;
+      const previousDays = Number(params?.previousDays) || 3;
+      const thresholdDelta = typeof params?.improvementThreshold === "number" ? params.improvementThreshold : 0.1;
+      const minRecentAttempts = Number(params?.minRecentAttempts) || 0;
+
+      const imp = derived.accuracyImprovement;
+      const recentAvg = imp?.recentAvg;
+      const previousAvg = imp?.previousAvg;
+      const improvement = imp?.improvement;
+
+      const canScore =
+        recentAvg != null &&
+        previousAvg != null &&
+        imp?.metMinRecentAttempts;
+
+      let pct = 0;
+      if (canScore) {
+        // Map delta [0..threshold] to [0..1]
+        // e.g., improvement=0 => 0, improvement=threshold => 1
+        pct = thresholdDelta > 0 ? Math.max(0, Math.min(1, improvement / thresholdDelta)) : 0;
+      }
+
+
+      const deltaMet = canScore && improvement >= thresholdDelta;
+
+      const currentDeltaPctText = canScore
+        ? `${Math.round(improvement * 100)}% improvement`
+        : "Not enough recent data";
+
+      return {
+        unlocked: !!deltaMet,
+        progress: {
+          kind: "delta",
+          current: canScore ? improvement : 0,
+          target: thresholdDelta,
+          percent: pct,
+          recentDays,
+          previousDays
+        },
+        progressText: canScore
+          ? `${Math.round(Math.max(0, improvement) * 100)}% / ${Math.round(thresholdDelta * 100)}%`
+          : currentDeltaPctText
+      };
+    }
+
     return {
       unlocked: false,
       progress: { kind: "unknown", current: 0, target: 0, percent: 0 },
@@ -227,15 +450,23 @@
     };
   }
 
+
   function buildDerived() {
     return {
       perfectAttemptsInWindow: getPerfectAttemptsInWindow({
         windowType: "week",
         perfectAccuracy: 1.0
       }),
-      anySkillBestAccuracy: getAnySkillMasteryAccuracy()
+      anySkillBestAccuracy: getAnySkillMasteryAccuracy(),
+      currentStreak: getCurrentStreakDerived(),
+      accuracyImprovement: getAccuracyImprovementDerived({
+        recentDays: 3,
+        previousDays: 3,
+        minRecentAttempts: 2
+      })
     };
   }
+
 
   function getUnlockedSet(ach) {
     const set = new Set(Array.isArray(ach.unlockedBadges) ? ach.unlockedBadges : []);
