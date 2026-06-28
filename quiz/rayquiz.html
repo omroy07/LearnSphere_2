@@ -74,14 +74,18 @@
         window.offlineSync.initOfflineStatusBar();
       }
     </script>
-<script src="../accessibility.js"></script>
+<script src="../accessibility.js" defer></script>
     <script src="../badges.js"></script>
+
     <script src="adaptiveQuiz.js"></script>
     <script src="rayquiz.js"></script>
     <script src="../quizAssignmentHelper.js"></script>
 
+
     <script>
+
       (function () {
+
         if (!('serviceWorker' in navigator)) return;
         window.addEventListener('load', function () {
           navigator.serviceWorker.register('/sw.js').catch(function (err) {

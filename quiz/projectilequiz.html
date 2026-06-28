@@ -74,13 +74,17 @@
         window.offlineSync.initOfflineStatusBar();
       }
     </script>
-<script src="../accessibility.js"></script>
+<script src="../accessibility.js" defer></script>
     <script src="../badges.js"></script>
+
     <script src="adaptiveQuiz.js"></script>
     <script src="projectilequiz.js"></script>
     <script src="../quizAssignmentHelper.js"></script>
+    <!-- accessibility.js (global toggles + quiz keyboard helpers) already loaded above -->
 
     <script>
+
+
       (function () {
         if (!('serviceWorker' in navigator)) return;
         window.addEventListener('load', function () {

@@ -69,11 +69,30 @@
 
         <button id="themeToggleBtn" class="theme-btn" aria-label="Toggle theme"></button>
 
+        <!-- Accessibility controls (keyboard accessible, persistent via accessibility.js) -->
+        <div class="buttons" role="group" aria-label="Accessibility options" style="margin-right:10px;">
+            <button
+              type="button"
+              id="reducedMotionToggle"
+              class="a11y-btn"
+              aria-pressed="false"
+              aria-label="Toggle reduced motion"
+            >Reduced motion: Off</button>
+            <button
+              type="button"
+              id="fontSizeToggle"
+              class="a11y-btn"
+              aria-pressed="true"
+              aria-label="Toggle larger text"
+            >Larger text</button>
+        </div>
+
         <div class="buttons">
             <button class="login"><a href="log/login.html">Log in</a></button>
             <button class="signup"><a href="log/register.html">Sign up</a></button>
         </div>
     </header>
+
 
     <main>
         <section class="hero" aria-label="Welcome section">
@@ -103,6 +122,9 @@
 
     <script src="navbar.js" defer></script>
     <script src="script.js" defer></script>
+    <script src="accessibility.js" defer></script>
+
+
 
     <script>
       (function () {

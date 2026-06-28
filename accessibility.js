@@ -104,7 +104,115 @@
     document.body.classList.add('high-contrast');
   }
 
+  // ------------------------------
+  // User controls: Reduced motion + Larger text
+  // ------------------------------
+  const A11Y_STORAGE_KEY = 'learnsphere_a11y';
+
+  function safeParse(json) {
+    try {
+      return JSON.parse(json);
+    } catch (e) {
+      return {};
+    }
+  }
+
+  function getStoredA11yPrefs() {
+    const raw = localStorage.getItem(A11Y_STORAGE_KEY);
+    if (!raw) return {};
+    const parsed = safeParse(raw);
+    return parsed && typeof parsed === 'object' ? parsed : {};
+  }
+
+  function setStoredA11yPrefs(next) {
+    try {
+      localStorage.setItem(A11Y_STORAGE_KEY, JSON.stringify(next));
+    } catch (e) {
+      // ignore
+    }
+  }
+
+  function applyLargerText(sizeKey) {
+    // sizeKey: 'sm' | 'lg' | 'xl'
+    const html = document.documentElement;
+    html.dataset.fontScale = sizeKey || 'lg';
+
+    // Persist
+    const stored = getStoredA11yPrefs();
+    stored.fontScale = html.dataset.fontScale;
+    setStoredA11yPrefs(stored);
+  }
+
+  function applyReducedMotion(enabled) {
+    const html = document.documentElement;
+    html.dataset.reducedMotion = enabled ? 'true' : 'false';
+
+    const stored = getStoredA11yPrefs();
+    stored.reducedMotion = !!enabled;
+    setStoredA11yPrefs(stored);
+  }
+
+  function initA11yControls() {
+    const reducedToggle = document.getElementById('reducedMotionToggle');
+    const fontToggle = document.getElementById('fontSizeToggle');
+
+    // If controls do not exist on this page, do nothing.
+    if (!reducedToggle && !fontToggle) return;
+
+    const stored = getStoredA11yPrefs();
+
+    // Reduced motion: stored override, otherwise OS preference
+    const osPrefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const reducedEnabled = typeof stored.reducedMotion === 'boolean' ? stored.reducedMotion : osPrefersReduced;
+    applyReducedMotion(reducedEnabled);
+
+    // Larger text: stored override, otherwise default scale
+    const fontScale = stored.fontScale || 'lg';
+    applyLargerText(fontScale);
+
+    // Update UI states
+    if (reducedToggle) {
+      reducedToggle.setAttribute('aria-pressed', String(reducedEnabled));
+      reducedToggle.textContent = reducedEnabled ? 'Reduced motion: On' : 'Reduced motion: Off';
+    }
+    if (fontToggle) {
+      const map = { sm: 'Small text', lg: 'Larger text', xl: 'Extra large text' };
+      fontToggle.setAttribute('aria-pressed', 'true');
+      fontToggle.textContent = map[fontScale] || 'Larger text';
+    }
+
+    // Events
+    if (reducedToggle) {
+      reducedToggle.addEventListener('click', () => {
+        const current = document.documentElement.dataset.reducedMotion === 'true';
+        const next = !current;
+        applyReducedMotion(next);
+        reducedToggle.setAttribute('aria-pressed', String(next));
+        reducedToggle.textContent = next ? 'Reduced motion: On' : 'Reduced motion: Off';
+      });
+    }
+
+    if (fontToggle) {
+      // cycle: lg -> xl -> sm -> lg
+      fontToggle.addEventListener('click', () => {
+        const current = document.documentElement.dataset.fontScale || 'lg';
+        const next = current === 'lg' ? 'xl' : current === 'xl' ? 'sm' : 'lg';
+        applyLargerText(next);
+        const map = { sm: 'Small text', lg: 'Larger text', xl: 'Extra large text' };
+        fontToggle.textContent = map[next] || 'Larger text';
+      });
+    }
+  }
+
+  // Run immediately on load (works for deferred scripts too)
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initA11yControls);
+  } else {
+    initA11yControls();
+  }
+
   // Expose API globally.
   window.initQuizAccessibility = initQuizAccessibility;
   window.srAnnounce = announce;
 })();
+
