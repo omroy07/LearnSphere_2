@@ -1,0 +1,71 @@
+.teacher-analytics-page {
+  width: min(1120px, calc(100% - 32px));
+  margin: 0 auto;
+}
+
+.teacher-analytics-hero p,
+.teacher-analytics-content .card > div,
+.teacher-analytics-content .card label,
+.teacher-analytics-content .card div[id="taImprovementText"] {
+  color: var(--text-muted) !important;
+}
+
+.teacher-analytics-content .card {
+  background: var(--card-bg) !important;
+  border: 1px solid var(--card-border) !important;
+  box-shadow: var(--card-shadow) !important;
+  color: var(--text-color);
+}
+
+.teacher-analytics-content input,
+.teacher-analytics-content select {
+  background: var(--progress-item-bg) !important;
+  color: var(--text-color) !important;
+  border: 1px solid var(--border-color) !important;
+}
+
+.teacher-analytics-content input:focus-visible,
+.teacher-analytics-content select:focus-visible,
+#taApplyBtn:focus-visible {
+  outline: 2px solid var(--accent-color);
+  outline-offset: 2px;
+}
+
+#taApplyBtn {
+  min-height: 42px;
+}
+
+#taTopicAccuracyChart,
+#taTypeAccuracyChart {
+  display: block;
+  width: 100% !important;
+  height: 240px !important;
+}
+
+@media (max-width: 900px) {
+  .teacher-analytics-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .teacher-analytics-page {
+    width: min(100% - 20px, 1120px);
+  }
+
+  .teacher-analytics-content .card {
+    padding: 14px !important;
+  }
+
+  .teacher-analytics-content .card > div:first-child {
+    align-items: stretch !important;
+  }
+
+  .teacher-analytics-content .card > div:first-child > div {
+    min-width: 100% !important;
+  }
+
+  #taApplyBtn {
+    width: 100%;
+  }
+}
