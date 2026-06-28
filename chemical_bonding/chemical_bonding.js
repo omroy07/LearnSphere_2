@@ -63,19 +63,16 @@ function submitFeedback() {
   }
 }
 
-/* Unified Theme Manager overrides */
-
-/* Unified Theme Manager overrides */
-}
-
 const canvas = document.getElementById('moleculeCanvas');
-const ctx = canvas.getContext('2d');
+const ctx = canvas ? canvas.getContext('2d') : null;
 
-const centerX = canvas.width / 2;
-const centerY = canvas.height / 2;
+const centerX = canvas ? canvas.width / 2 : 0;
+const centerY = canvas ? canvas.height / 2 : 0;
 
 // Draw central atom (Carbon)
 function drawCentralAtom() {
+  if (!ctx) return;
+
   ctx.beginPath();
   ctx.arc(centerX, centerY, 20, 0, 2 * Math.PI);
   ctx.fillStyle = '#333';
@@ -90,6 +87,8 @@ function drawCentralAtom() {
 
 // Draw surrounding atoms (Hydrogen)
 function drawHydrogenAtoms() {
+  if (!ctx) return;
+
   const radius = 100;
   const angles = [0, 90, 180, 270]; // Degrees
 
@@ -121,21 +120,3 @@ function drawHydrogenAtoms() {
 // Initialize drawing
 drawCentralAtom();
 drawHydrogenAtoms();
-
-// Feedback Popup functions (simple show/hide)
-function openFeedbackForm() {
-  document.getElementById("feedbackPopup").classList.remove("hidden");
-}
-function closeFeedbackForm() {
-  document.getElementById("feedbackPopup").classList.add("hidden");
-}
-function submitFeedback() {
-  const feedback = document.getElementById("feedbackInput").value.trim();
-  if (feedback) {
-    alert("Thank you for your feedback!");
-    document.getElementById("feedbackInput").value = "";
-    closeFeedbackForm();
-  } else {
-    alert("Please write some feedback before submitting.");
-  }
-}
