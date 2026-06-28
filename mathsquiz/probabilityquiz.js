@@ -31,6 +31,22 @@ let score = 0;
 let selectedOption = null;
 let userAnswers = new Array(questions.length).fill(null);
 
+function getCorrectAnswer(questionData) {
+    return typeof questionData.answer === "number"
+        ? questionData.options[questionData.answer]
+        : questionData.answer;
+}
+
+function isAnswerCorrect(questionData, answer) {
+    return answer === getCorrectAnswer(questionData);
+}
+
+function calculateScore() {
+    return questions.reduce((total, questionData, index) => {
+        return total + (isAnswerCorrect(questionData, userAnswers[index]) ? 1 : 0);
+    }, 0);
+}
+
 function loadQuestion() {
     let questionData = questions[currentQuestionIndex];
     document.getElementById("question").textContent = questionData.question;
@@ -69,10 +85,6 @@ function nextQuestion() {
         return;
     }
 
-    if (selectedOption === questions[currentQuestionIndex].answer) {
-        score++;
-    }
-
     currentQuestionIndex++;
     if (currentQuestionIndex < questions.length) {
         loadQuestion();
@@ -94,10 +106,6 @@ function submitQuiz() {
     if (!selectedOption) {
         showPopup();
         return;
-    }
-
-    if (selectedOption === questions[currentQuestionIndex].answer) {
-        score++;
     }
 
     document.getElementById("confirm-popup").style.display = "none";
@@ -133,13 +141,14 @@ function closeConfirmPopup() {
 function showResults() {
     document.getElementById("quiz-box").classList.add("hidden");
     document.getElementById("result-box").classList.remove("hidden");
+    score = calculateScore();
 
     let scoreText = `You scored <strong>${score}</strong> out of ${questions.length}! 🎉`;
     let feedbackHTML = "";
 
     questions.forEach((q, index) => {
         let userAnswer = userAnswers[index] || "No answer selected";
-        let isCorrect = userAnswer === q.answer;
+        let isCorrect = isAnswerCorrect(q, userAnswer);
 
         feedbackHTML += `
             <div class="${isCorrect ? "correct" : "incorrect"}">
