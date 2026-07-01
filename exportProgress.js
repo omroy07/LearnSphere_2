@@ -399,11 +399,7 @@
     const snapshotStr = localStorage.getItem(`snapshot_${exportId}`);
     if (!snapshotStr) { alert('Snapshot not found'); return; }
     const snapshot = JSON.parse(snapshotStr);
-    const html = `<html><body><pre>${JSON.stringify(snapshot.payload, null, 2)}</pre></body></html>`;
-    const iframe = document.createElement('iframe');
-    iframe.style.position = 'fixed'; iframe.style.right = '0'; iframe.style.bottom = '0'; iframe.style.width = '0'; iframe.style.height = '0';
-    document.body.appendChild(iframe);
-    iframe.contentDocument.open(); iframe.contentDocument.write(html); iframe.contentDocument.close();
+    const iframe = createSnapshotFrame(snapshot.payload);
     setTimeout(() => {
       html2canvas(iframe.contentDocument.body).then(canvas => {
         const link = document.createElement('a');
@@ -419,11 +415,7 @@
     const snapshotStr = localStorage.getItem(`snapshot_${exportId}`);
     if (!snapshotStr) { alert('Snapshot not found'); return; }
     const snapshot = JSON.parse(snapshotStr);
-    const html = `<html><body><pre>${JSON.stringify(snapshot.payload, null, 2)}</pre></body></html>`;
-    const iframe = document.createElement('iframe');
-    iframe.style.position = 'fixed'; iframe.style.right = '0'; iframe.style.bottom = '0'; iframe.style.width = '0'; iframe.style.height = '0';
-    document.body.appendChild(iframe);
-    iframe.contentDocument.open(); iframe.contentDocument.write(html); iframe.contentDocument.close();
+    const iframe = createSnapshotFrame(snapshot.payload);
     setTimeout(() => {
       html2canvas(iframe.contentDocument.body).then(canvas => {
         const imgData = canvas.toDataURL('image/png');
@@ -440,6 +432,27 @@
 
   function listSnapshots() {
     return JSON.parse(localStorage.getItem('snapshotIndex') || '[]');
+  }
+
+  function createSnapshotFrame(payload) {
+    const iframe = document.createElement('iframe');
+    iframe.style.position = 'fixed';
+    iframe.style.right = '0';
+    iframe.style.bottom = '0';
+    iframe.style.width = '0';
+    iframe.style.height = '0';
+    iframe.setAttribute('aria-hidden', 'true');
+    document.body.appendChild(iframe);
+
+    const doc = iframe.contentDocument;
+    doc.open();
+    doc.close();
+
+    const pre = doc.createElement('pre');
+    pre.textContent = JSON.stringify(payload, null, 2);
+    doc.body.appendChild(pre);
+
+    return iframe;
   }
 
   window.exportProgress = {
