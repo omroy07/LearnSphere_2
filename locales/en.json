@@ -1,0 +1,46 @@
+{
+  "language": {
+    "name": "English"
+  },
+  "notifications": {
+    "panelTitle": "Notifications",
+    "markAllRead": "Mark all read",
+    "close": "Close notifications",
+    "empty": "No notifications yet.",
+    "defaultTitle": "Notification",
+    "open": "Open",
+    "markRead": "Mark read",
+    "streakMaintained": {
+      "title": "Streak maintained",
+      "message": "🔥 You kept your {count}-day daily streak alive."
+    },
+    "weeklyReport": {
+      "title": "Weekly report",
+      "message": "🗓️ Your weekly highlights are ready—see progress and next goals."
+    },
+    "quizReady": {
+      "title": "New quiz ready",
+      "messageSingle": "You have 1 recommended quiz to practice next.",
+      "messagePlural": "You have {count} recommended quizzes to practice next."
+    },
+    "quizReadyGeneric": {
+      "title": "New quiz ready",
+      "message": "New practice is available based on your latest attempt."
+    }
+  },
+  "weeklyReport": {
+    "dash": "—",
+    "noStrength": "No strength data yet.",
+    "noWeak": "No weak concepts identified yet.",
+    "incompleteWeek": "Complete more quizzes to see weekly improvement.",
+    "steady": "Your accuracy is steady compared to last week.",
+    "improvement": "📈 Biggest improvement: +{pct}% accuracy this week.",
+    "decline": "📉 Accuracy change this week: {pct}% vs last week. Focus on weak concepts below.",
+    "dailyGoalAchieved": "✅ Daily goal: achieved today. Keep the streak safe by practicing tomorrow.",
+    "dailyGoal": "🎯 Daily goal: {quizzes}/1 quiz and {questions}/10 questions reviewed today.",
+    "nextGoals": "Next goals: practice {targets} next.",
+    "unlock": "Complete quizzes to unlock weekly goals."
+  }
+}
+
+

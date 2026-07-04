@@ -11,6 +11,15 @@
 (function () {
   const STORAGE_KEY = "learnsphere_notifications_v1";
 
+  function _t(key, params) {
+    try {
+      return window.i18n && typeof window.i18n.t === "function" ? window.i18n.t(key, params) : key;
+    } catch {
+      return key;
+    }
+  }
+
+
   const WEEKLY_REPORT_KEY = "learnsphere_weekly_report_notified_v1"; // YYYY-Www
   const LAST_QUIZ_READY_CHECK_KEY = "learnsphere_quiz_ready_check_v1"; // YYYY-MM-DD
 
@@ -151,10 +160,12 @@
 
       panel.innerHTML = `
         <div style="padding:12px 12px 10px; border-bottom:1px solid rgba(255,255,255,0.08); display:flex; align-items:center; justify-content:space-between; gap:10px;">
-          <div style="font-weight:800;">🔔 Notifications</div>
+          <div style="font-weight:800;">🔔 ${_t("notifications.panelTitle")}</div>
+
           <div style="display:flex; gap:8px; align-items:center;">
-            <button id="notifications-mark-all" style="background: rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.10); color: rgba(255,255,255,0.9); border-radius:10px; padding:6px 10px; cursor:pointer; font-weight:700; font-size:12px;">Mark all read</button>
-            <button id="notifications-close" aria-label="Close notifications" style="background: transparent; border:1px solid rgba(255,255,255,0.18); color: rgba(255,255,255,0.9); border-radius:10px; padding:6px 10px; cursor:pointer; font-weight:900; font-size:12px;">✕</button>
+            <button id="notifications-mark-all" style="background: rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.10); color: rgba(255,255,255,0.9); border-radius:10px; padding:6px 10px; cursor:pointer; font-weight:700; font-size:12px;">${_t("notifications.markAllRead")}</button>
+            <button id="notifications-close" aria-label="${_t("notifications.close")}" style="background: transparent; border:1px solid rgba(255,255,255,0.18); color: rgba(255,255,255,0.9); border-radius:10px; padding:6px 10px; cursor:pointer; font-weight:900; font-size:12px;">✕</button>
+
           </div>
         </div>
         <div id="notifications-list" style="padding:10px; display:flex; flex-direction:column; gap:10px;">
@@ -202,9 +213,10 @@
     if (!notifications || notifications.length === 0) {
       listEl.innerHTML = `
         <div style="color: rgba(255,255,255,0.65); font-size:13px; padding:10px;">
-          No notifications yet.
+          ${_t("notifications.empty")}
         </div>
       `;
+
       return;
     }
 
@@ -219,7 +231,8 @@
       item.style.border = "1px solid rgba(255,255,255,0.08)";
       item.style.background = isUnread ? "rgba(102,252,241,0.06)" : "rgba(255,255,255,0.03)";
 
-      const title = escapeHTML(n.title || "Notification");
+      const title = escapeHTML(n.title || _t("notifications.defaultTitle"));
+
       const msg = escapeHTML(n.message || "");
 
       item.innerHTML = `
@@ -232,12 +245,14 @@
         </div>
         ${n.ctaUrl ? `
           <div style="margin-top:10px; display:flex; justify-content:flex-end;">
-            <a href="${escapeHTML(n.ctaUrl)}" style="text-decoration:none; background: rgba(102,252,241,0.10); border:1px solid rgba(102,252,241,0.35); color:#66fcf1; padding:7px 10px; border-radius:10px; font-weight:900; font-size:12px;">Open</a>
+            <a href="${escapeHTML(n.ctaUrl)}" style="text-decoration:none; background: rgba(102,252,241,0.10); border:1px solid rgba(102,252,241,0.35); color:#66fcf1; padding:7px 10px; border-radius:10px; font-weight:900; font-size:12px;">${_t("notifications.open")}</a>
+
           </div>
         ` : ""}
         ${isUnread ? `
           <div style="margin-top:10px; display:flex; justify-content:flex-end;">
-            <button data-notif-id="${escapeHTML(n.id)}" style="background: rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.10); color: rgba(255,255,255,0.9); border-radius:10px; padding:7px 10px; cursor:pointer; font-weight:900; font-size:12px;">Mark read</button>
+            <button data-notif-id="${escapeHTML(n.id)}" style="background: rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.10); color: rgba(255,255,255,0.9); border-radius:10px; padding:7px 10px; cursor:pointer; font-weight:900; font-size:12px;">${_t("notifications.markRead")}</button>
+
           </div>
         ` : ""}
       `;
@@ -357,8 +372,9 @@
 
     pushNotification({
       type: "streak",
-      title: "Streak maintained",
-      message: `🔥 You kept your ${current}-day daily streak alive.`,
+      title: _t("notifications.streakMaintained.title"),
+      message: _t("notifications.streakMaintained.message", { count: current }),
+
       ctaUrl: "my_progress.html",
       dedupeKey,
     });
@@ -372,8 +388,9 @@
     // Notify on first load of week
     pushNotification({
       type: "weekly_report",
-      title: "Weekly report",
-      message: "🗓️ Your weekly highlights are ready—see progress and next goals.",
+      title: _t("notifications.weeklyReport.title"),
+      message: _t("notifications.weeklyReport.message"),
+
       ctaUrl: "my_progress.html",
       dedupeKey: `weekly-${weekToken}`,
     });
@@ -415,8 +432,9 @@
     if (hasRec) {
       pushNotification({
         type: "quiz_ready",
-        title: "New quiz ready",
-        message: `You have ${recCount} recommended ${recCount === 1 ? "quiz" : "quizzes"} to practice next.`,
+        title: _t("notifications.quizReady.title"),
+        message: _t(recCount === 1 ? "notifications.quizReady.messageSingle" : "notifications.quizReady.messagePlural", { count: recCount }),
+
         ctaUrl: "home.html",
         dedupeKey: `quiz-ready-${today}-${recCount}`,
       });
@@ -455,6 +473,18 @@
     pushNotification({ type, title, message, ctaUrl, dedupeKey });
     render();
   }
+
+  // Exposed i18n-backed helper (optional)
+  function notifyFromEventI18n({ type, titleKey, messageKey, messageParams, ctaUrl = null, dedupeKey = null }) {
+    notifyFromEvent({
+      type,
+      title: _t(titleKey),
+      message: _t(messageKey, messageParams),
+      ctaUrl,
+      dedupeKey,
+    });
+  }
+
 
   // Auto init on load (for pages that include notifications.js)
   window.addEventListener("DOMContentLoaded", () => {

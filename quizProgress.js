@@ -175,6 +175,16 @@ function _ensureTopicExists(topicId) {
 }
 
 function recordAttempt({ topicId, score, totalQuestions, correctCount, timeTakenMs, quizId = null }) {
+  // i18n (optional): use window.i18n.t when available.
+  const _t = (key, params) => {
+    try {
+      return window.i18n && typeof window.i18n.t === "function" ? window.i18n.t(key, params) : key;
+    } catch {
+      return key;
+    }
+  };
+
+
   if (!topicId) return;
 
   _ensureTopicExists(topicId);
@@ -386,11 +396,13 @@ function recordAttempt({ topicId, score, totalQuestions, correctCount, timeTaken
           const dedupeKey = `quiz-ready-${new Date().toISOString().slice(0, 10)}-${recs.length}`;
           window.notifications.notifyFromEvent({
             type: "quiz_ready",
-            title: "New quiz ready",
-            message: `New practice is available based on your latest attempt.`,
+            title: _t("notifications.quizReadyGeneric.title"),
+            message: _t("notifications.quizReadyGeneric.message"),
+
             ctaUrl: "home.html",
             dedupeKey,
           });
+
         }
       }
     }
