@@ -3,8 +3,13 @@
  * Offline-first app shell caching + runtime caching for same-origin assets.
  */
 
-// Increment this value to invalidate older caches
-const CACHE_VERSION = "v4";
+// Cache versioning / busting
+// Prefer deriving from manifest version so caches update after deploy.
+// Fallback to timestamp to avoid serving an old cache if manifest is missing/unchanged.
+// Important: Service workers cannot synchronously read manifest.json.
+// Keep a deterministic, deploy-time value so old caches are invalidated.
+// Update this when releasing a new build.
+const CACHE_VERSION = "v5";
 const CACHE_NAME = `learnsphere-static-${CACHE_VERSION}`;
 
 // For runtime image caching
@@ -164,7 +169,7 @@ self.addEventListener("fetch", (event) => {
   // Only handle GET requests
   if (req.method !== "GET") return;
 
-// Navigation: offline fallback to cached index / 404
+    // Navigation: network-first to avoid serving stale HTML/entrypoints
   if (req.mode === "navigate" || (req.destination === "document")) {
     event.respondWith(
       (async () => {
@@ -227,13 +232,12 @@ self.addEventListener("fetch", (event) => {
       return;
     }
 
-    // Other assets: cache-first (existing behavior)
+    // Static assets: cache-first (JS/CSS/fonts/images handled here)
     const isAsset =
       req.destination === "script" ||
       req.destination === "style" ||
       req.destination === "font" ||
       req.destination === "worker" ||
-      req.destination === "document" ||
       req.destination === "fetch";
 
     const fileLike =
@@ -243,7 +247,6 @@ self.addEventListener("fetch", (event) => {
       pathname.endsWith(".woff2") ||
       pathname.endsWith(".ttf") ||
       pathname.endsWith(".eot") ||
-      pathname.endsWith(".html") ||
       pathname.endsWith(".json");
 
     if (isAsset || fileLike) {
