@@ -5,6 +5,27 @@
 (function () {
   "use strict";
 
+  const quizUtils = (typeof window !== 'undefined' && window.quizUtils) || 
+                    (typeof require !== 'undefined' && require('./quizUtils.js')) || 
+                    (typeof globalThis !== 'undefined' && globalThis.quizUtils) ||
+                    {
+                      resolveSyncConflicts(events = [], strategy = "latest") {
+                        if (!events.length) return [];
+                        if (strategy === "latest") {
+                          const map = new Map();
+                          events.forEach((e) => {
+                            const key = `${e.type}|${e.payload?.topicId || ""}|${e.payload?.quizId || ""}`;
+                            const existing = map.get(key);
+                            if (!existing || e.timestamp > existing.timestamp) {
+                              map.set(key, e);
+                            }
+                          });
+                          return Array.from(map.values());
+                        }
+                        return events;
+                      }
+                    };
+
   // ----- Configuration -------------------------------------------------------
   const DEFAULT_CONFIG = {
     maxRetries: 5,
@@ -47,21 +68,7 @@
 
   // ----- Conflict Resolution -------------------------------------------------
   function _resolveConflicts(events) {
-    if (!events.length) return [];
-    // For now, implement "latest" strategy: keep the most recent event per (type, payload identifiers).
-    if (config.conflictStrategy === "latest") {
-      const map = new Map();
-      events.forEach((e) => {
-        const key = `${e.type}|${e.payload.topicId||''}|${e.payload.quizId||''}`;
-        const existing = map.get(key);
-        if (!existing || e.timestamp > existing.timestamp) {
-          map.set(key, e);
-        }
-      });
-      return Array.from(map.values());
-    }
-    // Placeholder for other strategies; return events unchanged.
-    return events;
+    return quizUtils.resolveSyncConflicts(events, config.conflictStrategy);
   }
 
   // ----- Public API ----------------------------------------------------------

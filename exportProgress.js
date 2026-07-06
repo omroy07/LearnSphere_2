@@ -7,6 +7,86 @@
  */
 
 (function () {
+  const quizUtils = (typeof window !== 'undefined' && window.quizUtils) || 
+                    (typeof require !== 'undefined' && require('./quizUtils.js')) || 
+                    (typeof globalThis !== 'undefined' && globalThis.quizUtils) ||
+                    {
+                      aggregateQuizHistory(attempts) {
+                        function safeNumber(n) {
+                          const x = Number(n);
+                          return Number.isFinite(x) ? x : null;
+                        }
+                        const totalAttempts = attempts.length;
+                        let firstAttemptAt = null;
+                        let lastAttemptAt = null;
+                        const byTopicMap = new Map();
+
+                        for (const a of attempts) {
+                          const started = a?.startedAt;
+                          const finished = a?.finishedAt;
+                          const at = typeof finished === "number" && Number.isFinite(finished) ? finished : (typeof started === "number" && Number.isFinite(started) ? started : null);
+                          if (at != null) {
+                            if (firstAttemptAt == null || at < firstAttemptAt) firstAttemptAt = at;
+                            if (lastAttemptAt == null || at > lastAttemptAt) lastAttemptAt = at;
+                          }
+
+                          const topicId = a?.topicId || null;
+                          if (!topicId) continue;
+                          if (!byTopicMap.has(topicId)) {
+                            byTopicMap.set(topicId, {
+                              topicId,
+                              quizAttemptCount: 0,
+                              questionsAttempted: 0,
+                              correctCount: 0,
+                              accuracy: null
+                            });
+                          }
+                          const bucket = byTopicMap.get(topicId);
+                          const totalQ = safeNumber(a?.totalQuestions) ?? 0;
+                          const correctCount = (a?.correctCount == null) ? null : safeNumber(a?.correctCount);
+                          bucket.quizAttemptCount += 1;
+                          bucket.questionsAttempted += totalQ;
+                          if (correctCount != null) bucket.correctCount += correctCount;
+                        }
+
+                        const byTopic = Array.from(byTopicMap.values()).map(b => {
+                          if (b.questionsAttempted > 0 && b.correctCount != null) {
+                            b.accuracy = b.correctCount / b.questionsAttempted;
+                          }
+                          return {
+                            topicId: b.topicId,
+                            quizAttemptCount: b.quizAttemptCount,
+                            questionsAttempted: b.questionsAttempted,
+                            correctCount: Number.isFinite(b.correctCount) ? b.correctCount : 0,
+                            accuracy: b.accuracy
+                          };
+                        }).sort((x, y) => y.quizAttemptCount - x.quizAttemptCount);
+
+                        const attemptsPreview = attempts
+                          .slice(-25)
+                          .map(a => ({
+                            topicId: a?.topicId || null,
+                            quizId: a?.quizId || null,
+                            practiceDate: a?.practiceDate || null,
+                            startedAt: a?.startedAt ?? null,
+                            finishedAt: a?.finishedAt ?? null,
+                            totalQuestions: safeNumber(a?.totalQuestions) ?? null,
+                            correctCount: (a?.correctCount == null) ? null : safeNumber(a?.correctCount),
+                            accuracy: (a?.accuracy == null) ? null : safeNumber(a?.accuracy),
+                            score: safeNumber(a?.score) ?? null,
+                            timeTakenMs: (a?.timeTakenMs == null) ? null : safeNumber(a?.timeTakenMs)
+                          }));
+
+                        return {
+                          totalAttempts,
+                          firstAttemptAt,
+                          lastAttemptAt,
+                          byTopic,
+                          attempts: attemptsPreview
+                        };
+                      }
+                    };
+
   function safeNumber(n) {
     const x = Number(n);
     return Number.isFinite(x) ? x : null;
@@ -69,78 +149,7 @@
       }
       const parsed = JSON.parse(raw);
       const attempts = Array.isArray(parsed?.attempts) ? parsed.attempts : [];
-
-      const totalAttempts = attempts.length;
-      let firstAttemptAt = null;
-      let lastAttemptAt = null;
-      const byTopicMap = new Map();
-
-      for (const a of attempts) {
-        const started = a?.startedAt;
-        const finished = a?.finishedAt;
-        const at = typeof finished === "number" && Number.isFinite(finished) ? finished : (typeof started === "number" && Number.isFinite(started) ? started : null);
-        if (at != null) {
-          if (firstAttemptAt == null || at < firstAttemptAt) firstAttemptAt = at;
-          if (lastAttemptAt == null || at > lastAttemptAt) lastAttemptAt = at;
-        }
-
-        const topicId = a?.topicId || null;
-        if (!topicId) continue;
-        if (!byTopicMap.has(topicId)) {
-          byTopicMap.set(topicId, {
-            topicId,
-            quizAttemptCount: 0,
-            questionsAttempted: 0,
-            correctCount: 0,
-            accuracy: null
-          });
-        }
-        const bucket = byTopicMap.get(topicId);
-        const totalQ = safeNumber(a?.totalQuestions) ?? 0;
-        const correctCount = (a?.correctCount == null) ? null : safeNumber(a?.correctCount);
-        bucket.quizAttemptCount += 1;
-        bucket.questionsAttempted += totalQ;
-        if (correctCount != null) bucket.correctCount += correctCount;
-
-        // accuracy computed later if possible
-      }
-
-      const byTopic = Array.from(byTopicMap.values()).map(b => {
-        if (b.questionsAttempted > 0 && b.correctCount != null) {
-          b.accuracy = b.correctCount / b.questionsAttempted;
-        }
-        return {
-          topicId: b.topicId,
-          quizAttemptCount: b.quizAttemptCount,
-          questionsAttempted: b.questionsAttempted,
-          correctCount: Number.isFinite(b.correctCount) ? b.correctCount : 0,
-          accuracy: b.accuracy
-        };
-      }).sort((x, y) => y.quizAttemptCount - x.quizAttemptCount);
-
-      // Do not dump raw attempts for payload size; provide a lightweight preview.
-      const attemptsPreview = attempts
-        .slice(-25)
-        .map(a => ({
-          topicId: a?.topicId || null,
-          quizId: a?.quizId || null,
-          practiceDate: a?.practiceDate || null,
-          startedAt: a?.startedAt ?? null,
-          finishedAt: a?.finishedAt ?? null,
-          totalQuestions: safeNumber(a?.totalQuestions) ?? null,
-          correctCount: (a?.correctCount == null) ? null : safeNumber(a?.correctCount),
-          accuracy: (a?.accuracy == null) ? null : safeNumber(a?.accuracy),
-          score: safeNumber(a?.score) ?? null,
-          timeTakenMs: (a?.timeTakenMs == null) ? null : safeNumber(a?.timeTakenMs)
-        }));
-
-      return {
-        totalAttempts,
-        firstAttemptAt,
-        lastAttemptAt,
-        byTopic,
-        attempts: attemptsPreview
-      };
+      return quizUtils.aggregateQuizHistory(attempts);
     } catch {
       return {
         totalAttempts: 0,

@@ -10,6 +10,28 @@
  * Persistence: localStorage (backend can be added later)
  */
 
+const quizUtils = (typeof window !== 'undefined' && window.quizUtils) || 
+                  (typeof require !== 'undefined' && require('./quizUtils.js')) || 
+                  (typeof globalThis !== 'undefined' && globalThis.quizUtils) ||
+                  {
+                    calculateCorrectAnswers(score, totalQuestions, correctCount) {
+                      const got = Number(score) || 0;
+                      const total = Number(totalQuestions) || 0;
+                      let correct = null;
+                      if (typeof correctCount === "number" && Number.isFinite(correctCount)) {
+                        correct = correctCount;
+                      } else {
+                        const looksLikeRatio = got >= 0 && got <= 1;
+                        const looksLikePercent = got > 1 && got <= 100;
+                        if (total > 0 && (looksLikeRatio || looksLikePercent)) {
+                          const ratio = looksLikeRatio ? got : got / 100;
+                          correct = Math.round(ratio * total);
+                        }
+                      }
+                      return correct;
+                    }
+                  };
+
 const QUIZ_PROGRESS_KEY = "learnsphere_quiz_progress_v1";
 
 /**
@@ -282,19 +304,7 @@ function recordAttempt({ topicId, score, totalQuestions, correctCount, timeTaken
   //    In those cases, correct = round(score * total).
   // 3) Otherwise, we cannot infer correct answers safely -> set null.
   //    (Prevents corrupting accuracy trend charts when score is points/marks.)
-  let correct = null;
-  if (typeof correctCount === "number" && Number.isFinite(correctCount)) {
-    correct = correctCount;
-  } else {
-    // Some quiz pages historically pass a percentage/ratio as `score` and omit `correctCount`.
-
-    const looksLikeRatio = got >= 0 && got <= 1;
-    const looksLikePercent = got > 1 && got <= 100;
-    if (total > 0 && (looksLikeRatio || looksLikePercent)) {
-      const ratio = looksLikeRatio ? got : got / 100;
-      correct = Math.round(ratio * total);
-    }
-  }
+  const correct = quizUtils.calculateCorrectAnswers(score, totalQuestions, correctCount);
 
 
 

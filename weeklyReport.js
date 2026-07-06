@@ -3,6 +3,25 @@
 // Assumes window.quizProgress and window.studyProgress are already loaded.
 
 (function () {
+  const quizUtils = (typeof window !== 'undefined' && window.quizUtils) || 
+                    (typeof require !== 'undefined' && require('./quizUtils.js')) || 
+                    (typeof globalThis !== 'undefined' && globalThis.quizUtils) ||
+                    {
+                      calculateWeeklyAggregates(accuracyByDay) {
+                        if (!Array.isArray(accuracyByDay)) {
+                          return { last7: [], prev7: [], lastAvg: null, prevAvg: null };
+                        }
+                        const last7 = accuracyByDay.slice(-7);
+                        const prev7 = accuracyByDay.slice(0, 7);
+                        function avg(arr) {
+                          const nums = arr.filter((x) => typeof x === 'number' && Number.isFinite(x));
+                          if (!nums.length) return null;
+                          return nums.reduce((s, v) => s + v, 0) / nums.length;
+                        }
+                        return { last7, prev7, lastAvg: avg(last7), prevAvg: avg(prev7) };
+                      }
+                    };
+
   function _t(key, params) {
     try {
       return window.i18n && typeof window.i18n.t === "function" ? window.i18n.t(key, params) : key;
@@ -127,14 +146,14 @@
     const series = window.quizProgress.getAccuracySeries({ days });
     if (!series || !Array.isArray(series.accuracyByDay)) return null;
     const acc = series.accuracyByDay;
-    const last7 = acc.slice(-7);
-    const prev7 = acc.slice(0, 7);
-    function avg(arr) {
-      const nums = arr.filter((x) => typeof x === 'number' && Number.isFinite(x));
-      if (!nums.length) return null;
-      return nums.reduce((s, v) => s + v, 0) / nums.length;
-    }
-    return { last7, prev7, lastAvg: avg(last7), prevAvg: avg(prev7), series };
+    const aggregates = quizUtils.calculateWeeklyAggregates(acc);
+    return {
+      last7: aggregates.last7,
+      prev7: aggregates.prev7,
+      lastAvg: aggregates.lastAvg,
+      prevAvg: aggregates.prevAvg,
+      series
+    };
   }
 
   function _renderBiggestImprovement() {

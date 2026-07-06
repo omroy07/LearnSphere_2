@@ -1,5 +1,6 @@
 // src/main.js – Vite entry point
 // Import shared scripts and modules
+import "../quizUtils.js";
 import "../navbar.js";
 import "../script.js";
 import "../accessibility.js";
