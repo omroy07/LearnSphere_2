@@ -725,10 +725,40 @@ function getAttemptsHistory() {
   return attempts.slice();
 }
 
+function recordAttemptCanonical(canonicalAttempt) {
+  // Canonical adapter: writes the same localStorage shape as recordAttempt
+  // but uses deterministic canonical totals.
+  if (!canonicalAttempt || !canonicalAttempt.quiz || !canonicalAttempt.quiz.topicId) return null;
+
+  const topicId = canonicalAttempt.quiz.topicId;
+  const quizId = canonicalAttempt.quiz.id ?? null;
+
+  const totals = canonicalAttempt.evaluation?.totals || {};
+  const totalQuestions = Number.isFinite(totals.totalQuestions) ? totals.totalQuestions : Number(totals.totalQuestions);
+  const correctCount = Number.isFinite(totals.correctCount) ? totals.correctCount : Number(totals.correctCount);
+  const score = Number.isFinite(totals.score) ? totals.score : Number(totals.score);
+
+  const timeTakenMs = canonicalAttempt.attempt?.timeTakenMs;
+
+  // IMPORTANT: recordAttempt currently includes legacy correctness inference.
+  // For canonical submissions we pass correctCount explicitly to ensure stable analytics.
+  return recordAttempt({
+    topicId,
+    quizId,
+    questionType: canonicalAttempt.metadata?.questionType,
+    score,
+    totalQuestions,
+    correctCount,
+    timeTakenMs,
+  });
+}
+
+// Keep legacy recordAttempt but add canonical method.
 window.quizProgress = {
   QUIZ_TOPICS,
   SKILL_TAXONOMY,
   recordAttempt,
+  recordAttemptCanonical,
   getStreak,
   getTopicStats,
   getAllTopicStats,

@@ -212,7 +212,19 @@ function showResults() {
     const timeTakenMs = Math.max(0, finishAt - startAt);
 
     try {
-        if (window.quizProgress && typeof window.quizProgress.recordAttempt === 'function') {
+        if (window.quizProgress && typeof window.quizProgress.recordAttemptCanonical === 'function' && window.quizModel && typeof window.quizModel.buildCanonicalAttemptFromLegacyGlobals === 'function') {
+            const canonical = window.quizModel.buildCanonicalAttemptFromLegacyGlobals({
+                topicId: "physics-motion",
+                quizId: "quiz:motion",
+                questionType: "mcq-single",
+                startedAt: window.__quizMotionStartedAt || null,
+                finishedAt: finishAt,
+                timeTakenMs,
+            });
+            canonical.attempt.startedAt = window.__quizMotionStartedAt || null;
+            canonical.attempt.finishedAt = finishAt;
+            window.quizProgress.recordAttemptCanonical(canonical);
+        } else if (window.quizProgress && typeof window.quizProgress.recordAttempt === 'function') {
             window.quizProgress.recordAttempt({
                 topicId: "physics-motion",
                 score: totalScore,
