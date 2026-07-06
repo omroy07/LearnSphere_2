@@ -112,14 +112,14 @@
             accuracy: b.accuracy,
           };
         })
-        .sort((x, y) => y.quizAttemptCount - x.quizAttemptCount);
+        .sort((x, y) => (y.quizAttemptCount - x.quizAttemptCount) || String(x.topicId).localeCompare(String(y.topicId)));
 
       const attemptsPreview = attempts.slice(-25).map((a) => ({
         topicId: a?.topicId || null,
         quizId: a?.quizId || null,
         practiceDate: a?.practiceDate || null,
-        startedAt: a?.startedAt ?? null,
-        finishedAt: a?.finishedAt ?? null,
+        startedAt: typeof a?.startedAt === "number" ? new Date(a.startedAt).toISOString() : null,
+        finishedAt: typeof a?.finishedAt === "number" ? new Date(a.finishedAt).toISOString() : null,
         totalQuestions: safeNumber(a?.totalQuestions) ?? null,
         correctCount: a?.correctCount == null ? null : safeNumber(a?.correctCount),
         accuracy: a?.accuracy == null ? null : safeNumber(a?.accuracy),
@@ -129,8 +129,8 @@
 
       return {
         totalAttempts,
-        firstAttemptAt,
-        lastAttemptAt,
+        firstAttemptAt: firstAttemptAt ? new Date(firstAttemptAt).toISOString() : null,
+        lastAttemptAt: lastAttemptAt ? new Date(lastAttemptAt).toISOString() : null,
         byTopic,
         attempts: attemptsPreview,
       };

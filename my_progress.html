@@ -218,11 +218,21 @@
 
       <div class="export-actions" style="display:flex; gap:12px; flex-wrap:wrap; justify-content:flex-start; margin-top:14px;">
         <button id="generateSnapshotBtn" class="export-btn" type="button">Generate Snapshot</button>
+        <button id="previewExportBtn" class="export-btn" type="button">Preview Export</button>
         <button id="downloadProgressJsonBtn" class="export-btn" type="button">Download JSON</button>
         <button id="printProgressBtn" class="export-btn" type="button">Print / Save as PDF</button>
       </div>
 
-            </div>
+      <!-- Export Preview Container -->
+      <div id="exportPreviewContainer" style="display:none; margin-top:16px; border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 12px; padding: 16px; background: rgba(255, 255, 255, 0.02);">
+        <h3 style="margin-top:0; color: var(--accent-color); font-size: 1.1rem; display: flex; justify-content: space-between; align-items: center;">
+          <span>📋 Export Data Preview</span>
+          <button id="closePreviewBtn" style="background: none; border: none; color: rgba(255,255,255,0.6); cursor: pointer; font-size: 1.2rem; line-height: 1;" aria-label="Close preview">×</button>
+        </h3>
+        <div id="exportPreviewWarning" style="display:none; margin-bottom:12px; padding: 10px 14px; background: rgba(245, 158, 11, 0.12); border: 1px solid rgba(245, 158, 11, 0.35); border-radius: 8px; color: #f59e0b; font-size: 13px; font-weight: 500;"></div>
+        <div id="exportPreviewContent" style="max-height: 300px; overflow-y: auto; font-family: monospace; font-size: 12px; background: rgba(0,0,0,0.3); padding: 12px; border-radius: 8px; color: #a9b7c6; border: 1px solid rgba(255,255,255,0.06); white-space: pre-wrap; text-align: left;"></div>
+      </div>
+    </div>
 
       <!-- Print-only report container -->
       <div id="printReport" class="print-report" style="display:none; margin-top:18px; text-align:left;">

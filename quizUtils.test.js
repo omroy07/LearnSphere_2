@@ -94,8 +94,8 @@ describe("quizUtils - Unit Tests", () => {
 
       const result = quizUtils.aggregateQuizHistory(attempts);
       expect(result.totalAttempts).toBe(3);
-      expect(result.firstAttemptAt).toBe(1000);
-      expect(result.lastAttemptAt).toBe(3000);
+      expect(result.firstAttemptAt).toBe(new Date(1000).toISOString());
+      expect(result.lastAttemptAt).toBe(new Date(3000).toISOString());
 
       expect(result.byTopic).toHaveLength(2);
       // physics-motion should be first because it has 2 attempts
@@ -116,6 +116,18 @@ describe("quizUtils - Unit Tests", () => {
       });
     });
 
+    it("should stably sort topics alphabetically by topicId when attempt count is equal", () => {
+      const attempts = [
+        { topicId: "physics-motion", totalQuestions: 5, correctCount: 4, finishedAt: 2000 },
+        { topicId: "chemistry-atomic", totalQuestions: 5, correctCount: 3, finishedAt: 1000 },
+      ];
+      const result = quizUtils.aggregateQuizHistory(attempts);
+      expect(result.byTopic).toHaveLength(2);
+      // both have 1 attempt, but "chemistry-atomic" comes first alphabetically
+      expect(result.byTopic[0].topicId).toBe("chemistry-atomic");
+      expect(result.byTopic[1].topicId).toBe("physics-motion");
+    });
+
     it("should limit attempts preview to the last 25 attempts", () => {
       const attempts = Array.from({ length: 30 }, (_, i) => ({
         topicId: "topic",
@@ -128,8 +140,8 @@ describe("quizUtils - Unit Tests", () => {
       expect(result.totalAttempts).toBe(30);
       expect(result.attempts).toHaveLength(25);
       // The preview attempts should correspond to the last ones (timestamps 1005 to 1029)
-      expect(result.attempts[0].finishedAt).toBe(1005);
-      expect(result.attempts[24].finishedAt).toBe(1029);
+      expect(result.attempts[0].finishedAt).toBe(new Date(1005).toISOString());
+      expect(result.attempts[24].finishedAt).toBe(new Date(1029).toISOString());
     });
   });
 

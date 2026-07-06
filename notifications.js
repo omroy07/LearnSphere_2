@@ -23,28 +23,48 @@
   const WEEKLY_REPORT_KEY = "learnsphere_weekly_report_notified_v1"; // YYYY-Www
   const LAST_QUIZ_READY_CHECK_KEY = "learnsphere_quiz_ready_check_v1"; // YYYY-MM-DD
 
+  let storageEnabled = false;
+  try {
+    if (typeof localStorage !== "undefined") {
+      localStorage.setItem("__test_storage_active__", "1");
+      localStorage.removeItem("__test_storage_active__");
+      storageEnabled = true;
+    }
+  } catch {}
+
+  let inMemoryStore = null;
+
   // Badge count = unread notifications count
   function loadStore() {
     try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (!raw) {
-        return { notifications: [], lastEventAt: null };
+      if (storageEnabled) {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) {
+          return { notifications: [], lastEventAt: null };
+        }
+        const parsed = JSON.parse(raw);
+        if (!parsed || typeof parsed !== "object") throw new Error("bad store");
+        if (!Array.isArray(parsed.notifications)) parsed.notifications = [];
+        return parsed;
       }
-      const parsed = JSON.parse(raw);
-      if (!parsed || typeof parsed !== "object") throw new Error("bad store");
-      if (!Array.isArray(parsed.notifications)) parsed.notifications = [];
-      return parsed;
     } catch {
       return { notifications: [], lastEventAt: null };
     }
+    if (!inMemoryStore) {
+      inMemoryStore = { notifications: [], lastEventAt: null };
+    }
+    return inMemoryStore;
   }
 
   function saveStore(store) {
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(store));
+      if (storageEnabled) {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(store));
+      }
     } catch (e) {
       console.warn("LearnSphere: could not save notifications", e);
     }
+    inMemoryStore = store;
   }
 
   function nowISO() {
@@ -79,27 +99,44 @@
     return `${yyyy}-${mm}-${dd}`;
   }
 
-  function pushNotification({ type, title, message, ctaUrl = null, dedupeKey = null }) {
+  function pushNotification({ id = null, type, title, message, ctaUrl = null, dedupeKey = null }) {
     const store = loadStore();
 
-    // Dedupe (best-effort): if same dedupeKey exists and is unread, don't add again.
+    const notifId = id || uuid();
+    if (id && store.notifications.some((n) => n.id === id)) {
+      return { inserted: false, reason: "duplicate_id" };
+    }
+
     if (dedupeKey) {
       const existing = store.notifications.find((n) => n.dedupeKey === dedupeKey);
       if (existing) {
-        // If it was read, we may want to re-notify only if caller asked.
-        // For now, keep it simple: do nothing if existing.
-        return { inserted: false, reason: "deduped" };
+        const ageMs = Date.now() - new Date(existing.createdAt).getTime();
+        if (ageMs < 24 * 60 * 60 * 1000) {
+          return { inserted: false, reason: "duplicate_dedupe_key" };
+        }
       }
     }
 
+    // Prevents spam loops: deduplicate similar content pushed within 60s
+    const recentDuplicate = store.notifications.find((n) => 
+      n.title === title && 
+      n.message === message && 
+      (Date.now() - new Date(n.createdAt).getTime() < 60 * 1000)
+    );
+    if (recentDuplicate) {
+      return { inserted: false, reason: "duplicate_content_recent" };
+    }
+
     const n = {
-      id: uuid(),
+      id: notifId,
       type,
       title,
       message,
       ctaUrl,
       createdAt: nowISO(),
       readAt: null,
+      deliveredAt: null,
+      deliveryState: "pending",
       dedupeKey: dedupeKey || null,
     };
 
@@ -107,7 +144,7 @@
     store.lastEventAt = nowISO();
     saveStore(store);
 
-    return { inserted: true };
+    return { inserted: true, notification: n };
   }
 
   function markAllRead() {
@@ -130,6 +167,21 @@
     });
     saveStore(store);
     return store;
+  }
+
+  function markAllDelivered() {
+    const store = loadStore();
+    let updated = false;
+    store.notifications.forEach((n) => {
+      if (n.deliveryState === "pending") {
+        n.deliveryState = "delivered";
+        n.deliveredAt = nowISO();
+        updated = true;
+      }
+    });
+    if (updated) {
+      saveStore(store);
+    }
   }
 
   function ensurePanel() {
@@ -262,6 +314,16 @@
       item.style.borderRadius = "12px";
       item.style.border = "1px solid rgba(255,255,255,0.08)";
       item.style.background = isUnread ? "rgba(102,252,241,0.06)" : "rgba(255,255,255,0.03)";
+      item.style.cursor = "pointer";
+
+      item.addEventListener("click", (e) => {
+        if (e.target.tagName === "BUTTON" || e.target.tagName === "A") return;
+        if (isUnread) {
+          markReadById(n.id);
+          renderBadgeOnly();
+          render();
+        }
+      });
 
       // Top row
       const top = document.createElement("div");
@@ -321,6 +383,12 @@
         a.style.borderRadius = "10px";
         a.style.fontWeight = "900";
         a.style.fontSize = "12px";
+
+        a.addEventListener("click", () => {
+          if (isUnread) {
+            markReadById(n.id);
+          }
+        });
 
         // Allow only relative/absolute same-origin URLs to avoid javascript: etc.
         try {
@@ -391,6 +459,7 @@
     const store = loadStore();
     renderList(store.notifications || []);
     renderBadgeOnly();
+    markAllDelivered();
   }
 
   function initUI() {
@@ -616,20 +685,34 @@
   }
 
 
-  // Auto init on load (for pages that include notifications.js)
-  window.addEventListener("DOMContentLoaded", () => {
-    // If progress scripts aren't loaded yet, triggers will still be best-effort.
-    checkAndTriggerAll();
-  });
+  if (typeof window !== "undefined") {
+    // Auto init on load (for pages that include notifications.js)
+    window.addEventListener("DOMContentLoaded", () => {
+      // If progress scripts aren't loaded yet, triggers will still be best-effort.
+      checkAndTriggerAll();
+    });
 
-  window.notifications = {
-    pushNotification,
-    markAllRead,
-    markReadById,
-    render,
-    initUI,
-    checkAndTriggerAll,
-    notifyFromEvent,
-  };
+    window.notifications = {
+      pushNotification,
+      markAllRead,
+      markReadById,
+      render,
+      initUI,
+      checkAndTriggerAll,
+      notifyFromEvent,
+    };
+  }
+
+  // Support exporting for unit tests
+  if (typeof module !== "undefined" && module.exports) {
+    module.exports = {
+      pushNotification,
+      markAllRead,
+      markReadById,
+      markAllDelivered,
+      loadStore,
+      saveStore
+    };
+  }
 })();
 

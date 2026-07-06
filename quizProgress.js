@@ -156,11 +156,8 @@ function _todayLocalISODate() {
 }
 
 function _parseISODateToUTCStart(isoDateYYYYMMDD) {
-  // Treat isoDate as local date; convert to a numeric day token.
-  // For streak we only need day-to-day adjacency, so a day token in local time is fine.
   const [y, m, d] = isoDateYYYYMMDD.split("-").map(Number);
-  const dt = new Date(y, m - 1, d, 0, 0, 0, 0);
-  return Math.floor(dt.getTime() / 86400000);
+  return Math.floor(Date.UTC(y, m - 1, d) / 86400000);
 }
 
 function _loadState() {
@@ -468,19 +465,17 @@ function getAccuracySeries({ days = 14 } = {}) {
   const state = _loadState();
   const attempts = state.attempts || [];
 
-  const end = new Date();
+  const today = new Date();
   const labels = [];
   const tokens = [];
 
   for (let i = days - 1; i >= 0; i--) {
-    const d = new Date(end);
-    d.setDate(end.getDate() - i);
-    const token = Math.floor(d.getTime() / 86400000);
-    // compute date string for label
-    // (yyyy intentionally unused)
+    const d = new Date(today.getFullYear(), today.getMonth(), today.getDate() - i);
+    const yyyy = d.getFullYear();
     const mm = String(d.getMonth() + 1).padStart(2, "0");
     const dd = String(d.getDate()).padStart(2, "0");
     const label = `${mm}/${dd}`;
+    const token = Math.floor(Date.UTC(yyyy, d.getMonth(), d.getDate()) / 86400000);
 
     tokens.push(token);
     labels.push(label);

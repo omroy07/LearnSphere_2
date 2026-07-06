@@ -159,10 +159,16 @@ function init() {
     const sorted = [...topics].sort((a, b) => {
       const aAttempts = byTopic[a.id]?.attempts || 0;
       const bAttempts = byTopic[b.id]?.attempts || 0;
-      return bAttempts - aAttempts;
+      return (bAttempts - aAttempts) || String(a.label).localeCompare(String(b.label));
     });
 
-    topicStatsEl.innerHTML = "";
+    topicStatsEl.innerHTML = `
+      <div style="display: flex; justify-content: space-between; font-size: 11px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; color: rgba(255,255,255,0.5); border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 6px; margin-bottom: 8px;">
+        <span style="min-width: 210px;">Topic</span>
+        <span style="flex: 1; margin: 0 10px; text-align: center;">Accuracy Trend</span>
+        <span style="min-width: 92px; text-align: right;">Stats</span>
+      </div>
+    `;
 
     sorted.forEach(t => {
       const agg = byTopic[t.id];
@@ -327,7 +333,13 @@ function initMasteryDashboard() {
   if (totalAttempts === 0) {
     masteryListEl.innerHTML = `<div class="muted" style="padding: 12px; text-align: center;">No mastery data recorded yet. Complete quizzes to see concept-wise stats!</div>`;
   } else {
-    masteryListEl.innerHTML = "";
+    masteryListEl.innerHTML = `
+      <div style="display: flex; justify-content: space-between; font-size: 11px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; color: rgba(255,255,255,0.5); border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 6px; margin-bottom: 8px;">
+        <span style="min-width: 210px;">Concept</span>
+        <span style="flex: 1; margin: 0 12px; text-align: center;">Mastery level</span>
+        <span style="min-width: 90px; text-align: right;">Accuracy</span>
+      </div>
+    `;
     skillsArray.forEach(s => {
       // Only render if attempted to keep the dashboard clean and focused on progress
       if (s.attempts === 0) return;
@@ -441,6 +453,11 @@ document.addEventListener("DOMContentLoaded", () => {
   // Export Progress UI wiring
   const downloadBtn = document.getElementById("downloadProgressJsonBtn");
   const printBtn = document.getElementById("printProgressBtn");
+  const previewBtn = document.getElementById("previewExportBtn");
+  const previewContainer = document.getElementById("exportPreviewContainer");
+  const previewContent = document.getElementById("exportPreviewContent");
+  const previewWarning = document.getElementById("exportPreviewWarning");
+  const closePreviewBtn = document.getElementById("closePreviewBtn");
 
   if (downloadBtn) {
     downloadBtn.addEventListener("click", () => {
@@ -456,6 +473,35 @@ document.addEventListener("DOMContentLoaded", () => {
   if (printBtn) {
     printBtn.addEventListener("click", () => {
       window.print();
+    });
+  }
+
+  if (previewBtn && previewContainer && previewContent && previewWarning) {
+    previewBtn.addEventListener("click", () => {
+      if (!window.exportProgress?.buildProgressExportPayload) return;
+      const payload = window.exportProgress.buildProgressExportPayload({
+        formatVersion: { major: 1, minor: 0 },
+        roleContext: "learner"
+      });
+
+      // Validate empty states
+      const attemptsCount = payload?.metrics?.quizHistory?.totalAttempts || 0;
+      if (attemptsCount === 0) {
+        previewWarning.style.display = "block";
+        previewWarning.textContent = "⚠️ [Empty State Check] No quiz attempts recorded yet. The generated export payload will contain empty progress metrics.";
+      } else {
+        previewWarning.style.display = "none";
+      }
+
+      previewContent.textContent = JSON.stringify(payload, null, 2);
+      previewContainer.style.display = "block";
+      previewContainer.scrollIntoView({ behavior: "smooth" });
+    });
+  }
+
+  if (closePreviewBtn && previewContainer) {
+    closePreviewBtn.addEventListener("click", () => {
+      previewContainer.style.display = "none";
     });
   }
 
@@ -499,7 +545,12 @@ document.addEventListener("DOMContentLoaded", () => {
       const printWeakSkills = document.getElementById("printWeakSkills");
       if (printWeakSkills && window.quizProgress?.getWeakestSkills) {
         const weak = window.quizProgress.getWeakestSkills({ limit: 3 }) || [];
-        printWeakSkills.innerHTML = "";
+        printWeakSkills.innerHTML = `
+          <div style="display: flex; justify-content: space-between; font-size: 11px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; color: rgba(255,255,255,0.5); border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 6px; margin-bottom: 8px;">
+            <span>Concept/Skill</span>
+            <span style="text-align: right;">Performance</span>
+          </div>
+        `;
         weak.forEach(ws => {
           const accTxt = ws.attempts > 0 && ws.accuracy != null ? `${Math.round(ws.accuracy * 100)}%` : "Not attempted";
           const el = document.createElement("div");
@@ -529,10 +580,15 @@ document.addEventListener("DOMContentLoaded", () => {
             const accuracy = qTotal > 0 ? (correctTotal / qTotal) : null;
             return { topicId: t.id, label: t.label, attempts, questionsTotal: qTotal, accuracy };
           })
-          .sort((a, b) => b.attempts - a.attempts)
+          .sort((a, b) => (b.attempts - a.attempts) || String(a.label).localeCompare(String(b.label)))
           .slice(0, 8);
 
-        printTopicStats.innerHTML = "";
+        printTopicStats.innerHTML = `
+          <div style="display: flex; justify-content: space-between; font-size: 11px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; color: rgba(255,255,255,0.5); border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 6px; margin-bottom: 8px;">
+            <span>Topic</span>
+            <span style="text-align: right;">Accuracy & Attempts</span>
+          </div>
+        `;
         rows.forEach(r => {
           const accTxt = r.accuracy == null ? "—" : `${Math.round(r.accuracy * 100)}%`;
           const barW = r.accuracy == null ? 0 : Math.max(0, Math.min(100, Math.round(r.accuracy * 100)));
