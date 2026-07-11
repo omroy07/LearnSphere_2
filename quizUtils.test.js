@@ -75,7 +75,47 @@ describe("quizUtils - Unit Tests", () => {
     });
   });
 
+  describe("calculateSkillMasteryTrend", () => {
+    it("should compute last3 accuracy, prev accuracy, and delta", () => {
+      const list = [
+        { ts: 1, correct: true },
+        { ts: 2, correct: false },
+        { ts: 3, correct: true },
+        { ts: 4, correct: true }, // last3 starts here (ts 2..4?) depends on slice(-6,-3)
+        { ts: 5, correct: true },
+        { ts: 6, correct: false },
+      ];
+
+      const res = quizUtils.calculateSkillMasteryTrend(list);
+      // sorted same order.
+      // last3 = ts 4,5,6 => correct: true,true,false => 2/3
+      expect(res.last3N).toBe(3);
+      expect(res.last3Acc).toBeCloseTo(2 / 3, 6);
+
+      // prev = ts 1,2,3 => true,false,true => 2/3
+      expect(res.prevAcc).toBeCloseTo(2 / 3, 6);
+      expect(res.delta).toBeCloseTo(0, 6);
+    });
+
+    it("should return nulls when attempts list is empty", () => {
+      const res = quizUtils.calculateSkillMasteryTrend([]);
+      expect(res.last3Acc).toBeNull();
+      expect(res.prevAcc).toBeNull();
+      expect(res.delta).toBeNull();
+      expect(res.last3N).toBe(0);
+    });
+  });
+
+  describe("estimateReadinessPct", () => {
+    it("should produce a percent between 0 and 100", () => {
+      const pct = quizUtils.estimateReadinessPct({ accuracyRatio: 0.6, trendDelta: 0.2, attemptsN: 5 });
+      expect(pct).toBeGreaterThanOrEqual(0);
+      expect(pct).toBeLessThanOrEqual(100);
+    });
+  });
+
   describe("aggregateQuizHistory", () => {
+
     it("should return empty structure when attempts array is empty", () => {
       const result = quizUtils.aggregateQuizHistory([]);
       expect(result.totalAttempts).toBe(0);

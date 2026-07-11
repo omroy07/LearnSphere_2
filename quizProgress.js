@@ -175,7 +175,9 @@ function _loadState() {
     if (!parsed.streak || typeof parsed.streak !== "object") parsed.streak = { lastPracticeDate: null, currentStreak: 0 };
     if (!parsed.mastery || typeof parsed.mastery !== "object") parsed.mastery = {};
     if (!parsed.masteryPractice || typeof parsed.masteryPractice !== "object") parsed.masteryPractice = {};
+    if (!parsed.skillAttempts || typeof parsed.skillAttempts !== "object") parsed.skillAttempts = {};
     return parsed;
+
   } catch {
     return { attempts: [], practiceAttempts: [], byTopic: {}, byTopicPractice: {}, streak: { lastPracticeDate: null, currentStreak: 0 }, mastery: {}, masteryPractice: {} };
   }
@@ -277,6 +279,24 @@ function recordAttempt({ topicId, score, totalQuestions, correctCount, timeTaken
           masteryObj[resolvedSkillId].correct += 1;
         }
         masteryObj[resolvedSkillId].lastAttemptAt = now;
+
+        // Compact per-skill attempt history for adaptive trend calculations.
+        // This is stored separately to avoid breaking existing mastery totals.
+        if (!state.skillAttempts) state.skillAttempts = {};
+        if (!state.skillAttempts[resolvedSkillId]) state.skillAttempts[resolvedSkillId] = [];
+        // Keep only lightweight info.
+        state.skillAttempts[resolvedSkillId].push({
+          ts: now,
+          correct: !!isCorrect,
+          practiceDate: today,
+          topicId: resolvedTopicId,
+          mode: (window.quizProgress && window.quizProgress.mode) || "exam",
+        });
+        // Bounded memory (last 50 observations per skill)
+        if (state.skillAttempts[resolvedSkillId].length > 50) {
+          state.skillAttempts[resolvedSkillId] = state.skillAttempts[resolvedSkillId].slice(-50);
+        }
+
 
         if (window.isWeaknessFocusMode) {
           masteryObj[resolvedSkillId].weaknessAttempts = (masteryObj[resolvedSkillId].weaknessAttempts || 0) + 1;
@@ -629,6 +649,7 @@ function getMasteryStats() {
 }
 
 function getWeakestSkills({ limit = 3 } = {}) {
+
   const state = _loadState();
   const mastery = state.mastery || {};
   
@@ -670,6 +691,7 @@ function getWeakestSkills({ limit = 3 } = {}) {
 }
 
 function getQuestionWeaknessWeight(q) {
+
   if (!q || !q.question) return 0.5;
   const qText = q.question.trim();
   const tax = SKILL_TAXONOMY[qText];
@@ -806,7 +828,9 @@ window.quizProgress = {
   getQuestionWeaknessWeight,
   recordRetryAttempt,
   getAttemptsHistory,
+  getAdaptiveNextQuizPlanner,
   mode: initialMode,
+
   logMistake,
   /** @returns {Object|null} offlineSync reference */
   get offlineSync() { return window.offlineSync || null; },
@@ -865,7 +889,157 @@ if ("serviceWorker" in navigator) {
   });
 }
 
+function getAdaptiveNextQuizPlanner({ limit = 1 } = {}) {
+
+  const state = _loadState();
+  const byTopic = state.byTopic || {};
+  const mastery = state.mastery || {};
+  const skillAttempts = state.skillAttempts || {};
+
+  const skillTax = SKILL_TAXONOMY || {};
+  const quizTopics = QUIZ_TOPICS || [];
+
+  // Build skill -> topicUrl/label mapping from taxonomy
+  const skillMeta = new Map();
+  for (const [qText, tax] of Object.entries(skillTax)) {
+    if (!tax || !tax.skillId) continue;
+    if (!skillMeta.has(tax.skillId)) {
+      skillMeta.set(tax.skillId, {
+        skillId: tax.skillId,
+        label: tax.label,
+        topicId: tax.topicId,
+        quizUrl: tax.quizUrl,
+      });
+    }
+  }
+
+  // Compute per-topic weakness from worst skills (last-3 trend) in that topic
+  const candidateTopics = quizTopics.map(t => {
+    const topicId = t.id;
+    const attempts = byTopic[topicId]?.attempts || 0;
+    const qTotal = byTopic[topicId]?.questionsTotal || 0;
+    const correctTotal = byTopic[topicId]?.correctTotal || 0;
+    const accuracy = qTotal > 0 ? correctTotal / qTotal : null;
+
+    // Gather skills belonging to this topic
+    const skillsInTopic = [];
+    for (const [sId, meta] of skillMeta.entries()) {
+      if (meta.topicId === topicId) {
+        const m = mastery[sId] || { attempts: 0, correct: 0 };
+        const accRatio = m.attempts > 0 ? (m.correct / m.attempts) : null;
+        const hist = skillAttempts[sId] || [];
+        const trend = quizUtils.calculateSkillMasteryTrend(hist);
+        skillsInTopic.push({ sId, meta, attemptsN: m.attempts || 0, accRatio, trend });
+      }
+    }
+
+    // Score topic weakness:
+    // - Prefer topics where (1-accuracy) is high
+    // - Prefer negative trend (delta < 0)
+    // - Also allow unseen topics to be high weakness
+    let weakness = 0;
+    if (accuracy === null) {
+      weakness = 1.0;
+    } else {
+      weakness = 1 - accuracy;
+    }
+
+    // If we have skill trends, adjust weakness by worst skill delta/accuracy
+    if (skillsInTopic.length) {
+      let worst = null;
+      skillsInTopic.forEach(s => {
+        const last3Acc = s.trend.last3Acc;
+        const delta = s.trend.delta;
+        const baseSkillWeakness = last3Acc == null ? 0.6 : (1 - last3Acc);
+        const trendPenalty = typeof delta === 'number' ? (delta < 0 ? Math.abs(delta) : 0) : 0;
+        const skillWeakness = baseSkillWeakness + trendPenalty * 0.7;
+        if (!worst || skillWeakness > worst.skillWeakness) {
+          worst = { skillWeakness, s };
+        }
+      });
+
+      if (worst) {
+        weakness += worst.skillWeakness * 0.35;
+      }
+    }
+
+    // Mild penalty for already well-practiced topics
+    if (attempts >= 8) weakness -= 0.05;
+
+    // Difficulty heuristic from weakness
+    let difficulty = 'easy';
+    if (weakness >= 0.95) difficulty = 'hard';
+    else if (weakness >= 0.65) difficulty = 'medium';
+
+    // Readiness from topic accuracy + trend of the weakest skill
+    let weakestSkillHist = null;
+    let weakestSkillAcc = null;
+    let weakestSkillTrendDelta = null;
+    if (skillsInTopic.length) {
+      // pick skill with max (1-last3Acc) or missing data
+      let worstSkill = null;
+      for (const s of skillsInTopic) {
+        const last3Acc = s.trend.last3Acc;
+        const w = last3Acc == null ? 1 : (1 - last3Acc);
+        if (!worstSkill || w > worstSkill.w) {
+          weakestSkillHist = s;
+          weakestSkillAcc = s.trend.last3Acc;
+          weakestSkillTrendDelta = s.trend.delta;
+          worstSkill = { w };
+        }
+      }
+    }
+
+    const readinessPct = quizUtils.estimateReadinessPct({
+      accuracyRatio: weakestSkillAcc,
+      trendDelta: weakestSkillTrendDelta,
+      attemptsN: byTopic[topicId]?.attempts || 0,
+    });
+
+    // Reason text key params (i18n happens in UI via reasonText)
+    let reasonText = '';
+    if (accuracy === null) {
+      reasonText = 'New topic: start with foundational practice.';
+    } else {
+      const delta = weakestSkillTrendDelta;
+      if (typeof delta === 'number' && delta < 0) {
+        reasonText = 'Your recent attempts are trending down—focus here next.';
+      } else {
+        reasonText = 'This topic needs more practice—build consistency with targeted questions.';
+      }
+    }
+
+    // Prefer quizUrl from taxonomy questions (fallback none)
+    // Instead of guessing, use skillMeta for a skill in this topic
+
+    let derivedQuizUrl = null;
+    if (skillsInTopic.length) {
+      derivedQuizUrl = skillsInTopic[0]?.meta?.quizUrl || null;
+    }
+
+    return {
+      topicId,
+      quizUrl: derivedQuizUrl || (t.quizIds && t.quizIds.length ? t.quizIds[0] : null),
+      topicLabel: t.label,
+      quizLabel: t.label,
+      attempts,
+      accuracy,
+      weakness,
+      difficulty,
+      readinessPct,
+      difficultyKey: `adaptiveNextQuizPlanner.difficulty.${difficulty}`,
+      reasonText,
+    };
+  });
+
+  candidateTopics.sort((a, b) => b.weakness - a.weakness);
+  const recommendations = candidateTopics.slice(0, limit);
+
+  return { recommendations };
+}
+
 function logMistake(topicId, q) {
+
   if (!topicId || !q) return;
   const MISSED_KEY = "learnsphere_review_missed_v1";
   let map = {};

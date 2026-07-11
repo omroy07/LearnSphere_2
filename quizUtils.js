@@ -47,9 +47,72 @@
     },
 
     /**
+     * Computes accuracy trend from a skill's compact attempt history.
+     *
+     * @param {Array<{correct: boolean, ts: number}>} skillAttemptsList
+     * @returns {{last3Acc: number|null, prevAcc: number|null, delta: number|null, last3N: number}}
+     */
+    calculateSkillMasteryTrend(skillAttemptsList = []) {
+      if (!Array.isArray(skillAttemptsList) || skillAttemptsList.length === 0) {
+        return { last3Acc: null, prevAcc: null, delta: null, last3N: 0 };
+      }
+
+      // Sort by timestamp (defensive)
+      const sorted = [...skillAttemptsList].filter(x => x && typeof x.ts === 'number').sort((a, b) => a.ts - b.ts);
+      if (!sorted.length) {
+        return { last3Acc: null, prevAcc: null, delta: null, last3N: 0 };
+      }
+
+      const last3 = sorted.slice(-3);
+      const last3N = last3.length;
+      const last3Acc = last3N ? (last3.filter(a => !!a.correct).length / last3N) : null;
+
+      // Previous window: up to 3 attempts immediately before last3
+      const prev = sorted.slice(-6, -3);
+      const prevN = prev.length;
+      const prevAcc = prevN ? (prev.filter(a => !!a.correct).length / prevN) : null;
+
+      let delta = null;
+      if (typeof last3Acc === 'number' && typeof prevAcc === 'number' && prevAcc !== null) {
+        delta = last3Acc - prevAcc;
+      }
+
+      return { last3Acc, prevAcc, delta, last3N };
+    },
+
+    /**
+     * Maps readiness (0..1) and trend into a user-facing readiness percent.
+     * @param {{accuracyRatio:number|null, trendDelta:number|null, attemptsN:number}} params
+     */
+    estimateReadinessPct({ accuracyRatio = null, trendDelta = null, attemptsN = 0 } = {}) {
+      // Base from current accuracy.
+      let base = 0.5;
+      if (typeof accuracyRatio === 'number' && Number.isFinite(accuracyRatio)) {
+        base = Math.max(0, Math.min(1, accuracyRatio));
+      } else {
+        base = attemptsN > 0 ? 0.45 : 0.35;
+      }
+
+      // If delta is positive, bump slightly; if negative, lower.
+      // delta in [-1,1]
+      if (typeof trendDelta === 'number' && Number.isFinite(trendDelta)) {
+        base += trendDelta * 0.25;
+      }
+
+      // Encourage some minimum practice; too low attempts => conservative.
+      if (attemptsN < 3) {
+        base *= 0.85;
+      }
+
+      const pct = Math.round(Math.max(0, Math.min(1, base)) * 100);
+      return pct;
+    },
+
+    /**
      * Compiles attempts list into a lightweight history export summary.
      */
     aggregateQuizHistory(attempts = []) {
+
       function safeNumber(n) {
         const x = Number(n);
         return Number.isFinite(x) ? x : null;

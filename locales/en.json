@@ -40,6 +40,14 @@
     "dailyGoal": "🎯 Daily goal: {quizzes}/1 quiz and {questions}/10 questions reviewed today.",
     "nextGoals": "Next goals: practice {targets} next.",
     "unlock": "Complete quizzes to unlock weekly goals."
+  },
+  "adaptiveNextQuizPlanner": {
+    "title": "Adaptive Next Quiz Planner",
+    "difficulty": {
+      "easy": "Easy",
+      "medium": "Medium",
+      "hard": "Hard"
+    }
   }
 }
 

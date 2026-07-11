@@ -383,7 +383,52 @@
     }
   }
 
+  function renderAdaptiveNextQuizPlanner(root) {
+    const container = root.querySelector("#adaptiveNextQuizPlanner");
+    if (!container) return;
+
+    const planner = window.quizProgress?.getAdaptiveNextQuizPlanner?.({ limit: 1 });
+    container.innerHTML = "";
+
+    if (!planner || !planner.recommendations || planner.recommendations.length === 0) {
+      container.innerHTML = `<div class="muted">No adaptive recommendation yet.</div>`;
+      return;
+    }
+
+    const rec = planner.recommendations[0];
+    const quizTitle = rec.quizLabel || rec.topicLabel || "Next quiz";
+    const readiness = rec.readinessPct == null ? "—" : `${rec.readinessPct}%`;
+    const reason = rec.reasonText || "";
+
+    const difficultyKey = rec.difficultyKey || rec.difficulty || "";
+    const badgeText = difficultyKey ? String(difficultyKey).replace(/-/g, ' ') : (rec.difficulty || "");
+
+    container.innerHTML = `
+      <div style="display:flex; flex-direction:column; gap:10px;">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px;">
+          <div>
+            <div style="font-weight:800; font-size:1.05rem; color: var(--accent-color);">${quizTitle}</div>
+            <div class="muted" style="font-size:13px; margin-top:4px;">${reason}</div>
+          </div>
+          <div style="text-align:right; min-width: 110px;">
+            <div style="font-weight:900; font-size:18px; color:#66fcf1;">${readiness}</div>
+            <div class="muted" style="font-size:12px; margin-top:2px;">Readiness</div>
+          </div>
+        </div>
+        <div style="display:flex; align-items:center; justify-content:space-between; gap:10px;">
+          <div class="muted" style="font-size:13px;">Difficulty: <span style="font-weight:700; color:#fff;">${badgeText}</span></div>
+          <a href="${rec.quizUrl || '#'}" style="text-decoration:none;">
+            <button style="background: linear-gradient(135deg, #00f2fe, #4facfe); border: none; color: #000; font-weight:800; padding: 10px 14px; border-radius: 10px; cursor:pointer;">
+              Start recommended quiz ▶
+            </button>
+          </a>
+        </div>
+      </div>
+    `;
+  }
+
   function renderAll(root) {
+
     // Guard: quizProgress must be loaded
     if (!window.quizProgress) {
       const status = root.querySelector("#dashboardStatus");
@@ -396,6 +441,8 @@
     renderRecommendations(root);
     renderTopicStats(root);
     renderMastery(root);
+    renderAdaptiveNextQuizPlanner(root);
+
   }
 
   function initByRole() {
