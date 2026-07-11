@@ -145,3 +145,19 @@
     box-shadow: var(--card-shadow) !important;
     border: 1px solid var(--border-color) !important;
 }
+/* ==========================================
+   GLOBAL FOCUS-VISIBLE STYLES (keyboard nav)
+   Lives here (not styles.css) because every
+   page in the site loads variables.css, while
+   many quiz/topic pages do NOT load styles.css.
+   ========================================== */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible,
+[tabindex]:focus-visible {
+    outline: 2px solid var(--accent-color);
+    outline-offset: 2px;
+    border-radius: 2px;
+}

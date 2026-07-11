@@ -227,10 +227,8 @@ textarea {
   font-size: 1rem;
   resize: vertical;
 
-  outline: none;
   margin-top: 10px;
 }
-
 /* Focus Effect */
 textarea:focus {
   border-color: #38bdf8;
