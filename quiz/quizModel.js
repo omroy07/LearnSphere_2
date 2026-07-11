@@ -18,6 +18,12 @@
     // Legacy format used widely in current quiz modules:
     // questions: [{ question, options?, answer }]
     // userSelections: [selectedOptionText or null]
+    //
+    // Newer/optional explanation fields supported (best-effort):
+    // - explanationCorrect: string
+    // - explanationWrong: array aligned with options[] (wrong per option)
+    // - whyWrong / misconceptions / remediation: legacy-ish fields used elsewhere
+
 
     const qArr = Array.isArray(questions) ? questions : [];
     const uArr = Array.isArray(userSelections) ? userSelections : [];
@@ -28,6 +34,36 @@
       const userAnswer = uArr[idx];
       const isCorrect = userAnswer === correctAnswer;
 
+      const options = Array.isArray(q?.options) ? q.options : [];
+      const pickedIndex = (() => {
+        if (userAnswer == null) return null;
+        const i = options.indexOf(userAnswer);
+        return i >= 0 ? i : null;
+      })();
+
+      const explanationCorrect = typeof q?.explanationCorrect === 'string' ? q.explanationCorrect : '';
+
+      let explanationWrong = [];
+      if (Array.isArray(q?.explanationWrong)) {
+        explanationWrong = q.explanationWrong;
+      } else if (typeof q?.whyWrong === 'string') {
+        // Best-effort: same explanation for all wrong options.
+        explanationWrong = options.map(() => q.whyWrong);
+      } else if (Array.isArray(q?.misconceptions) && q.misconceptions.length > 0) {
+        // Best-effort: map misconceptions to wrong explanations if no per-option mapping exists.
+        const m = q.misconceptions[0];
+        const msg = typeof m?.explanation === 'string' ? m.explanation : '';
+        explanationWrong = options.map(() => msg);
+      }
+
+      const explanationPicked = (() => {
+        if (isCorrect) return explanationCorrect || '';
+        if (pickedIndex == null) return '';
+        const fromArr = explanationWrong[pickedIndex];
+        return typeof fromArr === 'string' ? fromArr : '';
+      })();
+
+
       return {
         questionId: null,
         prompt: prompt || null,
@@ -36,7 +72,14 @@
         isCorrect,
         scoreEarned: isCorrect ? 1 : 0,
         scorePossible: 1,
+
+        // Explanation fields (optional)
+        explanationCorrect,
+        explanationWrong,
+        explanationPicked,
       };
+
+
     });
 
     const correctCount = results.reduce((acc, r) => acc + (r.isCorrect ? 1 : 0), 0);

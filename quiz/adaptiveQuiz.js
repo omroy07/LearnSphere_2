@@ -97,6 +97,7 @@
   }
 
   function createAdaptiveQuiz({ questions, startingDifficultyIndex = 1 }) {
+
     const buckets = buildBuckets(questions);
     const totalSteps = questions.length;
 

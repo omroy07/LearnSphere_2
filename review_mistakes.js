@@ -110,6 +110,22 @@
           <span>Correct answer: <strong>${correctText || "—"}</strong></span>
         </div>
         ${q?.explanation ? `<div class="review-mistake-expl">${q.explanation}</div>` : ``}
+
+        ${q?.explanationCorrect || q?.whyWrong || (Array.isArray(q?.misconceptions) && q?.misconceptions[0]?.explanation) || q?.remediation?.explanation
+          ? `<div class="review-mistake-expl">
+              <div style="font-weight:800; margin-bottom:6px;">Why this answer matters</div>
+              ${q.explanationCorrect && typeof q.explanationCorrect === 'string' && q.explanationCorrect.trim()
+                ? q.explanationCorrect
+                : (typeof q.whyWrong === 'string' && q.whyWrong.trim())
+                  ? q.whyWrong
+                  : (Array.isArray(q.misconceptions) && q.misconceptions[0] && typeof q.misconceptions[0].explanation === 'string' && q.misconceptions[0].explanation.trim())
+                    ? q.misconceptions[0].explanation
+                    : (q.remediation && typeof q.remediation.explanation === 'string')
+                      ? q.remediation.explanation
+                      : ''}
+            </div>`
+          : ``}
+
       `;
 
       listEl.appendChild(item);

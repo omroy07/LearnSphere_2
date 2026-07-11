@@ -313,5 +313,40 @@ html[data-font-scale="sm"] { font-size: 16px; }
 html[data-font-scale="lg"] { font-size: 18px; }
 html[data-font-scale="xl"] { font-size: 20px; }
 
+/* ─── Explanation Panel ───────────────────────────────────────────────── */
+.explanation-panel {
+    margin-top: 10px;
+    padding: 12px 14px;
+    border-radius: 10px;
+    border: 1px solid var(--border-color);
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.explanation-title {
+    font-weight: 900;
+    margin-bottom: 6px;
+}
+
+.explanation-body {
+    color: var(--text-muted);
+    line-height: 1.55;
+    white-space: pre-wrap;
+}
+
+.explanation-correct {
+    border-color: rgba(16, 185, 129, 0.5);
+    background: rgba(16, 185, 129, 0.08);
+}
+
+.explanation-wrong {
+    border-color: rgba(239, 68, 68, 0.5);
+    background: rgba(239, 68, 68, 0.08);
+}
+
+
+
+
+
+
 
 

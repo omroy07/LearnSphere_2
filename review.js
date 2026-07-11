@@ -699,11 +699,41 @@
               correctedQids.push(item.__qid);
             }
 
+            const whyWrongText =
+              typeof item.whyWrong === "string" && item.whyWrong.trim()
+                ? item.whyWrong.trim()
+                : "";
+
+            const remediationExplanation =
+              item.remediation && typeof item.remediation.explanation === "string"
+                ? item.remediation.explanation.trim()
+                : "";
+
+            const misconceptionExplanation =
+              Array.isArray(item.misconceptions) && item.misconceptions[0]
+                ? typeof item.misconceptions[0].explanation === "string"
+                  ? item.misconceptions[0].explanation.trim()
+                  : ""
+                : "";
+
+            const explanationCorrect = remediationExplanation || "";
+            const explanationWrong = whyWrongText || misconceptionExplanation || "";
+            const explanationPicked = correct ? explanationCorrect : explanationWrong;
+
             qDiv.innerHTML = `
               <div><strong>Q${idx + 1}:</strong> ${item.q}</div>
               <div>Your answer: ${userAns} ${correct ? "✅" : "❌"}</div>
               <div>Correct answer: ${item.options[item.answerIndex]}</div>
+              ${explanationPicked
+                ? `
+                  <div class="explanation-panel ${correct ? "explanation-correct" : "explanation-wrong"}">
+                    <div class="explanation-title">${correct ? "Why this is correct" : "Why this is wrong"}</div>
+                    <div class="explanation-body">${explanationPicked}</div>
+                  </div>
+                `
+                : ""}
             `;
+
 
             const askBtn = document.createElement("button");
             askBtn.textContent = "Ask about this question";
