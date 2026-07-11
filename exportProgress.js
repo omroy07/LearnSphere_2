@@ -383,8 +383,134 @@
     a.click();
     a.remove();
 
+    setTimeout(() => URL.revokeObjectURL(url), 5000);
+  }
+
+  /* ── CSV Export ────────────────────────────────────────────── */
+
+  /**
+   * Escape a value for CSV (RFC 4180).
+   */
+  function csvEscape(val) {
+    if (val == null) return "";
+    const str = String(val);
+    if (str.includes('"') || str.includes(',') || str.includes('\n') || str.includes('\r')) {
+      return '"' + str.replace(/"/g, '""') + '"';
+    }
+    return str;
+  }
+
+  /**
+   * Build CSV string from the export payload.
+   * Schema: Date, Quiz, Score (%), Correct, Total Questions, Topics, Time (s)
+   */
+  function buildCsvString(payload) {
+    const attempts = payload?.metrics?.quizHistory?.attempts || [];
+    const topicPerf = payload?.metrics?.topicPerformance || [];
+
+    // Build topic label lookup
+    const topicLabelMap = {};
+    topicPerf.forEach(t => { topicLabelMap[t.topicId] = t.label || t.topicId; });
+
+    const header = ["Date", "Quiz", "Score (%)", "Correct", "Total Questions", "Topic", "Time (s)"];
+    const rows = [header.map(csvEscape).join(",")];
+
+    attempts.forEach(a => {
+      const date = a.practiceDate || (a.finishedAt ? new Date(a.finishedAt).toISOString().slice(0, 10) : "");
+      const quiz = a.quizId || "";
+      const scorePct = a.accuracy != null ? Math.round(a.accuracy * 100) : (a.score != null ? a.score : "");
+      const correct = a.correctCount != null ? a.correctCount : "";
+      const totalQ = a.totalQuestions != null ? a.totalQuestions : "";
+      const topic = topicLabelMap[a.topicId] || a.topicId || "";
+      const timeSec = a.timeTakenMs != null ? Math.round(a.timeTakenMs / 1000) : "";
+
+      rows.push([
+        csvEscape(date),
+        csvEscape(quiz),
+        csvEscape(scorePct),
+        csvEscape(correct),
+        csvEscape(totalQ),
+        csvEscape(topic),
+        csvEscape(timeSec)
+      ].join(","));
+    });
+
+    return rows.join("\r\n");
+  }
+
+  /**
+   * Download the CSV file.
+   */
+  function downloadCsv(payload, filename = "learnsphere_progress_export.csv") {
+    const csvString = buildCsvString(payload);
+    const blob = new Blob([csvString], { type: "text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
 
     setTimeout(() => URL.revokeObjectURL(url), 5000);
+  }
+
+  /* ── Shareable Snapshot URL ───────────────────────────────── */
+
+  /**
+   * Create a shareable snapshot and return its URL.
+   * Stores the snapshot in localStorage keyed by ID.
+   * The URL contains ?snapshot=<id> which can be opened in the same browser
+   * (or on any machine that has the snapshot in localStorage — ready for backend).
+   */
+  async function createShareableSnapshot() {
+    const exportId = await generateSnapshot();
+
+    // Build the shareable URL using the current page location
+    const base = window.location.href.split("?")[0].split("#")[0];
+    const shareUrl = `${base}?snapshot=${encodeURIComponent(exportId)}`;
+
+    return { exportId, shareUrl };
+  }
+
+  /**
+   * Load a snapshot by ID from localStorage.
+   * Returns the parsed snapshot object or null.
+   */
+  function loadSnapshot(exportId) {
+    try {
+      const raw = localStorage.getItem(`snapshot_${exportId}`);
+      if (!raw) return null;
+      return JSON.parse(raw);
+    } catch {
+      return null;
+    }
+  }
+
+  /**
+   * Get snapshot ID from current URL query params.
+   * Returns the ID string or null.
+   */
+  function getSnapshotIdFromUrl() {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      return params.get("snapshot") || null;
+    } catch {
+      return null;
+    }
+  }
+
+  /**
+   * Delete a snapshot by ID.
+   */
+  function deleteSnapshot(exportId) {
+    localStorage.removeItem(`snapshot_${exportId}`);
+    try {
+      const index = JSON.parse(localStorage.getItem('snapshotIndex') || '[]');
+      const filtered = index.filter(s => s.exportId !== exportId);
+      localStorage.setItem('snapshotIndex', JSON.stringify(filtered));
+    } catch {}
   }
 
   // Snapshot utilities
@@ -467,9 +593,15 @@
   window.exportProgress = {
     buildProgressExportPayload,
     downloadJson,
+    downloadCsv,
+    buildCsvString,
     generateSnapshot,
+    createShareableSnapshot,
+    loadSnapshot,
+    getSnapshotIdFromUrl,
+    listSnapshots,
+    deleteSnapshot,
     downloadSnapshotAsImage,
-    downloadSnapshotAsPDF,
-    listSnapshots
+    downloadSnapshotAsPDF
   };})();
 

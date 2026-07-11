@@ -505,6 +505,244 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  // ── CSV Download ──
+  const csvBtn = document.getElementById("downloadProgressCsvBtn");
+  if (csvBtn) {
+    csvBtn.addEventListener("click", () => {
+      if (!window.exportProgress?.buildProgressExportPayload || !window.exportProgress?.downloadCsv) return;
+      const payload = window.exportProgress.buildProgressExportPayload({
+        formatVersion: { major: 1, minor: 0 },
+        roleContext: "learner"
+      });
+      window.exportProgress.downloadCsv(payload, "learnsphere_progress_export.csv");
+    });
+  }
+
+  // ── Create Shareable Link ──
+  const shareLinkBtn = document.getElementById("createShareableLinkBtn");
+  if (shareLinkBtn) {
+    shareLinkBtn.addEventListener("click", async () => {
+      if (!window.exportProgress?.createShareableSnapshot) return;
+      shareLinkBtn.disabled = true;
+      shareLinkBtn.textContent = "⏳ Creating…";
+      try {
+        const { shareUrl } = await window.exportProgress.createShareableSnapshot();
+        showShareModal(shareUrl);
+        renderSnapshotHistory();
+      } catch (err) {
+        console.error("Snapshot creation failed:", err);
+        alert("Failed to create snapshot. See console for details.");
+      } finally {
+        shareLinkBtn.disabled = false;
+        shareLinkBtn.textContent = "🔗 Create Shareable Link";
+      }
+    });
+  }
+
+  // ── Snapshot History ──
+  const snapshotHistorySection = document.getElementById("snapshotHistorySection");
+  const snapshotHistoryList = document.getElementById("snapshotHistoryList");
+  const closeHistoryBtn = document.getElementById("closeSnapshotHistory");
+  const genSnapshotBtn = document.getElementById("generateSnapshotBtn");
+
+  if (genSnapshotBtn) {
+    // Enhance existing Generate Snapshot button to also show history
+    const originalHandler = genSnapshotBtn.onclick;
+    genSnapshotBtn.addEventListener("click", async () => {
+      if (!window.exportProgress?.generateSnapshot) return;
+      genSnapshotBtn.disabled = true;
+      genSnapshotBtn.textContent = "⏳ Generating…";
+      try {
+        await window.exportProgress.generateSnapshot();
+        renderSnapshotHistory();
+      } catch (err) {
+        console.error("Snapshot generation failed:", err);
+      } finally {
+        genSnapshotBtn.disabled = false;
+        genSnapshotBtn.textContent = "Generate Snapshot";
+      }
+    });
+  }
+
+  if (closeHistoryBtn && snapshotHistorySection) {
+    closeHistoryBtn.addEventListener("click", () => {
+      snapshotHistorySection.style.display = "none";
+    });
+  }
+
+  function renderSnapshotHistory() {
+    if (!snapshotHistorySection || !snapshotHistoryList) return;
+    const snapshots = window.exportProgress?.listSnapshots?.() || [];
+    if (snapshots.length === 0) {
+      snapshotHistorySection.style.display = "none";
+      return;
+    }
+
+    snapshotHistorySection.style.display = "block";
+    snapshotHistoryList.innerHTML = "";
+
+    // Show newest first
+    const sorted = [...snapshots].reverse();
+    sorted.forEach(snap => {
+      const item = document.createElement("div");
+      item.className = "snapshot-history-item";
+
+      const dateStr = snap.generatedAt
+        ? new Date(snap.generatedAt).toLocaleString()
+        : snap.exportId;
+
+      const base = window.location.href.split("?")[0].split("#")[0];
+      const snapUrl = `${base}?snapshot=${encodeURIComponent(snap.exportId)}`;
+
+      item.innerHTML = `
+        <div style="flex: 1;">
+          <div style="font-weight: 600; color: rgba(255,255,255,0.9);">${dateStr}</div>
+          <div style="font-size: 11px; color: rgba(255,255,255,0.45); margin-top: 2px; font-family: monospace; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 220px;">${snap.exportId}</div>
+        </div>
+        <div class="snap-actions">
+          <button class="snap-copy" data-url="${snapUrl}" title="Copy link">📋 Copy</button>
+          <button class="snap-view" data-id="${snap.exportId}" title="View snapshot">👁 View</button>
+          <button class="snap-delete" data-id="${snap.exportId}" title="Delete snapshot">✕</button>
+        </div>
+      `;
+      snapshotHistoryList.appendChild(item);
+    });
+
+    // Delegate click events
+    snapshotHistoryList.addEventListener("click", (e) => {
+      const btn = e.target.closest("button");
+      if (!btn) return;
+
+      if (btn.classList.contains("snap-copy")) {
+        const url = btn.dataset.url;
+        navigator.clipboard.writeText(url).then(() => {
+          btn.textContent = "✓ Copied!";
+          setTimeout(() => { btn.textContent = "📋 Copy"; }, 1500);
+        }).catch(() => {
+          showShareModal(url);
+        });
+      }
+
+      if (btn.classList.contains("snap-view")) {
+        const id = btn.dataset.id;
+        const base = window.location.href.split("?")[0].split("#")[0];
+        window.location.href = `${base}?snapshot=${encodeURIComponent(id)}`;
+      }
+
+      if (btn.classList.contains("snap-delete")) {
+        const id = btn.dataset.id;
+        if (confirm("Delete this snapshot?")) {
+          window.exportProgress?.deleteSnapshot?.(id);
+          renderSnapshotHistory();
+        }
+      }
+    });
+  }
+
+  // Show history if any snapshots exist
+  renderSnapshotHistory();
+
+  // ── Share Modal ──
+  function showShareModal(shareUrl) {
+    // Remove existing modal if any
+    const existing = document.querySelector(".share-modal-overlay");
+    if (existing) existing.remove();
+
+    const overlay = document.createElement("div");
+    overlay.className = "share-modal-overlay";
+    overlay.innerHTML = `
+      <div class="share-modal">
+        <h3>🔗 Shareable Progress Link</h3>
+        <div class="sub">Share this link to let others view your progress snapshot (read-only). Currently stored locally in this browser.</div>
+        <div class="url-box">
+          <input type="text" id="shareUrlInput" value="${shareUrl}" readonly />
+          <button class="copy-btn" id="copyShareUrlBtn">Copy</button>
+        </div>
+        <div class="modal-footer">
+          <button class="close-modal-btn" id="closeShareModal">Close</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(overlay);
+
+    const input = document.getElementById("shareUrlInput");
+    const copyBtn = document.getElementById("copyShareUrlBtn");
+    const closeBtn = document.getElementById("closeShareModal");
+
+    if (input) {
+      input.addEventListener("focus", () => input.select());
+    }
+
+    if (copyBtn && input) {
+      copyBtn.addEventListener("click", () => {
+        navigator.clipboard.writeText(input.value).then(() => {
+          copyBtn.textContent = "✓ Copied!";
+          setTimeout(() => { copyBtn.textContent = "Copy"; }, 2000);
+        }).catch(() => {
+          input.select();
+          document.execCommand("copy");
+          copyBtn.textContent = "✓ Copied!";
+          setTimeout(() => { copyBtn.textContent = "Copy"; }, 2000);
+        });
+      });
+    }
+
+    if (closeBtn) {
+      closeBtn.addEventListener("click", () => overlay.remove());
+    }
+    // Close on backdrop click
+    overlay.addEventListener("click", (e) => {
+      if (e.target === overlay) overlay.remove();
+    });
+  }
+
+  // ── Snapshot URL Auto-Load ──
+  (function checkSnapshotUrl() {
+    const snapshotId = window.exportProgress?.getSnapshotIdFromUrl?.();
+    if (!snapshotId) return;
+
+    const snapshot = window.exportProgress.loadSnapshot(snapshotId);
+    const banner = document.getElementById("snapshotBanner");
+    const bannerInfo = document.getElementById("snapshotBannerInfo");
+    const closeBannerBtn = document.getElementById("closeSnapshotBanner");
+
+    if (!snapshot) {
+      // Snapshot not found in this browser's localStorage
+      if (banner && bannerInfo) {
+        bannerInfo.textContent = `Snapshot "${snapshotId}" not found in this browser. It may have been created on a different device.`;
+        bannerInfo.style.color = "#f59e0b";
+        banner.style.display = "flex";
+        banner.style.borderColor = "rgba(245, 158, 11, 0.35)";
+        banner.style.background = "linear-gradient(135deg, rgba(245, 158, 11, 0.12), rgba(217, 119, 6, 0.08))";
+      }
+    } else {
+      // Show read-only banner with snapshot info
+      if (banner && bannerInfo) {
+        const ts = snapshot.generatedAt
+          ? new Date(snapshot.generatedAt).toLocaleString()
+          : "Unknown date";
+        bannerInfo.innerHTML = `You are viewing a <strong>read-only progress snapshot</strong> from ${ts}.`;
+        banner.style.display = "flex";
+      }
+
+      // Populate the preview with snapshot data
+      if (previewContainer && previewContent) {
+        previewContent.textContent = JSON.stringify(snapshot.payload, null, 2);
+        previewContainer.style.display = "block";
+
+        // Update the preview header to indicate it's a snapshot
+        const previewHeader = previewContainer.querySelector("h3 span");
+        if (previewHeader) previewHeader.textContent = "📸 Snapshot Data (Read-Only)";
+      }
+    }
+
+    if (closeBannerBtn && banner) {
+      closeBannerBtn.addEventListener("click", () => {
+        banner.style.display = "none";
+      });
+    }
+  })();
+
   // Populate print-only report container before printing.
   window.addEventListener("beforeprint", () => {
     try {

@@ -100,10 +100,128 @@
       font-size: 13px;
       margin-top: 6px;
     }
+
+    /* ── Snapshot banner (read-only view) ── */
+    .snapshot-banner {
+      background: linear-gradient(135deg, rgba(102, 252, 241, 0.12), rgba(69, 162, 158, 0.10));
+      border: 1px solid rgba(102, 252, 241, 0.35);
+      border-radius: 12px;
+      padding: 14px 18px;
+      margin-bottom: 18px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 14px;
+      color: #66fcf1;
+      animation: bannerFadeIn 0.4s ease;
+    }
+    .snapshot-banner .badge {
+      background: rgba(102, 252, 241, 0.18);
+      border: 1px solid rgba(102, 252, 241, 0.45);
+      border-radius: 6px;
+      padding: 4px 10px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      white-space: nowrap;
+    }
+    .snapshot-banner .info { flex: 1; color: rgba(255,255,255,0.82); }
+    .snapshot-banner .close-banner {
+      background: none; border: none; color: rgba(255,255,255,0.5);
+      cursor: pointer; font-size: 18px; line-height: 1; padding: 4px;
+      transition: color 0.2s;
+    }
+    .snapshot-banner .close-banner:hover { color: #fff; }
+    @keyframes bannerFadeIn {
+      from { opacity: 0; transform: translateY(-8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── Share link modal ── */
+    .share-modal-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0, 0, 0, 0.65);
+      backdrop-filter: blur(6px);
+      z-index: 9000;
+      display: flex; align-items: center; justify-content: center;
+      animation: modalOverlayIn 0.25s ease;
+    }
+    .share-modal {
+      background: #141820;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 16px;
+      padding: 28px 24px;
+      max-width: 520px; width: 90%;
+      box-shadow: 0 24px 64px rgba(0, 0, 0, 0.5);
+      animation: modalSlideUp 0.3s ease;
+    }
+    .share-modal h3 { margin: 0 0 6px; font-size: 1.15rem; color: #fff; }
+    .share-modal .sub { font-size: 13px; color: rgba(255,255,255,0.6); margin-bottom: 16px; }
+    .share-modal .url-box { display: flex; gap: 8px; align-items: stretch; }
+    .share-modal .url-box input {
+      flex: 1; background: rgba(0,0,0,0.35);
+      border: 1px solid rgba(255,255,255,0.12); border-radius: 8px;
+      color: #a9b7c6; font-family: monospace; font-size: 12px;
+      padding: 10px 12px; outline: none; transition: border-color 0.2s;
+    }
+    .share-modal .url-box input:focus { border-color: rgba(102, 252, 241, 0.5); }
+    .share-modal .copy-btn {
+      background: linear-gradient(135deg, #66fcf1, #45a29e);
+      color: #0f1115; border: none; border-radius: 8px;
+      padding: 10px 16px; font-weight: 700; font-size: 13px;
+      cursor: pointer; white-space: nowrap;
+      transition: opacity 0.2s, transform 0.15s;
+    }
+    .share-modal .copy-btn:hover { opacity: 0.88; transform: scale(1.02); }
+    .share-modal .copy-btn:active { transform: scale(0.97); }
+    .share-modal .modal-footer { display: flex; justify-content: flex-end; margin-top: 16px; }
+    .share-modal .close-modal-btn {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.12); border-radius: 8px;
+      color: rgba(255,255,255,0.7); padding: 8px 16px; font-size: 13px;
+      cursor: pointer; transition: background 0.2s;
+    }
+    .share-modal .close-modal-btn:hover { background: rgba(255,255,255,0.1); }
+
+    /* ── Snapshot history ── */
+    .snapshot-history-list { max-height: 200px; overflow-y: auto; margin-top: 12px; }
+    .snapshot-history-item {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 10px; padding: 8px 12px; border-radius: 8px;
+      background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06);
+      margin-bottom: 6px; font-size: 12px; color: rgba(255,255,255,0.75);
+      transition: background 0.15s;
+    }
+    .snapshot-history-item:hover { background: rgba(255,255,255,0.05); }
+    .snapshot-history-item .snap-actions { display: flex; gap: 6px; }
+    .snapshot-history-item .snap-actions button {
+      background: rgba(102, 252, 241, 0.08); border: 1px solid rgba(102, 252, 241, 0.3);
+      color: #66fcf1; border-radius: 6px; padding: 4px 8px;
+      font-size: 11px; cursor: pointer; transition: all 0.15s;
+    }
+    .snapshot-history-item .snap-actions button:hover { background: #66fcf1; color: #0f1115; }
+    .snapshot-history-item .snap-actions button.snap-delete {
+      background: rgba(239, 68, 68, 0.08); border-color: rgba(239, 68, 68, 0.3); color: #ef4444;
+    }
+    .snapshot-history-item .snap-actions button.snap-delete:hover { background: #ef4444; color: #fff; }
+
+    @keyframes modalOverlayIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes modalSlideUp {
+      from { opacity: 0; transform: translateY(16px) scale(0.97); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
   </style>
 </head>
 
 <body>
+
+  <!-- Snapshot read-only banner (shown when ?snapshot=... is in URL) -->
+  <div id="snapshotBanner" class="snapshot-banner" style="display:none; margin: 12px auto; max-width: 980px;">
+    <span class="badge">📸 Snapshot</span>
+    <span class="info" id="snapshotBannerInfo">You are viewing a read-only progress snapshot.</span>
+    <button class="close-banner" id="closeSnapshotBanner" aria-label="Close banner">×</button>
+  </div>
 
       <header class="navbar" role="banner">
         <div class="logo"><a href="index.html" aria-label="LearnSphere Home">LearnSphere</a></div>
@@ -238,7 +356,18 @@
         <button id="generateSnapshotBtn" class="export-btn" type="button">Generate Snapshot</button>
         <button id="previewExportBtn" class="export-btn" type="button">Preview Export</button>
         <button id="downloadProgressJsonBtn" class="export-btn" type="button">Download JSON</button>
+        <button id="downloadProgressCsvBtn" class="export-btn" type="button" style="background: linear-gradient(135deg, rgba(102, 252, 241, 0.10), rgba(69, 162, 158, 0.08)); border: 1px solid rgba(102, 252, 241, 0.35); color: #66fcf1;">📊 Download CSV</button>
+        <button id="createShareableLinkBtn" class="export-btn" type="button" style="background: linear-gradient(135deg, rgba(168, 85, 247, 0.10), rgba(139, 92, 246, 0.08)); border: 1px solid rgba(168, 85, 247, 0.35); color: #a855f7;">🔗 Create Shareable Link</button>
         <button id="printProgressBtn" class="export-btn" type="button">Print / Save as PDF</button>
+      </div>
+
+      <!-- Snapshot History -->
+      <div id="snapshotHistorySection" style="display:none; margin-top:16px; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px; padding: 14px 16px; background: rgba(255, 255, 255, 0.02);">
+        <h3 style="margin-top:0; font-size: 0.95rem; color: rgba(255,255,255,0.85); display: flex; justify-content: space-between; align-items: center;">
+          <span>📸 Saved Snapshots</span>
+          <button id="closeSnapshotHistory" style="background: none; border: none; color: rgba(255,255,255,0.5); cursor: pointer; font-size: 1.1rem; line-height: 1;" aria-label="Close snapshot history">×</button>
+        </h3>
+        <div id="snapshotHistoryList" class="snapshot-history-list"></div>
       </div>
 
       <!-- Export Preview Container -->
