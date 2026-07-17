@@ -231,13 +231,210 @@
     }
   }
 
+  function _estimatePracticeSessionsPerWeek() {
+    // Parent-friendly heuristic:
+    // - Use weakest skills (if available) and scale with their attempts.
+    // - Output a single “sessions this week” number.
+    // Goal: show a reasonable range even with partial data.
+
+    // If we can see per-skill attempt counts from mastery stats, use it.
+    const weak = (window.quizProgress && typeof window.quizProgress.getWeakestSkills === 'function')
+      ? window.quizProgress.getWeakestSkills({ limit: 5 })
+      : [];
+
+    let attemptsSum = 0;
+    let weakCount = 0;
+    for (const w of (Array.isArray(weak) ? weak : [])) {
+      if (typeof w?.attempts === 'number' && Number.isFinite(w.attempts)) {
+        attemptsSum += w.attempts;
+        weakCount += 1;
+      }
+    }
+
+    // If weakest skills aren’t available, fall back to mastery stats.
+    if (!weakCount && window.quizProgress && typeof window.quizProgress.getMasteryStats === 'function') {
+      const mastery = window.quizProgress.getMasteryStats() || {};
+      const entries = Object.entries(mastery)
+        .map(([skillId, m]) => ({ skillId, attempts: m?.attempts, accuracy: m?.attempts ? (m?.correct / m?.attempts) : null }))
+        .filter((x) => typeof x.attempts === 'number' && Number.isFinite(x.attempts) && x.attempts > 0);
+
+      // Select low-accuracy skills with at least some attempts.
+      const sorted = entries.sort((a, b) => {
+        const aa = typeof a.accuracy === 'number' ? a.accuracy : 0;
+        const bb = typeof b.accuracy === 'number' ? b.accuracy : 0;
+        return aa - bb;
+      });
+      const picked = sorted.slice(0, 5);
+      attemptsSum = picked.reduce((s, p) => s + (p.attempts || 0), 0);
+      weakCount = picked.length;
+    }
+
+    // Convert attempt signal → recommended weekly sessions.
+    // Heuristic mapping:
+    // - No/unknown data => 3 sessions.
+    // - Low attempts / emerging weakness => 4 sessions.
+    // - Higher attempts / consistent weakness => 5-6 sessions.
+    if (!weakCount || attemptsSum <= 0) return 3;
+
+    // Normalize by number of weak skills so “attemptsSum grows with more weak skills” doesn’t inflate too much.
+    const avgAttemptsPerWeak = attemptsSum / Math.max(weakCount, 1);
+
+    // Tuned constants for stability.
+    if (avgAttemptsPerWeak < 3) return 4;
+    if (avgAttemptsPerWeak < 8) return 5;
+    return 6;
+  }
+
+  function _renderPracticeSessions() {
+    const el = document.getElementById('practiceSessionsRecommendation');
+    if (!el) return;
+
+    const sessions = _estimatePracticeSessionsPerWeek();
+    // Parent-friendly language.
+    const headline = `Recommended: ${sessions} short practice session${sessions === 1 ? '' : 's'} this week`;
+    const sub = '5–10 minutes each, focused on the topics your child is struggling with.';
+    el.textContent = headline;
+
+    const subEl = document.getElementById('practiceSessionsRecommendationSub');
+    if (subEl) subEl.textContent = sub;
+  }
+
+  function _renderAccuracyChart() {
+    // Draw a simple chart into #accuracyChart using last 14 days.
+    const canvas = document.getElementById('accuracyChart');
+    if (!canvas) return;
+
+    if (typeof window.Chart === 'undefined' && canvas.getContext) {
+      // If Chart.js isn’t available, do a minimal fallback text.
+      const fallback = document.createElement('div');
+      fallback.style.fontSize = '13px';
+      fallback.style.color = 'rgba(255,255,255,0.72)';
+      fallback.style.marginTop = '8px';
+      fallback.textContent = 'Accuracy trend: not available in this view.';
+      // Avoid duplicating fallback.
+      if (!document.getElementById('accuracyChartFallback')) {
+        fallback.id = 'accuracyChartFallback';
+        canvas.parentElement?.appendChild(fallback);
+      }
+      return;
+    }
+
+    const series = _getWeekAccuracySeries(14);
+    if (!series) return;
+
+    const last7 = series.last7;
+    const prev7 = series.prev7;
+
+    // If accuracyByDay includes null/undefined, Chart.js can handle gaps, but we’ll filter to show labels.
+    const lastValues = last7.map((v) => (typeof v === 'number' && Number.isFinite(v) ? v : null));
+    const prevValues = prev7.map((v) => (typeof v === 'number' && Number.isFinite(v) ? v : null));
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    // Compute averages for parent-friendly tooltip/legend.
+    const lastAvg = series.lastAvg;
+    const prevAvg = series.prevAvg;
+
+    const labels = ['D-13', 'D-12', 'D-11', 'D-10', 'D-9', 'D-8', 'D-7', 'D-6', 'D-5', 'D-4', 'D-3', 'D-2', 'D-1', 'Today'];
+
+    // Combine prev7 + last7 into a 14-day sequence: prev7 (7) then last7 (7)
+    const combined = prevValues.concat(lastValues);
+
+    // Destroy existing chart if present.
+    if (canvas.__chartInstance && typeof canvas.__chartInstance.destroy === 'function') {
+      canvas.__chartInstance.destroy();
+    }
+
+    const ChartCtor = window.Chart;
+    canvas.__chartInstance = new ChartCtor(ctx, {
+      type: 'line',
+      data: {
+        labels,
+        datasets: [
+          {
+            label: 'Accuracy (last 14 days)',
+            data: combined.map((v) => (v === null ? null : Math.round(v * 100))),
+            borderColor: 'rgba(102,252,241,0.9)',
+            backgroundColor: 'rgba(102,252,241,0.12)',
+            pointBackgroundColor: 'rgba(102,252,241,0.95)',
+            pointRadius: 3,
+            tension: 0.35,
+            spanGaps: true
+          },
+          {
+            label: 'Last 7 days avg',
+            data: combined.map((_, idx) => {
+              if (idx < 7) return null;
+              if (typeof lastAvg !== 'number' || !Number.isFinite(lastAvg)) return null;
+              return Math.round(lastAvg * 100);
+            }),
+            borderColor: 'rgba(16,185,129,0.8)',
+            borderDash: [6, 6],
+            pointRadius: 0,
+            fill: false
+          },
+          {
+            label: 'Previous 7 days avg',
+            data: combined.map((_, idx) => {
+              if (idx >= 7) return null;
+              if (typeof prevAvg !== 'number' || !Number.isFinite(prevAvg)) return null;
+              return Math.round(prevAvg * 100);
+            }),
+            borderColor: 'rgba(239,68,68,0.8)',
+            borderDash: [6, 6],
+            pointRadius: 0,
+            fill: false
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            labels: {
+              color: 'rgba(255,255,255,0.75)',
+              font: { size: 11 }
+            }
+          },
+          tooltip: {
+            callbacks: {
+              label: (ctx) => {
+                const val = ctx.parsed?.y;
+                if (val === null || val === undefined) return 'N/A';
+                return `Accuracy: ${val}%`;
+              }
+            }
+          }
+        },
+        scales: {
+          x: {
+            ticks: { color: 'rgba(255,255,255,0.55)', maxTicksLimit: 7 },
+            grid: { display: false }
+          },
+          y: {
+            beginAtZero: true,
+            max: 100,
+            ticks: { color: 'rgba(255,255,255,0.55)', callback: (v) => `${v}%` },
+            grid: { color: 'rgba(255,255,255,0.06)' }
+          }
+        }
+      }
+    });
+  }
+
   function _renderWeeklyReport() {
     _updateStreak();
+    _renderAccuracyChart();
     _renderStrengths();
     _renderWeaknesses();
+    _renderPracticeSessions();
+    // Keep legacy elements safe (only render if the parent page provides the containers)
     _renderBiggestImprovement();
     _renderNextGoals();
   }
+
 
 
   document.addEventListener('DOMContentLoaded', _renderWeeklyReport);

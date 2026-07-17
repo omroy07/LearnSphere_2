@@ -529,9 +529,20 @@ html[data-font-scale="xl"] { font-size: 20px; }
     background: var(--border-color);
 }
 
+/* ─── Parent/Guardian: weekly summary tweaks ──────────────────────────── */
+#practiceSessionsRecommendation {
+    color: var(--accent-color);
+    margin-top: 4px;
+}
+
+#practiceSessionsRecommendationSub {
+    line-height: 1.5;
+}
+
 /* ─── Landing Page: Final CTA (#213) ──────────────────────────────────────── */
 .final-cta {
     max-width: 600px;
+
     margin: 0 auto;
     padding: 50px 20px 90px;
     text-align: center;

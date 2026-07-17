@@ -113,12 +113,12 @@
             </div>
 
             <!-- New Section: Personalized Concept Mastery -->
-            <div class="card" style="background:#0f1115;border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:16px;box-shadow:0 10px 30px rgba(0,0,0,0.2);margin-top:16px">
+                <div class="card" style="background:#0f1115;border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:16px;box-shadow:0 10px 30px rgba(0,0,0,0.2);margin-top:16px">
                 <h2 style="margin-top:0; display:flex; align-items:center; gap:8px;">
                     🎯 Personalized Concept Mastery
                 </h2>
                 <p style="font-size:13px; color:rgba(255,255,255,0.72); margin-bottom:16px;">Track mastery levels per specific sub-skill/concept. Recommendations adapt to the weakest areas.</p>
-                
+
                 <div class="grid-2" style="display:grid;grid-template-columns:1.1fr 0.9fr;gap:16px">
                     <div>
                         <h3 style="margin-top:0; font-size:1.1rem; color: var(--accent-color);">Concept Mastery Details</h3>
@@ -126,13 +126,19 @@
                             <div style="font-size:13px; color:rgba(255,255,255,0.72)">No mastery data recorded yet.</div>
                         </div>
                     </div>
-                    
+
                     <div style="border-left: 1px solid rgba(255, 255, 255, 0.08); padding-left: 20px;">
                         <h3 style="margin-top:0; font-size:1.1rem; color: #ff5e5e;">Top Weak Concepts</h3>
                         <div id="weakSkillsRecommendations" style="display:flex; flex-direction:column; gap:12px; margin-top:12px;">
                             <div style="font-size:13px; color:rgba(255,255,255,0.72)">No weak concepts identified yet.</div>
                         </div>
                     </div>
+                </div>
+
+                <div style="margin-top:16px; padding-top:14px; border-top:1px solid rgba(255,255,255,0.08);">
+                    <h3 style="margin:0 0 6px; font-size:1.1rem; color: var(--accent-color);">Practice plan for this week</h3>
+                    <div id="practiceSessionsRecommendation" style="font-weight:900; font-size:1.05rem;">Recommended: — short practice sessions this week</div>
+                    <div id="practiceSessionsRecommendationSub" style="font-size:13px; margin-top:6px; color:rgba(255,255,255,0.72)">—</div>
                 </div>
             </div>
 
@@ -143,6 +149,7 @@
             </div>
         </div>
     </section>
+
 
     <!-- ── Notification Digest Settings ── -->
     <section class="content" style="padding-top:0; max-width:980px; margin:0 auto; padding-bottom:32px;">
