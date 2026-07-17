@@ -12,8 +12,13 @@
 const CACHE_VERSION = "v5";
 const CACHE_NAME = `learnsphere-static-${CACHE_VERSION}`;
 
+// Subject pack caching version. Bump to invalidate old offline packs.
+const PACK_CACHE_VERSION = "v1";
+const PACK_CACHE_PREFIX = "learnsphere-pack";
+
 // For runtime image caching
 const RUNTIME_IMAGE_CACHE_NAME = `learnsphere-images-${CACHE_VERSION}`;
+
 
 const QUIZ_PRACTICE_URLS = [
   "/quiz/motionquiz.html",
@@ -152,6 +157,21 @@ self.addEventListener("activate", (event) => {
       // Remove old caches
       const keys = await caches.keys();
       const keepCaches = new Set([CACHE_NAME, RUNTIME_IMAGE_CACHE_NAME]);
+
+      // Keep current pack caches, drop all others
+      for (const k of keys) {
+        if (k.startsWith(`${PACK_CACHE_PREFIX}-${"physics"}-v`) ||
+            k.startsWith(`${PACK_CACHE_PREFIX}-${"maths"}-v`) ||
+            k.startsWith(`${PACK_CACHE_PREFIX}-${"chemistry"}-v`)) {
+          // handled below by explicit keep list
+        }
+      }
+
+      const subjects = ["physics", "maths", "chemistry"];
+      for (const subject of subjects) {
+        keepCaches.add(`${PACK_CACHE_PREFIX}-${subject}-v${PACK_CACHE_VERSION}`);
+      }
+
       await Promise.all(
         keys.map((k) => {
           if (!keepCaches.has(k)) return caches.delete(k);
@@ -161,6 +181,7 @@ self.addEventListener("activate", (event) => {
     })()
   );
 });
+
 
 self.addEventListener("fetch", (event) => {
   const req = event.request;
@@ -286,6 +307,199 @@ self.addEventListener("fetch", (event) => {
 
 // Listener for message events to support on-demand preloading of resources
 self.addEventListener("message", (event) => {
+  if (event.data && event.data.action === "download-offline-pack") {
+    const subject = event.data.subject;
+    if (!subject) return;
+
+    const packSubject = String(subject);
+    const validSubjects = new Set(["physics", "maths", "chemistry"]);
+    if (!validSubjects.has(packSubject)) {
+      event.source?.postMessage?.({
+        action: "offline-pack-status",
+        subject: packSubject,
+        status: "failed",
+        error: "Invalid subject",
+      });
+      return;
+    }
+
+    event.waitUntil(
+      (async () => {
+        const packCacheName = `${PACK_CACHE_PREFIX}-${packSubject}-v${PACK_CACHE_VERSION}`;
+        const cache = await caches.open(packCacheName);
+
+        // If already downloaded, treat as completed.
+        const markerUrl = `/offline-pack/${packSubject}/v${PACK_CACHE_VERSION}/marker.txt`;
+        const existingMarker = await cache.match(markerUrl);
+        if (existingMarker) {
+          const clientsList = await self.clients.matchAll();
+          clientsList.forEach((client) => {
+            client.postMessage({
+              action: "offline-pack-status",
+              subject: packSubject,
+              status: "completed",
+            });
+          });
+          return;
+        }
+
+        const subjectLessonUrls = (() => {
+          if (packSubject === "physics") return ["/sub/physics.html"]; 
+          if (packSubject === "maths") return ["/sub/maths.html"]; 
+          if (packSubject === "chemistry") return ["/sub/chemistry.html"]; 
+          return [];
+        })();
+
+        const subjectQuizUrls = (() => {
+          if (packSubject === "physics")
+            return [
+              "/quiz/motionquiz.html",
+              "/quiz/nlmquiz.html",
+              "/quiz/projectilequiz.html",
+              "/quiz/rayquiz.html",
+            ];
+          if (packSubject === "maths")
+            return [
+              "/mathsquiz/calculusquiz.html",
+              "/mathsquiz/geometryquiz.html",
+              "/mathsquiz/probabilityquiz.html",
+              "/mathsquiz/vectorquiz.html",
+            ];
+          if (packSubject === "chemistry")
+            return [
+              "/chemistryquiz/atomic_structurequiz.html",
+              "/chemistryquiz/chemical_bondingquiz.html",
+              "/chemistryquiz/equilibriumquiz.html",
+              "/chemistryquiz/thermoquiz.html",
+            ];
+          return [];
+        })();
+
+        // Heuristic: quiz page companion assets live in same folders and are cached by SW anyway.
+        // But we also cache quiz JS/CSS in the pack for stronger offline reliability.
+        const subjectQuizJsAndCssUrls = (() => {
+          const urls = [];
+          const pushIf = (u) => urls.push(u);
+          if (packSubject === "physics") {
+            pushIf("/quiz/motionquiz.js");
+            pushIf("/quiz/nlmquiz.js");
+            pushIf("/quiz/projectilequiz.js");
+            pushIf("/quiz/rayquiz.js");
+            pushIf("/quiz/motionquiz.css");
+            pushIf("/quiz/nlmquiz.css");
+            pushIf("/quiz/projectilequiz.css");
+            pushIf("/quiz/rayquiz.css");
+          }
+          if (packSubject === "maths") {
+            pushIf("/mathsquiz/calculusquiz.js");
+            pushIf("/mathsquiz/geometryquiz.js");
+            pushIf("/mathsquiz/probabilityquiz.js");
+            pushIf("/mathsquiz/vectorquiz.js");
+            pushIf("/mathsquiz/calculusquiz.css");
+            pushIf("/mathsquiz/geometryquiz.css");
+            pushIf("/mathsquiz/probabilityquiz.css");
+            pushIf("/mathsquiz/vectorquiz.css");
+          }
+          if (packSubject === "chemistry") {
+            pushIf("/chemistryquiz/atomic_structurequiz.js");
+            pushIf("/chemistryquiz/chemical_bondingquiz.js");
+            pushIf("/chemistryquiz/equilibriumquiz.js");
+            pushIf("/chemistryquiz/thermoquiz.js");
+            pushIf("/chemistryquiz/atomic_structurequiz.css");
+            pushIf("/chemistryquiz/chemical_bondingquiz.css");
+            pushIf("/chemistryquiz/equilibriumquiz.css");
+            pushIf("/chemistryquiz/thermoquiz.css");
+          }
+          return urls;
+        })();
+
+        // Always include these shared JS dependencies that might be needed by quiz pages.
+        const sharedQuizDependencies = [
+          "/quizUtils.js",
+          "/quizProgress.js",
+          "/quiz/quizModel.js",
+          "/quiz/adaptiveQuiz.js",
+          "/quizUtils.test.js",
+          "/quizAssignmentHelper.js",
+        ].filter(Boolean);
+
+        const urlsToCache = [
+          ...subjectLessonUrls,
+          ...subjectQuizUrls,
+          ...subjectQuizJsAndCssUrls,
+          ...sharedQuizDependencies,
+        ];
+
+        // De-dupe
+        const uniqueUrls = [...new Set(urlsToCache)];
+        const total = uniqueUrls.length;
+        const clientsList = await self.clients.matchAll();
+
+        const broadcast = (payload) => {
+          clientsList.forEach((client) => client.postMessage(payload));
+        };
+
+        broadcast({
+          action: "offline-pack-status",
+          subject: packSubject,
+          status: "downloading",
+          downloaded: 0,
+          total,
+        });
+
+        let downloaded = 0;
+        try {
+          await Promise.all(
+            uniqueUrls.map(async (u) => {
+              try {
+                const resp = await fetch(u, { cache: "reload" });
+                if (resp && resp.ok) {
+                  await cache.put(u, resp.clone());
+                }
+              } catch (e) {
+                // Ignore individual asset failures so the pack can still succeed.
+                console.warn(`LearnSphere: Pack cache miss for ${u}`, e);
+              } finally {
+                downloaded++;
+                if (downloaded === 1 || downloaded % 3 === 0 || downloaded === total) {
+                  broadcast({
+                    action: "offline-pack-status",
+                    subject: packSubject,
+                    status: "downloading",
+                    downloaded,
+                    total,
+                  });
+                }
+              }
+            })
+          );
+
+          // Write marker so we can detect completion next time.
+          await cache.put(
+            markerUrl,
+            new Response(`ok:${packSubject}:${PACK_CACHE_VERSION}`, {
+              headers: { "Content-Type": "text/plain" },
+            })
+          );
+
+          broadcast({
+            action: "offline-pack-status",
+            subject: packSubject,
+            status: "completed",
+          });
+        } catch (err) {
+          broadcast({
+            action: "offline-pack-status",
+            subject: packSubject,
+            status: "failed",
+            error: err?.message || String(err),
+          });
+        }
+      })()
+    );
+    return;
+  }
+
   if (event.data && event.data.action === "preload") {
     event.waitUntil(
       (async () => {
@@ -317,6 +531,7 @@ self.addEventListener("message", (event) => {
       })()
     );
   }
+
 
   // Handle manual sync flush request from clients
   if (event.data && event.data.action === "flush-offline-queue") {

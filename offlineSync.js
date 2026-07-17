@@ -517,6 +517,26 @@
     initOfflineStatusBar();
   }
 
+  // ----- UI: Offline pack download status (optional relay) -----------------
+  // If a page includes the pack UI, we can still listen here and let it update its own DOM.
+  // This module does not assume specific DOM ids; it only re-dispatches a window event.
+  function initOfflinePackStatusRelay() {
+    if (!('serviceWorker' in navigator)) return;
+    try {
+      navigator.serviceWorker.addEventListener('message', (event) => {
+        const data = event.data || {};
+        if (data.action !== 'offline-pack-status') return;
+        try {
+          window.dispatchEvent(
+            new CustomEvent('learnsphere:offline-pack-status', { detail: data })
+          );
+        } catch {}
+      });
+    } catch {}
+  }
+
+  initOfflinePackStatusRelay();
+
   // Export API
   window.offlineSync = {
     queueProgressUpdate,
@@ -529,3 +549,4 @@
     initOfflineStatusBar,
   };
 })();
+
