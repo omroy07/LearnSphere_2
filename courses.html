@@ -78,8 +78,146 @@
         <button class="cta">Start Learning</button>
     </section>
 
+    <section class="content" aria-labelledby="offline-pack-title">
+        <h2 id="offline-pack-title">Download Offline Lesson Packs</h2>
+        <p style="color: var(--text-muted); margin-top: -6px;">
+            Choose a subject to cache lesson pages and quiz data for offline use.
+        </p>
+
+        <div style="display:flex; flex-wrap:wrap; gap:12px; margin-top:16px; align-items:center;">
+            <button class="offline-pack-btn" data-subject="physics">Download offline pack: Physics</button>
+            <button class="offline-pack-btn" data-subject="maths">Download offline pack: Math</button>
+            <button class="offline-pack-btn" data-subject="chemistry">Download offline pack: Chemistry</button>
+        </div>
+
+        <div id="offline-pack-status" style="margin-top:14px; padding:12px 14px; border-radius:12px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); display:none;">
+            <div style="display:flex; align-items:center; gap:10px;">
+                <span id="offline-pack-status-icon" aria-hidden="true">⬇️</span>
+                <div>
+                    <div id="offline-pack-status-text" style="font-weight:600;">Preparing…</div>
+                    <div id="offline-pack-status-progress" style="color: var(--text-muted); font-size: 0.9rem; margin-top:4px;">0 / 0 items</div>
+                </div>
+            </div>
+        </div>
+
+        <div id="offline-pack-message" style="margin-top:10px; color: var(--text-muted); font-size: 0.95rem;"></div>
+    </section>
+
     <script src="navbar.js"></script>
     <script src="script.js"></script>
+    <script src="offlineSync.js"></script>
+    <script>
+        (function () {
+            const statusEl = document.getElementById('offline-pack-status');
+            const iconEl = document.getElementById('offline-pack-status-icon');
+            const textEl = document.getElementById('offline-pack-status-text');
+            const progressEl = document.getElementById('offline-pack-status-progress');
+            const messageEl = document.getElementById('offline-pack-message');
+
+            function showStatus() {
+                if (statusEl) statusEl.style.display = 'block';
+            }
+            function hideStatus() {
+                if (statusEl) statusEl.style.display = 'none';
+            }
+
+            function setStatus({ icon, text, progressText }) {
+                if (iconEl && icon) iconEl.textContent = icon;
+                if (textEl && text) textEl.textContent = text;
+                if (progressEl && progressText) progressEl.textContent = progressText;
+                showStatus();
+            }
+
+            function getSubjectLabel(subject) {
+                if (subject === 'maths') return 'Math';
+                if (subject === 'physics') return 'Physics';
+                if (subject === 'chemistry') return 'Chemistry';
+                return subject;
+            }
+
+            async function requestPackDownload(subject) {
+                hideStatus();
+                if (messageEl) messageEl.textContent = '';
+
+                if (!('serviceWorker' in navigator)) {
+                    if (messageEl) messageEl.textContent = 'Service Worker not supported in this browser.';
+                    return;
+                }
+
+                const reg = await navigator.serviceWorker.ready;
+                if (!reg.active) {
+                    if (messageEl) messageEl.textContent = 'Service Worker not ready yet. Please try again.';
+                    return;
+                }
+
+                setStatus({
+                    icon: '⬇️',
+                    text: `Downloading offline pack: ${getSubjectLabel(subject)}`,
+                    progressText: '0 / 0 items',
+                });
+
+                reg.active.postMessage({ action: 'download-offline-pack', subject });
+            }
+
+            // UI events
+            document.querySelectorAll('.offline-pack-btn').forEach((btn) => {
+                btn.addEventListener('click', () => {
+                    const subject = btn.getAttribute('data-subject');
+                    if (subject) requestPackDownload(subject);
+                });
+            });
+
+            // Listen SW status messages
+            // Note: some browsers require a window-level relay event; offlineSync.js re-dispatches it.
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.addEventListener('message', (event) => {
+                    const data = event.data || {};
+                    if (data.action !== 'offline-pack-status') return;
+                    handleOfflinePackStatus(data);
+                });
+            }
+
+            window.addEventListener('learnsphere:offline-pack-status', (e) => {
+                const data = e.detail || {};
+                if (data.action !== 'offline-pack-status') return;
+                handleOfflinePackStatus(data);
+            });
+
+            function handleOfflinePackStatus(data) {
+                const subject = data.subject;
+                const label = getSubjectLabel(subject);
+
+                if (data.status === 'downloading') {
+                    setStatus({
+                        icon: '⬇️',
+                        text: `Downloading offline pack: ${label}`,
+                        progressText: `${data.downloaded || 0} / ${data.total || 0} items`,
+                    });
+                    if (messageEl) messageEl.textContent = 'This may take a few moments…';
+                }
+
+                if (data.status === 'completed') {
+                    setStatus({
+                        icon: '✅',
+                        text: `Offline pack ready: ${label}`,
+                        progressText: 'Completed',
+                    });
+                    if (messageEl) messageEl.textContent = 'You can now use the lessons and quizzes offline.';
+                }
+
+                if (data.status === 'failed') {
+                    setStatus({
+                        icon: '⚠️',
+                        text: `Offline pack failed: ${label}`,
+                        progressText: 'Failed',
+                    });
+                    if (messageEl) messageEl.textContent = data.error ? String(data.error) : 'Unknown error.';
+                }
+            }
+
+        })();
+    </script>
     <script src="accessibility.js" defer></script>
 </body>
 </html>
+
