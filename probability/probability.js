@@ -44,12 +44,12 @@ function loadProbabilityCalculator() {
 }
 
 function calculateProbability() {
-  const total = parseFloat(document.getElementById("total").value);
-  const favorable = parseFloat(document.getElementById("favorable").value);
-  const result = document.getElementById("result");
+  const total = parseFloat(document.getElementById('total').value);
+  const favorable = parseFloat(document.getElementById('favorable').value);
+  const result = document.getElementById('result');
 
   if (isNaN(total) || isNaN(favorable) || total <= 0 || favorable < 0) {
-    result.textContent = "Please enter valid numbers.";
+    result.textContent = 'Please enter valid numbers.';
     return;
   }
 
@@ -59,15 +59,15 @@ function calculateProbability() {
 
 // Feedback Handling
 function openFeedbackForm() {
-  document.getElementById("feedbackPopup").classList.remove("hidden");
+  document.getElementById('feedbackPopup').classList.remove('hidden');
 }
 
 function closeFeedbackForm() {
-  document.getElementById("feedbackPopup").classList.add("hidden");
+  document.getElementById('feedbackPopup').classList.add('hidden');
 }
 
 function submitFeedback() {
-  const input = document.getElementById("feedbackInput").value;
-  alert("Thanks for your feedback: " + input);
+  const input = document.getElementById('feedbackInput').value;
+  alert('Thanks for your feedback: ' + input);
   closeFeedbackForm();
 }

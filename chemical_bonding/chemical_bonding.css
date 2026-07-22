@@ -82,8 +82,7 @@ body {
 
   overflow: hidden;
 
-  background:
-    linear-gradient(145deg, #001f3f, #003566);
+  background: linear-gradient(145deg, #001f3f, #003566);
 
   padding: 25px;
 
@@ -131,8 +130,7 @@ canvas {
 
   background: #f8fafc;
 
-  box-shadow:
-    0 0 15px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
 }
 
 /* Resource Section */
@@ -152,8 +150,7 @@ canvas {
 .button-grid {
   display: grid;
 
-  grid-template-columns:
-    repeat(auto-fit, minmax(180px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
 
   gap: 15px;
 
@@ -167,8 +164,7 @@ canvas {
   align-items: center;
   justify-content: center;
 
-  background:
-    linear-gradient(135deg, #007bff, #0056b3);
+  background: linear-gradient(135deg, #007bff, #0056b3);
 
   color: white;
 
@@ -186,19 +182,16 @@ canvas {
 
   transition: all 0.3s ease;
 
-  box-shadow:
-    0 4px 10px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
 }
 
 /* Button Hover */
 .button:hover {
-  background:
-    linear-gradient(135deg, #0096ff, #0047ab);
+  background: linear-gradient(135deg, #0096ff, #0047ab);
 
   transform: translateY(-2px) scale(1.03);
 
-  box-shadow:
-    0 0 15px rgba(0, 153, 255, 0.5);
+  box-shadow: 0 0 15px rgba(0, 153, 255, 0.5);
 }
 
 /* Button Click */
@@ -208,13 +201,11 @@ canvas {
 
 /* Home Button */
 .home-btn {
-  background:
-    linear-gradient(135deg, #8e24aa, #5e35b1);
+  background: linear-gradient(135deg, #8e24aa, #5e35b1);
 }
 
 .home-btn:hover {
-  background:
-    linear-gradient(135deg, #ab47bc, #7e57c2);
+  background: linear-gradient(135deg, #ab47bc, #7e57c2);
 }
 
 /* Dark Mode Toggle */
@@ -224,8 +215,7 @@ canvas {
   top: 15px;
   right: 15px;
 
-  background:
-    linear-gradient(135deg, #facc15, #f59e0b);
+  background: linear-gradient(135deg, #facc15, #f59e0b);
 
   color: #000;
 
@@ -242,30 +232,26 @@ canvas {
 
   z-index: 1000;
 
-  box-shadow:
-    0 4px 10px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
 }
 
 /* Toggle Hover */
 .dark-toggle:hover {
   transform: scale(1.05);
 
-  background:
-    linear-gradient(135deg, #fde047, #f59e0b);
+  background: linear-gradient(135deg, #fde047, #f59e0b);
 }
 
 /* Light Mode */
 .dark-mode {
-  background:
-    linear-gradient(135deg, #f1f5f9, #e2e8f0);
+  background: linear-gradient(135deg, #f1f5f9, #e2e8f0);
 
   color: #000;
 }
 
 /* Light Mode Container */
 .dark-mode .iframe-container {
-  background:
-    linear-gradient(145deg, #ffffff, #e2e8f0);
+  background: linear-gradient(145deg, #ffffff, #e2e8f0);
 
   color: #000;
 }
@@ -287,8 +273,7 @@ canvas {
   width: 90%;
   max-width: 450px;
 
-  background:
-    rgba(15, 23, 42, 0.98);
+  background: rgba(15, 23, 42, 0.98);
 
   color: white;
 
@@ -296,8 +281,7 @@ canvas {
 
   border-radius: 20px;
 
-  box-shadow:
-    0 0 25px rgba(0, 255, 255, 0.3);
+  box-shadow: 0 0 25px rgba(0, 255, 255, 0.3);
 
   text-align: center;
 
@@ -347,8 +331,7 @@ canvas {
 .feedback-popup textarea:focus {
   border-color: #38bdf8;
 
-  box-shadow:
-    0 0 10px rgba(56, 189, 248, 0.5);
+  box-shadow: 0 0 10px rgba(56, 189, 248, 0.5);
 }
 
 /* Feedback Buttons */
@@ -358,7 +341,6 @@ canvas {
 
 /* Responsive Design */
 @media (max-width: 768px) {
-
   .title {
     font-size: 2rem;
   }
@@ -386,7 +368,6 @@ canvas {
 
 /* Mobile Devices */
 @media (max-width: 480px) {
-
   body {
     padding: 10px;
   }

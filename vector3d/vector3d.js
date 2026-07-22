@@ -10,12 +10,7 @@ function init() {
   scene = new THREE.Scene();
   scene.background = new THREE.Color(0x001f3f);
 
-  camera = new THREE.PerspectiveCamera(
-    45,
-    canvas.clientWidth / canvas.clientHeight,
-    0.1,
-    1000
-  );
+  camera = new THREE.PerspectiveCamera(45, canvas.clientWidth / canvas.clientHeight, 0.1, 1000);
   camera.position.set(5, 5, 10);
   camera.lookAt(0, 0, 0);
 
@@ -136,4 +131,3 @@ function submitFeedback() {
   closeFeedbackForm();
   alert('Thank you for your feedback!');
 }
-

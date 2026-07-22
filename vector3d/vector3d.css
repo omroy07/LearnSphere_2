@@ -59,43 +59,42 @@ canvas {
 }
 
 /* content-area */
-  .content-area {
-    background: #1a1a2e;
-    padding: 20px;
-    border-radius: 10px;
-    margin-top: 20px;
-    box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
-  }
+.content-area {
+  background: #1a1a2e;
+  padding: 20px;
+  border-radius: 10px;
+  margin-top: 20px;
+  box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
+}
 
 /* Feedback Popup */
-  .feedback-popup {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: #001f3f;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 0 15px rgba(0, 255, 255, 0.5);
-    z-index: 1000;
-    width: 90%;
-    max-width: 500px;
-  }
+.feedback-popup {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: #001f3f;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 0 15px rgba(0, 255, 255, 0.5);
+  z-index: 1000;
+  width: 90%;
+  max-width: 500px;
+}
 
-  .feedback-popup.hidden {
-    display: none;
-  }
+.feedback-popup.hidden {
+  display: none;
+}
 
-  .feedback-popup textarea {
-    width: 100%;
-    padding: 10px;
-    border-radius: 5px;
-    border: none;
-    resize: vertical;
-    margin-bottom: 10px;
-  }
+.feedback-popup textarea {
+  width: 100%;
+  padding: 10px;
+  border-radius: 5px;
+  border: none;
+  resize: vertical;
+  margin-bottom: 10px;
+}
 
-  .close-button {
-    background: #ff4444;
-  }
-
+.close-button {
+  background: #ff4444;
+}

@@ -44,13 +44,15 @@
       if (window.isWeaknessFocusMode && window.quizProgress) {
         // Prioritize weakest questions.
         // If per-question topic metadata exists, further bias toward weak topics.
-        const getQWeak = typeof window.quizProgress.getQuestionWeaknessWeight === 'function'
-          ? window.quizProgress.getQuestionWeaknessWeight.bind(window.quizProgress)
-          : null;
+        const getQWeak =
+          typeof window.quizProgress.getQuestionWeaknessWeight === 'function'
+            ? window.quizProgress.getQuestionWeaknessWeight.bind(window.quizProgress)
+            : null;
 
-        const getTopicStats = typeof window.quizProgress.getTopicStats === 'function'
-          ? window.quizProgress.getTopicStats.bind(window.quizProgress)
-          : null;
+        const getTopicStats =
+          typeof window.quizProgress.getTopicStats === 'function'
+            ? window.quizProgress.getTopicStats.bind(window.quizProgress)
+            : null;
 
         arr.sort((a, b) => {
           const wA = getQWeak ? getQWeak(a) : 0.5;
@@ -97,7 +99,6 @@
   }
 
   function createAdaptiveQuiz({ questions, startingDifficultyIndex = 1 }) {
-
     const buckets = buildBuckets(questions);
     const totalSteps = questions.length;
 
@@ -190,6 +191,4 @@
   // Export to window.
   window.createAdaptiveQuiz = createAdaptiveQuiz;
   window.getStartingDifficultyFromAccuracy = getStartingDifficultyFromAccuracy;
-
 })();
-

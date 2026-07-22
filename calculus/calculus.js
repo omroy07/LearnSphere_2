@@ -71,16 +71,15 @@ function closeFeedbackForm() {
 // Function to submit Feedback
 function submitFeedback() {
   const feedback = document.getElementById('feedbackInput').value;
-  if (feedback.trim() === "") {
-    alert("Please enter your feedback before submitting.");
+  if (feedback.trim() === '') {
+    alert('Please enter your feedback before submitting.');
     return;
   }
   // Here, you can implement the logic to send feedback to a server or email
-  alert("Thank you for your feedback!");
-  document.getElementById('feedbackInput').value = "";
+  alert('Thank you for your feedback!');
+  document.getElementById('feedbackInput').value = '';
   closeFeedbackForm();
 }
-
 
 // calculus.js
 
@@ -96,66 +95,72 @@ function loadDerivativeCalculator() {
     <button class="button" onclick="calculateDerivative()">Calculate Derivative</button>
     <div id="derivativeResult" style="margin-top: 20px; font-weight: bold; font-size: 1.2rem;"></div>
   `;
-  document.getElementById("contentArea").innerHTML = content;
+  document.getElementById('contentArea').innerHTML = content;
 }
 
 // Calculate derivative using numerical method (finite difference)
 function calculateDerivative() {
-  const funcInput = document.getElementById("funcInput").value.trim();
-  const x = parseFloat(document.getElementById("xValue").value);
+  const funcInput = document.getElementById('funcInput').value.trim();
+  const x = parseFloat(document.getElementById('xValue').value);
   const h = 0.0001;
 
   if (!funcInput) {
-    document.getElementById("derivativeResult").innerText = "Please enter a function!";
+    document.getElementById('derivativeResult').innerText = 'Please enter a function!';
     return;
   }
 
   try {
     // Create a function from user input
-    const f = new Function("x", `return ${funcInput};`);
+    const f = new Function('x', `return ${funcInput};`);
 
     // Compute numerical derivative f'(x) ≈ [f(x+h) - f(x)] / h
     const derivative = (f(x + h) - f(x)) / h;
 
     // Show result rounded to 5 decimals
-    document.getElementById("derivativeResult").innerText = `f'(${x}) ≈ ${derivative.toFixed(5)}`;
+    document.getElementById('derivativeResult').innerText = `f'(${x}) ≈ ${derivative.toFixed(5)}`;
   } catch (err) {
     // If the user input causes an error (syntax, etc.)
-    document.getElementById("derivativeResult").innerText = "❌ Invalid function! Use valid JS math functions (e.g., Math.sin(x), x*x)";
+    document.getElementById('derivativeResult').innerText =
+      '❌ Invalid function! Use valid JS math functions (e.g., Math.sin(x), x*x)';
   }
 }
 
 // Placeholder functions for other buttons
 function loadTheory() {
-  document.getElementById("contentArea").innerHTML = "<h2>📖 Theory</h2><p>Calculus theory content goes here.</p>";
+  document.getElementById('contentArea').innerHTML =
+    '<h2>📖 Theory</h2><p>Calculus theory content goes here.</p>';
 }
 function loadAnimation() {
-  document.getElementById("contentArea").innerHTML = "<h2>🎞️ Animation</h2><p>Animation will show here.</p>";
+  document.getElementById('contentArea').innerHTML =
+    '<h2>🎞️ Animation</h2><p>Animation will show here.</p>';
 }
 function loadFormulas() {
-  document.getElementById("contentArea").innerHTML = "<h2>✏️ Formula & Derivation</h2><p>Formulas and derivations go here.</p>";
+  document.getElementById('contentArea').innerHTML =
+    '<h2>✏️ Formula & Derivation</h2><p>Formulas and derivations go here.</p>';
 }
 function loadRealLifeExample() {
-  document.getElementById("contentArea").innerHTML = "<h2>🌍 Real-Life Example</h2><p>Real-life applications of calculus.</p>";
+  document.getElementById('contentArea').innerHTML =
+    '<h2>🌍 Real-Life Example</h2><p>Real-life applications of calculus.</p>';
 }
 function loadInteractive() {
-  document.getElementById("contentArea").innerHTML = "<h2>🎮 Interactive</h2><p>Interactive activities will appear here.</p>";
+  document.getElementById('contentArea').innerHTML =
+    '<h2>🎮 Interactive</h2><p>Interactive activities will appear here.</p>';
 }
 
 // Feedback Popup functions (simple show/hide)
 function openFeedbackForm() {
-  document.getElementById("feedbackPopup").classList.remove("hidden");
+  document.getElementById('feedbackPopup').classList.remove('hidden');
 }
 function closeFeedbackForm() {
-  document.getElementById("feedbackPopup").classList.add("hidden");
+  document.getElementById('feedbackPopup').classList.add('hidden');
 }
 function submitFeedback() {
-  const feedback = document.getElementById("feedbackInput").value.trim();
+  const feedback = document.getElementById('feedbackInput').value.trim();
   if (feedback) {
-    alert("Thank you for your feedback!");
-    document.getElementById("feedbackInput").value = "";
+    alert('Thank you for your feedback!');
+    document.getElementById('feedbackInput').value = '';
     closeFeedbackForm();
   } else {
-    alert("Please write some feedback before submitting.");
+    alert('Please write some feedback before submitting.');
   }
 }
