@@ -14,7 +14,7 @@ function loadTheory() {
 
 function loadAnimation() {
   // Opens PhET simulation of molecule shapes in a new tab
-  window.open("https://phet.colorado.edu/en/simulation/molecule-shapes", "_blank");
+  window.open('https://phet.colorado.edu/en/simulation/molecule-shapes', '_blank');
 }
 
 function loadFormulas() {
@@ -41,25 +41,25 @@ function loadRealLifeExample() {
 
 function loadInteractive() {
   // Opens an interactive 3D molecule viewer in a new tab
-  window.open("https://chemapps.stolaf.edu/jmol/jmol.php", "_blank");
+  window.open('https://chemapps.stolaf.edu/jmol/jmol.php', '_blank');
 }
 
 function openFeedbackForm() {
-  document.getElementById("feedbackPopup").style.display = "block";
+  document.getElementById('feedbackPopup').style.display = 'block';
 }
 
 function closeFeedbackForm() {
-  document.getElementById("feedbackPopup").style.display = "none";
+  document.getElementById('feedbackPopup').style.display = 'none';
 }
 
 function submitFeedback() {
-  const feedback = document.getElementById("feedbackInput").value.trim();
+  const feedback = document.getElementById('feedbackInput').value.trim();
   if (feedback) {
-    alert("Thank you for your feedback! 😊\n\n" + feedback);
-    document.getElementById("feedbackInput").value = "";
+    alert('Thank you for your feedback! 😊\n\n' + feedback);
+    document.getElementById('feedbackInput').value = '';
     closeFeedbackForm();
   } else {
-    alert("Please enter your feedback before submitting.");
+    alert('Please enter your feedback before submitting.');
   }
 }
 

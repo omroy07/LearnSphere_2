@@ -254,7 +254,6 @@ iframe {
 
 /* Responsive Design */
 @media (max-width: 768px) {
-
   h1 {
     font-size: 2rem;
   }
@@ -279,7 +278,6 @@ iframe {
 }
 
 @media (max-width: 480px) {
-
   body {
     padding: 10px;
   }

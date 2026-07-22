@@ -35,7 +35,7 @@
  * @property {QuizProgressState} quizProgress
  */
 
-const STORAGE_KEY = "learnsphere_state_v1";
+const STORAGE_KEY = 'learnsphere_state_v1';
 
 /** Default empty state */
 const DEFAULT_STATE = /** @type {AppState} */ ({
@@ -58,12 +58,12 @@ function _load() {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return;
     const parsed = JSON.parse(raw);
-    if (parsed && typeof parsed === "object") {
+    if (parsed && typeof parsed === 'object') {
       // shallow merge with defaults to protect against missing sections
       _state = { ...DEFAULT_STATE, ...parsed };
     }
   } catch (e) {
-    console.warn("LearnSphere: Failed to load central state", e);
+    console.warn('LearnSphere: Failed to load central state', e);
   }
 }
 
@@ -72,7 +72,7 @@ function _save() {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(_state));
   } catch (e) {
-    console.warn("LearnSphere: Failed to save central state", e);
+    console.warn('LearnSphere: Failed to save central state', e);
   }
 }
 
@@ -91,7 +91,9 @@ function setState(newState) {
 /** Helper: emit a custom event when any part of the state changes */
 function _dispatchChange() {
   try {
-    window.dispatchEvent(new CustomEvent("learnsphere:state-changed", { detail: { state: getState() } }));
+    window.dispatchEvent(
+      new CustomEvent('learnsphere:state-changed', { detail: { state: getState() } })
+    );
   } catch {}
 }
 
@@ -134,7 +136,11 @@ function recordQuizAttempt({ quizId, topicId, score, totalQuestions, correctCoun
   _state.quizProgress.attempts.push(attempt);
 
   // Update aggregated by‑topic stats
-  const agg = _state.quizProgress.byTopic[topicId] || { attempts: 0, bestScore: 0, completed: false };
+  const agg = _state.quizProgress.byTopic[topicId] || {
+    attempts: 0,
+    bestScore: 0,
+    completed: false,
+  };
   agg.attempts += 1;
   if (score > agg.bestScore) agg.bestScore = score;
   if (score === 1) agg.completed = true;

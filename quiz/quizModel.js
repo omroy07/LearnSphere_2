@@ -14,7 +14,13 @@
     return typeof x === 'string' ? x : '';
   }
 
-  function normalizeLegacySingleSelect({ topicId, quizId, questionType, questions, userSelections }) {
+  function normalizeLegacySingleSelect({
+    topicId,
+    quizId,
+    questionType,
+    questions,
+    userSelections,
+  }) {
     // Legacy format used widely in current quiz modules:
     // questions: [{ question, options?, answer }]
     // userSelections: [selectedOptionText or null]
@@ -23,7 +29,6 @@
     // - explanationCorrect: string
     // - explanationWrong: array aligned with options[] (wrong per option)
     // - whyWrong / misconceptions / remediation: legacy-ish fields used elsewhere
-
 
     const qArr = Array.isArray(questions) ? questions : [];
     const uArr = Array.isArray(userSelections) ? userSelections : [];
@@ -41,7 +46,8 @@
         return i >= 0 ? i : null;
       })();
 
-      const explanationCorrect = typeof q?.explanationCorrect === 'string' ? q.explanationCorrect : '';
+      const explanationCorrect =
+        typeof q?.explanationCorrect === 'string' ? q.explanationCorrect : '';
 
       let explanationWrong = [];
       if (Array.isArray(q?.explanationWrong)) {
@@ -82,7 +88,6 @@
         return null;
       })();
 
-
       return {
         questionId: null,
         prompt: prompt || null,
@@ -93,15 +98,11 @@
         scoreEarned: isCorrect ? 1 : 0,
         scorePossible: 1,
 
-
         // Explanation fields (optional)
         explanationCorrect,
         explanationWrong,
         explanationPicked,
       };
-
-
-
     });
 
     const correctCount = results.reduce((acc, r) => acc + (r.isCorrect ? 1 : 0), 0);
@@ -193,4 +194,3 @@
     scoreCanonicalAttempt,
   };
 })();
-

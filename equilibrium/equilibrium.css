@@ -1,115 +1,117 @@
 body {
-    background: linear-gradient(135deg, #0d0d0d, #1a1a2e);
-    color: #ffffff;
-    font-family: 'Arial', sans-serif;
-    text-align: center;
-    margin: 0;
-    padding: 0;
-    min-height: 100vh;
+  background: linear-gradient(135deg, #0d0d0d, #1a1a2e);
+  color: #ffffff;
+  font-family: 'Arial', sans-serif;
+  text-align: center;
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
 }
 
 .container {
-    max-width: 900px;
-    margin: auto;
-    padding: 20px;
-    animation: fadeIn 1.5s ease-in-out;
+  max-width: 900px;
+  margin: auto;
+  padding: 20px;
+  animation: fadeIn 1.5s ease-in-out;
 }
 
 @keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(-20px);
-    }
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
 
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .title {
-    font-size: 2.5rem;
-    text-shadow: 0 0 10px cyan;
+  font-size: 2.5rem;
+  text-shadow: 0 0 10px cyan;
 }
 
 .description {
-    font-size: 1.2rem;
-    margin-bottom: 20px;
-    opacity: 0.8;
+  font-size: 1.2rem;
+  margin-bottom: 20px;
+  opacity: 0.8;
 }
 
 .canvas-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 300px;
-    background: #001f3f;
-    border-radius: 10px;
-    box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
-    margin-bottom: 20px;
-    transition: transform 0.3s ease-in-out;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 300px;
+  background: #001f3f;
+  border-radius: 10px;
+  box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
+  margin-bottom: 20px;
+  transition: transform 0.3s ease-in-out;
 }
 
 .canvas-container:hover {
-    transform: scale(1.05);
+  transform: scale(1.05);
 }
 
-.controls, .adjustments, .button-grid {
-    margin: 10px 0;
+.controls,
+.adjustments,
+.button-grid {
+  margin: 10px 0;
 }
 
 .button {
-    background: #007bff;
-    color: white;
-    text-decoration: none;
-    padding: 12px 15px;
-    border-radius: 8px;
-    font-size: 1rem;
-    transition: 0.3s;
-    box-shadow: 0 4px 8px rgba(0, 123, 255, 0.3);
-    border: none;
-    cursor: pointer;
-    position: relative;
-    overflow: hidden;
-    margin: 5px;
+  background: #007bff;
+  color: white;
+  text-decoration: none;
+  padding: 12px 15px;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: 0.3s;
+  box-shadow: 0 4px 8px rgba(0, 123, 255, 0.3);
+  border: none;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  margin: 5px;
 }
 
 .button::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: rgba(255, 255, 255, 0.2);
-    transition: left 0.4s;
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.2);
+  transition: left 0.4s;
 }
 
 .button:hover::before {
-    left: 100%;
+  left: 100%;
 }
 
 .button:hover {
-    background: #0056b3;
-    transform: scale(1.05);
+  background: #0056b3;
+  transform: scale(1.05);
 }
 
 .info {
-    margin-top: 20px;
-    font-size: 18px;
-    font-weight: bold;
+  margin-top: 20px;
+  font-size: 18px;
+  font-weight: bold;
 }
 
 .back-button {
-    margin-top: 20px;
+  margin-top: 20px;
 }
 
 @media (max-width: 600px) {
-    .title {
-        font-size: 2rem;
-    }
+  .title {
+    font-size: 2rem;
+  }
 
-    .description {
-        font-size: 1rem;
-    }
+  .description {
+    font-size: 1rem;
+  }
 }

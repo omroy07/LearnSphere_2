@@ -1,92 +1,92 @@
 * {
-    box-sizing: border-box;
+  box-sizing: border-box;
 }
 /* General Styling */
 body {
-    font-family: Arial, sans-serif;
-    margin: 0;
-    padding: 0;
-    background-color: #f8f9fa;
-    text-align: center;
-    min-height: 100vh;
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #f8f9fa;
+  text-align: center;
+  min-height: 100vh;
 }
 
 /* Container */
 .container {
-    max-width: 800px;
-    margin: 50px auto;
-    padding: 20px;
-    background: #072645;
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  max-width: 800px;
+  margin: 50px auto;
+  padding: 20px;
+  background: #072645;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 /* Heading */
 h1 {
-    font-size: 32px;
-    color: #008374;
-    margin-bottom: 10px;
+  font-size: 32px;
+  color: #008374;
+  margin-bottom: 10px;
 }
 
 p {
-    font-size: 18px;
-    color: #555;
-    margin-bottom: 20px;
+  font-size: 18px;
+  color: #555;
+  margin-bottom: 20px;
 }
 
 /* Button Container */
 .button-container {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 15px;
-    margin-top: 20px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 15px;
+  margin-top: 20px;
 }
 
 /* Buttons */
 .button {
-    text-decoration: none;
-    padding: 12px 20px;
-    font-size: 16px;
-    font-weight: bold;
-    color: white;
-    background-color: #008374;
-    border-radius: 8px;
-    transition: background 0.3s ease;
+  text-decoration: none;
+  padding: 12px 20px;
+  font-size: 16px;
+  font-weight: bold;
+  color: white;
+  background-color: #008374;
+  border-radius: 8px;
+  transition: background 0.3s ease;
 }
 
 .button:hover {
-    background-color: #00695c;
+  background-color: #00695c;
 }
 
 /* Back Button */
 .button:last-child {
-    background-color: #333;
+  background-color: #333;
 }
 
 .button:last-child:hover {
-    background-color: #222;
+  background-color: #222;
 }
 
 /* Modal (For Future Enhancements) */
 #chapterModal {
-    display: none;
-    position: fixed;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
-    background: white;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  display: none;
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
 .close {
-    cursor: pointer;
-    font-size: 20px;
-    color: #888;
+  cursor: pointer;
+  font-size: 20px;
+  color: #888;
 }
 
 .close:hover {
-    color: #555;
+  color: #555;
 }

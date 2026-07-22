@@ -49,32 +49,32 @@ function loadDistanceCalculator() {
 }
 
 function calculateDistance() {
-  const x1 = parseFloat(document.getElementById("x1").value);
-  const y1 = parseFloat(document.getElementById("y1").value);
-  const x2 = parseFloat(document.getElementById("x2").value);
-  const y2 = parseFloat(document.getElementById("y2").value);
-  const result = document.getElementById("result");
+  const x1 = parseFloat(document.getElementById('x1').value);
+  const y1 = parseFloat(document.getElementById('y1').value);
+  const x2 = parseFloat(document.getElementById('x2').value);
+  const y2 = parseFloat(document.getElementById('y2').value);
+  const result = document.getElementById('result');
 
   if (isNaN(x1) || isNaN(y1) || isNaN(x2) || isNaN(y2)) {
-    result.textContent = "Please enter valid coordinates.";
+    result.textContent = 'Please enter valid coordinates.';
     return;
   }
 
-  const distance = Math.sqrt((x2 - x1)**2 + (y2 - y1)**2);
+  const distance = Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
   result.textContent = `Distance = ${distance.toFixed(2)}`;
 }
 
 // Feedback Form Functions
 function openFeedbackForm() {
-  document.getElementById("feedbackPopup").classList.remove("hidden");
+  document.getElementById('feedbackPopup').classList.remove('hidden');
 }
 
 function closeFeedbackForm() {
-  document.getElementById("feedbackPopup").classList.add("hidden");
+  document.getElementById('feedbackPopup').classList.add('hidden');
 }
 
 function submitFeedback() {
-  const feedback = document.getElementById("feedbackInput").value;
-  alert("Thank you for your feedback: " + feedback);
+  const feedback = document.getElementById('feedbackInput').value;
+  alert('Thank you for your feedback: ' + feedback);
   closeFeedbackForm();
 }

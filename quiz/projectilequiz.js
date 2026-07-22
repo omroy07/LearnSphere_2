@@ -1,49 +1,52 @@
 const questions = [
-    {
-        difficulty: "easy",
-        topicId: "physics-projectile",
-        skillId: "projectile-trajectory",
-        skillLabel: "Projectile Trajectory",
-        question: "What is the path of a projectile in ideal conditions?",
-        options: ["Straight line", "Circular", "Parabolic", "Elliptical"],
-        answer: "Parabolic"
-    },
-    {
-        difficulty: "easy",
-        topicId: "physics-projectile",
-        skillId: "projectile-acceleration",
-        skillLabel: "Horizontal & Vertical Acceleration",
-        question: "What is the horizontal acceleration of a projectile in the absence of air resistance?",
-        options: ["9.8 m/s²", "0 m/s²", "Depends on initial velocity", "Constant"],
-        answer: "0 m/s²"
-    },
-    {
-        difficulty: "medium",
-        topicId: "physics-projectile",
-        skillId: "projectile-velocity",
-        skillLabel: "Velocity at Peak",
-        question: "At the highest point of its trajectory, what is the vertical velocity of a projectile?",
-        options: ["Maximum", "Zero", "Equal to initial velocity", "Depends on mass"],
-        answer: "Zero"
-    },
-    {
-        difficulty: "medium",
-        topicId: "physics-projectile",
-        skillId: "projectile-range-height",
-        skillLabel: "Range & Maximum Height",
-        question: "Which factor affects the range of a projectile the most?",
-        options: ["Mass", "Launch angle", "Time of flight", "Shape"],
-        answer: "Launch angle"
-    },
-    {
-        difficulty: "hard",
-        topicId: "physics-projectile",
-        skillId: "projectile-range-height",
-        skillLabel: "Range & Maximum Height",
-        question: "What is the optimal angle for maximum range in projectile motion (neglecting air resistance)?",
-        options: ["30°", "45°", "60°", "90°"],
-        answer: "45°"
-    }
+  {
+    difficulty: 'easy',
+    topicId: 'physics-projectile',
+    skillId: 'projectile-trajectory',
+    skillLabel: 'Projectile Trajectory',
+    question: 'What is the path of a projectile in ideal conditions?',
+    options: ['Straight line', 'Circular', 'Parabolic', 'Elliptical'],
+    answer: 'Parabolic',
+  },
+  {
+    difficulty: 'easy',
+    topicId: 'physics-projectile',
+    skillId: 'projectile-acceleration',
+    skillLabel: 'Horizontal & Vertical Acceleration',
+    question:
+      'What is the horizontal acceleration of a projectile in the absence of air resistance?',
+    options: ['9.8 m/s²', '0 m/s²', 'Depends on initial velocity', 'Constant'],
+    answer: '0 m/s²',
+  },
+  {
+    difficulty: 'medium',
+    topicId: 'physics-projectile',
+    skillId: 'projectile-velocity',
+    skillLabel: 'Velocity at Peak',
+    question:
+      'At the highest point of its trajectory, what is the vertical velocity of a projectile?',
+    options: ['Maximum', 'Zero', 'Equal to initial velocity', 'Depends on mass'],
+    answer: 'Zero',
+  },
+  {
+    difficulty: 'medium',
+    topicId: 'physics-projectile',
+    skillId: 'projectile-range-height',
+    skillLabel: 'Range & Maximum Height',
+    question: 'Which factor affects the range of a projectile the most?',
+    options: ['Mass', 'Launch angle', 'Time of flight', 'Shape'],
+    answer: 'Launch angle',
+  },
+  {
+    difficulty: 'hard',
+    topicId: 'physics-projectile',
+    skillId: 'projectile-range-height',
+    skillLabel: 'Range & Maximum Height',
+    question:
+      'What is the optimal angle for maximum range in projectile motion (neglecting air resistance)?',
+    options: ['30°', '45°', '60°', '90°'],
+    answer: '45°',
+  },
 ];
 
 let adaptiveQuiz = null;
@@ -58,318 +61,311 @@ let userAnswers = new Array(questions.length).fill(null);
 let lastFocusedEl = null;
 
 function getSrStatus() {
-    return document.getElementById("sr-status");
+  return document.getElementById('sr-status');
 }
 
 function announce(message) {
-    const el = getSrStatus();
-    if (!el) return;
-    el.textContent = message;
+  const el = getSrStatus();
+  if (!el) return;
+  el.textContent = message;
 }
 
 function loadQuestion() {
-    lastFocusedEl = document.activeElement;
+  lastFocusedEl = document.activeElement;
 
-    let questionData = questions[currentQuestionIndex];
-    document.getElementById("question").textContent = questionData.question;
+  let questionData = questions[currentQuestionIndex];
+  document.getElementById('question').textContent = questionData.question;
 
-    let optionsContainer = document.getElementById("options");
-    optionsContainer.innerHTML = "";
+  let optionsContainer = document.getElementById('options');
+  optionsContainer.innerHTML = '';
 
-    // Announce current question for screen readers
-    announce(`Question ${currentQuestionIndex + 1} of ${questions.length}. ${questionData.question}`);
+  // Announce current question for screen readers
+  announce(`Question ${currentQuestionIndex + 1} of ${questions.length}. ${questionData.question}`);
 
+  let fragment = document.createDocumentFragment();
+  questionData.options.forEach(option => {
+    let btn = document.createElement('button');
+    btn.classList.add('option');
+    btn.type = 'button';
+    btn.textContent = option;
 
-    let fragment = document.createDocumentFragment();
-    questionData.options.forEach((option) => {
-        let btn = document.createElement("button");
-        btn.classList.add("option");
-        btn.type = "button";
-        btn.textContent = option;
+    btn.setAttribute('role', 'radio');
+    btn.setAttribute('aria-checked', 'false');
 
-        btn.setAttribute("role", "radio");
-        btn.setAttribute("aria-checked", "false");
+    fragment.appendChild(btn);
+  });
+  optionsContainer.appendChild(fragment);
 
-        fragment.appendChild(btn);
-    });
-    optionsContainer.appendChild(fragment);
+  selectedOption = null;
+  document.getElementById('next-btn').disabled = true;
+  document.getElementById('prev-btn').disabled = currentQuestionIndex === 0;
+  document
+    .getElementById('submit-btn')
+    .classList.toggle('hidden', currentQuestionIndex !== questions.length - 1);
+  document
+    .getElementById('next-btn')
+    .classList.toggle('hidden', currentQuestionIndex === questions.length - 1);
 
-
-    selectedOption = null;
-    document.getElementById("next-btn").disabled = true;
-    document.getElementById("prev-btn").disabled = currentQuestionIndex === 0;
-    document.getElementById("submit-btn").classList.toggle("hidden", currentQuestionIndex !== questions.length - 1);
-    document.getElementById("next-btn").classList.toggle("hidden", currentQuestionIndex === questions.length - 1);
-
-    updateProgressBar();
+  updateProgressBar();
 }
 
 function selectOption(button, option) {
-    document.querySelectorAll(".option").forEach((btn) => {
-        btn.classList.remove("selected");
-        btn.setAttribute("aria-checked", "false");
-    });
+  document.querySelectorAll('.option').forEach(btn => {
+    btn.classList.remove('selected');
+    btn.setAttribute('aria-checked', 'false');
+  });
 
-    button.classList.add("selected");
-    button.setAttribute("aria-checked", "true");
+  button.classList.add('selected');
+  button.setAttribute('aria-checked', 'true');
 
-    selectedOption = option;
-    userAnswers[currentQuestionIndex] = option;
-    document.getElementById("next-btn").disabled = false;
+  selectedOption = option;
+  userAnswers[currentQuestionIndex] = option;
+  document.getElementById('next-btn').disabled = false;
 
-    announce(`Selected: ${option}`);
+  announce(`Selected: ${option}`);
 }
 
-
 function nextQuestion() {
-    if (!selectedOption) {
-        showPopup();
-        return;
-    }
+  if (!selectedOption) {
+    showPopup();
+    return;
+  }
 
-    if (selectedOption === questions[currentQuestionIndex].answer) {
-        score++;
-    }
+  if (selectedOption === questions[currentQuestionIndex].answer) {
+    score++;
+  }
 
-    currentQuestionIndex++;
-    if (currentQuestionIndex < questions.length) {
-        loadQuestion();
-    } else {
-        showResults();
-    }
+  currentQuestionIndex++;
+  if (currentQuestionIndex < questions.length) {
+    loadQuestion();
+  } else {
+    showResults();
+  }
 }
 
 function prevQuestion() {
-    currentQuestionIndex--;
-    loadQuestion();
+  currentQuestionIndex--;
+  loadQuestion();
 }
 
 function confirmSubmit() {
-    const confirmPopup = document.getElementById("confirm-popup");
-    if (window.openDialog) {
-        window.openDialog(confirmPopup, { initialFocusId: "confirm-yes" });
-    } else {
-        confirmPopup.style.display = "block";
-    }
+  const confirmPopup = document.getElementById('confirm-popup');
+  if (window.openDialog) {
+    window.openDialog(confirmPopup, { initialFocusId: 'confirm-yes' });
+  } else {
+    confirmPopup.style.display = 'block';
+  }
 }
 
 function submitQuiz() {
-    if (!selectedOption) {
-        showPopup();
-        return;
-    }
+  if (!selectedOption) {
+    showPopup();
+    return;
+  }
 
-    if (selectedOption === questions[currentQuestionIndex].answer) {
-        score++;
-    }
+  if (selectedOption === questions[currentQuestionIndex].answer) {
+    score++;
+  }
 
-    const confirmPopup = document.getElementById("confirm-popup");
-    if (window.closeDialog) {
-        window.closeDialog(confirmPopup);
-    } else {
-        confirmPopup.style.display = "none";
-    }
-    showResults();
+  const confirmPopup = document.getElementById('confirm-popup');
+  if (window.closeDialog) {
+    window.closeDialog(confirmPopup);
+  } else {
+    confirmPopup.style.display = 'none';
+  }
+  showResults();
 }
 
 function restartQuiz() {
-    currentQuestionIndex = 0;
-    score = 0;
-    selectedOption = null;
-    userAnswers.fill(null);
+  currentQuestionIndex = 0;
+  score = 0;
+  selectedOption = null;
+  userAnswers.fill(null);
 
-    document.getElementById("quiz-box").classList.remove("hidden");
-    document.getElementById("result-box").classList.add("hidden");
+  document.getElementById('quiz-box').classList.remove('hidden');
+  document.getElementById('result-box').classList.add('hidden');
 
-    document.getElementById("progress-bar").style.width = "0%";
+  document.getElementById('progress-bar').style.width = '0%';
 
-    loadQuestion();
+  loadQuestion();
 
-    setTimeout(() => {
-        const firstOption = document.querySelector("#options .option");
-        if (firstOption) firstOption.focus();
-    }, 0);
+  setTimeout(() => {
+    const firstOption = document.querySelector('#options .option');
+    if (firstOption) firstOption.focus();
+  }, 0);
 }
 
-
 function showPopup() {
-    const popup = document.getElementById("popup");
-    if (window.openDialog) {
-        window.openDialog(popup, { initialFocusId: "popup-ok" });
-    } else {
-        lastFocusedEl = document.activeElement;
-        popup.style.display = "block";
-        const okBtn = document.getElementById("popup-ok");
-        if (okBtn) okBtn.focus();
-    }
-    announce("Warning: Please select an answer before proceeding.");
+  const popup = document.getElementById('popup');
+  if (window.openDialog) {
+    window.openDialog(popup, { initialFocusId: 'popup-ok' });
+  } else {
+    lastFocusedEl = document.activeElement;
+    popup.style.display = 'block';
+    const okBtn = document.getElementById('popup-ok');
+    if (okBtn) okBtn.focus();
+  }
+  announce('Warning: Please select an answer before proceeding.');
 }
 
 function closePopup() {
-    const popup = document.getElementById("popup");
-    if (window.closeDialog) {
-        window.closeDialog(popup);
-    } else {
-        popup.style.display = "none";
-        if (lastFocusedEl && typeof lastFocusedEl.focus === "function") lastFocusedEl.focus();
-    }
+  const popup = document.getElementById('popup');
+  if (window.closeDialog) {
+    window.closeDialog(popup);
+  } else {
+    popup.style.display = 'none';
+    if (lastFocusedEl && typeof lastFocusedEl.focus === 'function') lastFocusedEl.focus();
+  }
 }
 
 function closeConfirmPopup() {
-    const confirmPopup = document.getElementById("confirm-popup");
-    if (window.closeDialog) {
-        window.closeDialog(confirmPopup);
-    } else {
-        confirmPopup.style.display = "none";
-        if (lastFocusedEl && typeof lastFocusedEl.focus === "function") lastFocusedEl.focus();
-    }
+  const confirmPopup = document.getElementById('confirm-popup');
+  if (window.closeDialog) {
+    window.closeDialog(confirmPopup);
+  } else {
+    confirmPopup.style.display = 'none';
+    if (lastFocusedEl && typeof lastFocusedEl.focus === 'function') lastFocusedEl.focus();
+  }
 }
 
-
 function showResults() {
-    document.getElementById("quiz-box").classList.add("hidden");
-    document.getElementById("result-box").classList.remove("hidden");
+  document.getElementById('quiz-box').classList.add('hidden');
+  document.getElementById('result-box').classList.remove('hidden');
 
-    const heading = document.getElementById("result-heading");
-    if (heading) heading.focus();
+  const heading = document.getElementById('result-heading');
+  if (heading) heading.focus();
 
-    let scoreText = `You scored <strong>${score}</strong> out of ${questions.length}! 🎉`;
+  let scoreText = `You scored <strong>${score}</strong> out of ${questions.length}! 🎉`;
 
+  let feedbackHTML = '';
 
-    let feedbackHTML = "";
+  questions.forEach((q, index) => {
+    let userAnswer = userAnswers[index] || 'No answer selected';
+    let isCorrect = userAnswer === q.answer;
 
-
-
-    questions.forEach((q, index) => {
-        let userAnswer = userAnswers[index] || "No answer selected";
-        let isCorrect = userAnswer === q.answer;
-
-        feedbackHTML += `
-            <div class="${isCorrect ? "correct" : "incorrect"}">
+    feedbackHTML += `
+            <div class="${isCorrect ? 'correct' : 'incorrect'}">
                 <p><strong>Q${index + 1}:</strong> ${q.question}</p>
-                <p>Your answer: <strong class="${isCorrect ? "correct-answer" : "wrong-answer"}">${userAnswer}</strong></p>
+                <p>Your answer: <strong class="${isCorrect ? 'correct-answer' : 'wrong-answer'}">${userAnswer}</strong></p>
                 ${isCorrect ? `<p>✅ Correct!</p>` : `<p>❌ Incorrect! </p> <p class="correct-answer"> The correct answer is: <strong class="correct-answer">${q.answer}</strong></p>`}
                 <hr>
             </div>
         `;
-    });
+  });
 
-    document.getElementById("score").innerHTML = scoreText + "<br><br>" + feedbackHTML;
+  document.getElementById('score').innerHTML = scoreText + '<br><br>' + feedbackHTML;
 
-    announce(`Quiz completed. Score: ${score} out of ${questions.length}.`);
+  announce(`Quiz completed. Score: ${score} out of ${questions.length}.`);
 }
 
-
-
-
-
-
-
 function updateProgressBar() {
-    let progress = ((currentQuestionIndex + 1) / questions.length) * 100;
+  let progress = ((currentQuestionIndex + 1) / questions.length) * 100;
 
-    document.getElementById("progress-bar").style.width = progress + "%";
+  document.getElementById('progress-bar').style.width = progress + '%';
 }
 
 function getOptionButtons() {
-    return Array.from(document.querySelectorAll("#options .option"));
+  return Array.from(document.querySelectorAll('#options .option'));
 }
 
 function moveOptionFocus(delta) {
-    const options = getOptionButtons();
-    if (options.length === 0) return;
+  const options = getOptionButtons();
+  if (options.length === 0) return;
 
-    const active = document.activeElement;
-    let idx = options.indexOf(active);
-    if (idx === -1) {
-        idx = selectedOption ? options.findIndex((b) => b.textContent === selectedOption) : 0;
-        if (idx < 0) idx = 0;
-    }
+  const active = document.activeElement;
+  let idx = options.indexOf(active);
+  if (idx === -1) {
+    idx = selectedOption ? options.findIndex(b => b.textContent === selectedOption) : 0;
+    if (idx < 0) idx = 0;
+  }
 
-    const nextIdx = Math.max(0, Math.min(options.length - 1, idx + delta));
-    options[nextIdx].focus();
+  const nextIdx = Math.max(0, Math.min(options.length - 1, idx + delta));
+  options[nextIdx].focus();
 }
 
-document.addEventListener("keydown", (e) => {
-    const quizBox = document.getElementById("quiz-box");
-    if (!quizBox || quizBox.classList.contains("hidden")) return;
+document.addEventListener('keydown', e => {
+  const quizBox = document.getElementById('quiz-box');
+  if (!quizBox || quizBox.classList.contains('hidden')) return;
 
-    const options = getOptionButtons();
-    const active = document.activeElement;
-    const isOptionFocused = options.includes(active);
+  const options = getOptionButtons();
+  const active = document.activeElement;
+  const isOptionFocused = options.includes(active);
 
-    if (e.key === "Escape") {
-        const popup = document.getElementById("popup");
-        const confirmPopup = document.getElementById("confirm-popup");
-        if (popup && popup.style.display !== "none" && !popup.classList.contains("hidden")) {
-            e.preventDefault();
-            closePopup();
-            return;
-        }
-        if (confirmPopup && confirmPopup.style.display !== "none" && !confirmPopup.classList.contains("hidden")) {
-            e.preventDefault();
-            closeConfirmPopup();
-            return;
-        }
+  if (e.key === 'Escape') {
+    const popup = document.getElementById('popup');
+    const confirmPopup = document.getElementById('confirm-popup');
+    if (popup && popup.style.display !== 'none' && !popup.classList.contains('hidden')) {
+      e.preventDefault();
+      closePopup();
+      return;
+    }
+    if (
+      confirmPopup &&
+      confirmPopup.style.display !== 'none' &&
+      !confirmPopup.classList.contains('hidden')
+    ) {
+      e.preventDefault();
+      closeConfirmPopup();
+      return;
+    }
+  }
+
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+    e.preventDefault();
+    moveOptionFocus(1);
+    return;
+  }
+
+  if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+    e.preventDefault();
+    moveOptionFocus(-1);
+    return;
+  }
+
+  if (e.key === 'Enter' || e.key === ' ') {
+    if (isOptionFocused) {
+      e.preventDefault();
+      const optionText = active.textContent;
+      if (optionText) selectOption(active, optionText);
+      return;
     }
 
-    if (e.key === "ArrowRight" || e.key === "ArrowDown") {
+    if (selectedOption) {
+      const submitHidden = document.getElementById('submit-btn').classList.contains('hidden');
+      if (!submitHidden) {
         e.preventDefault();
-        moveOptionFocus(1);
-        return;
-    }
-
-    if (e.key === "ArrowLeft" || e.key === "ArrowUp") {
-        e.preventDefault();
-        moveOptionFocus(-1);
-        return;
-    }
-
-    if (e.key === "Enter" || e.key === " ") {
-        if (isOptionFocused) {
-            e.preventDefault();
-            const optionText = active.textContent;
-            if (optionText) selectOption(active, optionText);
-            return;
+        confirmSubmit();
+      } else {
+        const nextBtn = document.getElementById('next-btn');
+        if (nextBtn && !nextBtn.disabled) {
+          e.preventDefault();
+          nextQuestion();
         }
-
-        if (selectedOption) {
-            const submitHidden = document.getElementById("submit-btn").classList.contains("hidden");
-            if (!submitHidden) {
-                e.preventDefault();
-                confirmSubmit();
-            } else {
-                const nextBtn = document.getElementById("next-btn");
-                if (nextBtn && !nextBtn.disabled) {
-                    e.preventDefault();
-                    nextQuestion();
-                }
-            }
-        }
+      }
     }
+  }
 });
 
-document.addEventListener("DOMContentLoaded", () => {
-    const optContainer = document.getElementById("options");
-    if (optContainer && !optContainer.dataset.delegated) {
-        optContainer.dataset.delegated = "true";
-        optContainer.addEventListener("click", (e) => {
-            if (e.target.classList.contains("option")) {
-                selectOption(e.target, e.target.textContent);
-            }
-        });
-    }
+document.addEventListener('DOMContentLoaded', () => {
+  const optContainer = document.getElementById('options');
+  if (optContainer && !optContainer.dataset.delegated) {
+    optContainer.dataset.delegated = 'true';
+    optContainer.addEventListener('click', e => {
+      if (e.target.classList.contains('option')) {
+        selectOption(e.target, e.target.textContent);
+      }
+    });
+  }
 
-    // Initialize accessibility utilities
-    if (window.initQuizAccessibility) {
-        window.initQuizAccessibility();
-    }
-    document.getElementById("progress-bar").style.width = "0%";
-    loadQuestion();
+  // Initialize accessibility utilities
+  if (window.initQuizAccessibility) {
+    window.initQuizAccessibility();
+  }
+  document.getElementById('progress-bar').style.width = '0%';
+  loadQuestion();
 
-    setTimeout(() => {
-        const firstOption = document.querySelector("#options .option");
-        if (firstOption) firstOption.focus();
-    }, 0);
+  setTimeout(() => {
+    const firstOption = document.querySelector('#options .option');
+    if (firstOption) firstOption.focus();
+  }, 0);
 });
-

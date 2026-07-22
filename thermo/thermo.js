@@ -6,7 +6,7 @@ let animationId;
 let temperature = 300; // Kelvin
 let activationEnergy = 50; // kJ/mol
 let reactionCount = 0;
-let equilibriumState = "Not started";
+let equilibriumState = 'Not started';
 
 const numParticles = 100;
 
@@ -26,7 +26,7 @@ function createParticle() {
     vx: speed * Math.cos(angle),
     vy: speed * Math.sin(angle),
     color: 'orange',
-    reacted: false
+    reacted: false,
   };
 }
 
@@ -97,7 +97,7 @@ function animate() {
 function startSimulation() {
   resetSimulation();
   generateParticles();
-  equilibriumState = "At Equilibrium";
+  equilibriumState = 'At Equilibrium';
   updateDisplays();
   animate();
 }
@@ -106,7 +106,7 @@ function resetSimulation() {
   cancelAnimationFrame(animationId);
   particles = [];
   reactionCount = 0;
-  equilibriumState = "Not started";
+  equilibriumState = 'Not started';
   updateDisplays();
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 }
@@ -120,7 +120,7 @@ function increaseTemperature() {
     p.vx = speed * Math.cos(angle);
     p.vy = speed * Math.sin(angle);
   });
-  equilibriumState = "Shifted Right (Endothermic)";
+  equilibriumState = 'Shifted Right (Endothermic)';
   updateDisplays();
 }
 
@@ -134,7 +134,7 @@ function decreaseTemperature() {
       p.vx = speed * Math.cos(angle);
       p.vy = speed * Math.sin(angle);
     });
-    equilibriumState = "Shifted Left (Exothermic)";
+    equilibriumState = 'Shifted Left (Exothermic)';
     updateDisplays();
   }
 }
@@ -153,57 +153,62 @@ function decreaseActivationEnergy() {
 
 // Feedback Popup functions (simple show/hide)
 function openFeedbackForm() {
-  document.getElementById("feedbackPopup").classList.remove("hidden");
+  document.getElementById('feedbackPopup').classList.remove('hidden');
 }
 function closeFeedbackForm() {
-  document.getElementById("feedbackPopup").classList.add("hidden");
+  document.getElementById('feedbackPopup').classList.add('hidden');
 }
 function submitFeedback() {
-  const feedback = document.getElementById("feedbackInput").value.trim();
+  const feedback = document.getElementById('feedbackInput').value.trim();
   if (feedback) {
-    alert("Thank you for your feedback!");
-    document.getElementById("feedbackInput").value = "";
+    alert('Thank you for your feedback!');
+    document.getElementById('feedbackInput').value = '';
     closeFeedbackForm();
   } else {
-    alert("Please write some feedback before submitting.");
+    alert('Please write some feedback before submitting.');
   }
 }
 
 function loadTheory() {
-  document.getElementById("theory").scrollIntoView({ behavior: "smooth" });
+  document.getElementById('theory').scrollIntoView({ behavior: 'smooth' });
 }
 
 function loadAnimation() {
-  window.open("https://www.youtube.com/watch?v=0Gvmpg2yJQU", "_blank"); // Replace with your own
+  window.open('https://www.youtube.com/watch?v=0Gvmpg2yJQU', '_blank'); // Replace with your own
 }
 
 function loadFormulas() {
-  window.open("https://chem.libretexts.org/Bookshelves/Physical_and_Theoretical_Chemistry_Textbook_Maps", "_blank");
+  window.open(
+    'https://chem.libretexts.org/Bookshelves/Physical_and_Theoretical_Chemistry_Textbook_Maps',
+    '_blank'
+  );
 }
 
 function loadRealLifeExample() {
-  alert("Real-life example: Instant cold packs use endothermic reactions, absorbing heat to feel cold.");
+  alert(
+    'Real-life example: Instant cold packs use endothermic reactions, absorbing heat to feel cold.'
+  );
 }
 
 function loadInteractive() {
-  window.open("https://phet.colorado.edu/en/simulations/category/chemistry", "_blank");
+  window.open('https://phet.colorado.edu/en/simulations/category/chemistry', '_blank');
 }
 
 function openFeedbackForm() {
-  document.getElementById("feedbackPopup").classList.remove("hidden");
+  document.getElementById('feedbackPopup').classList.remove('hidden');
 }
 
 function closeFeedbackForm() {
-  document.getElementById("feedbackPopup").classList.add("hidden");
+  document.getElementById('feedbackPopup').classList.add('hidden');
 }
 
 function submitFeedback() {
-  const feedback = document.getElementById("feedbackInput").value.trim();
+  const feedback = document.getElementById('feedbackInput').value.trim();
   if (feedback) {
-    alert("Thank you for your feedback!");
-    document.getElementById("feedbackInput").value = "";
+    alert('Thank you for your feedback!');
+    document.getElementById('feedbackInput').value = '';
     closeFeedbackForm();
   } else {
-    alert("Please enter feedback before submitting.");
+    alert('Please enter feedback before submitting.');
   }
 }
