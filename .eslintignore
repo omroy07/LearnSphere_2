@@ -1,8 +1,5 @@
 // .eslintignore – files and directories for ESLint to ignore
 node_modules/
-.dist/
+dist/
 build/
 public/
-
-# Ignore built assets
-dist/
