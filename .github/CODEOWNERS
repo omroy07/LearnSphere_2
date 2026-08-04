@@ -1,0 +1,13 @@
+# 📚 LearnSphere CODEOWNERS
+# This file automatically requests reviews from the maintainers when their code changes.
+
+# Global default owner
+* @omroy07
+
+# Specialized backend components (AI Tutor)
+/chatbot.py @omroy07
+/requirements.txt @omroy07
+
+# Global Configuration and CI
+/.github/ @omroy07
+/package.json @omroy07
