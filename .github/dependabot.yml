@@ -1,0 +1,49 @@
+version: 2
+updates:
+  # Maintain Python dependencies for the AI Tutor (chatbot.py)
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    assignees:
+      - "omroy07"
+    reviewers:
+      - "omroy07"
+    labels:
+      - "dependencies"
+      - "python"
+    commit-message:
+      prefix: "chore(deps)"
+      include: "scope"
+
+  # Maintain Node dependencies for frontend tooling and linting
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    assignees:
+      - "omroy07"
+    reviewers:
+      - "omroy07"
+    labels:
+      - "dependencies"
+      - "javascript"
+    commit-message:
+      prefix: "chore(deps)"
+      include: "scope"
+
+  # Maintain GitHub Actions dependencies for CI pipelines
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+    assignees:
+      - "omroy07"
+    reviewers:
+      - "omroy07"
+    labels:
+      - "dependencies"
+      - "ci"
+    commit-message:
+      prefix: "ci(deps)"
+      include: "scope"
