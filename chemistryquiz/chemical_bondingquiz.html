@@ -12,7 +12,9 @@
 
 <body>
 
-  <div class="container">
+  <a class="skip-link" href="#content">Skip to content</a>
+
+  <div class="container" id="content">
     <h1 class="title">Chemical Bonding & Molecular Geometry</h1>
     <p class="description">Test your understanding of Chemical Bonding & Molecular Geometry concepts!</p>
 
@@ -21,34 +23,41 @@
       <div id="progress-bar"></div>
     </div>
 
-    <div id="quiz-box">
+    <main id="quiz-box">
       <h2 id="question">Loading...</h2>
-      <div id="options" class="options-grid"></div>
-      <button id="prev-btn" onclick="prevQuestion()" disabled>Previous</button>
-      <button id="next-btn" onclick="nextQuestion()" disabled>Next</button>
-      <button id="submit-btn" class="hidden" onclick="confirmSubmit()">Submit</button>
-    </div>
+      <div id="options" class="options-grid" role="radiogroup" aria-labelledby="question"></div>
+
+      <div class="button-group" role="group" aria-label="Quiz navigation">
+        <button id="prev-btn" onclick="prevQuestion()" disabled aria-label="Previous question">Previous</button>
+        <button id="next-btn" onclick="nextQuestion()" disabled aria-label="Next question">Next</button>
+        <button id="submit-btn" class="hidden" onclick="confirmSubmit()" aria-label="Submit quiz">Submit</button>
+      </div>
+
+      <p id="sr-status" class="sr-only" aria-live="polite" aria-atomic="true"></p>
+    </main>
 
     <!-- Warning Popup -->
-    <div id="popup" class="popup hidden">
-      <h3>⚠️ Please select an answer before proceeding!</h3>
-      <button onclick="closePopup()">OK</button>
+    <div id="popup" class="popup hidden" role="dialog" aria-modal="true" aria-labelledby="popup-title">
+      <h3 id="popup-title">⚠️ Please select an answer before proceeding!</h3>
+      <button id="popup-ok" onclick="closePopup()" aria-label="Close warning">OK</button>
     </div>
 
     <!-- Confirm Submit Popup -->
-    <div id="confirm-popup" class="popup hidden">
-      <h3>Are you sure you want to submit?</h3>
-      <button onclick="submitQuiz()">Yes, Submit</button>
-      <button onclick="closeConfirmPopup()">No, Resume</button>
+    <div id="confirm-popup" class="popup hidden" role="dialog" aria-modal="true" aria-labelledby="confirm-popup-title">
+      <h3 id="confirm-popup-title">Are you sure you want to submit?</h3>
+      <button id="confirm-yes" onclick="submitQuiz()" aria-label="Confirm submit">Yes, Submit</button>
+      <button id="confirm-no" onclick="closeConfirmPopup()" aria-label="Cancel submit">No, Resume</button>
     </div>
 
     <!-- Result Box -->
-    <div id="result-box" class="hidden">
-      <h2>🎉 Quiz Completed!</h2>
+    <section id="result-box" class="hidden" aria-labelledby="result-title">
+      <h2 id="result-title" tabindex="-1">🎉 Quiz Completed!</h2>
       <p id="score"></p>
-      <button onclick="restartQuiz()">Try Again 🔄</button>
-      <button class="motion"><a href="..\chemical_bonding\chemical_bonding.html">⬅ Back to Previous Page</a></button>
-    </div>
+      <div class="button-group" role="group" aria-label="Quiz results actions">
+        <button onclick="restartQuiz()" aria-label="Restart quiz">Try Again 🔄</button>
+        <button class="motion" onclick="window.location.href='../chemical_bonding/chemical_bonding.html'" aria-label="Back to previous page">⬅ Back</button>
+      </div>
+    </section>
   </div>
 
   <script src="../offlineSync.js"></script>
@@ -56,6 +65,7 @@
   <script src="../badges.js"></script>
   <script src="chemical_bondingquiz.js"></script>
   <script src="../quizAssignmentHelper.js"></script>
+  <script src="../accessibility.js" defer></script>
 </body>
 
 </html>
