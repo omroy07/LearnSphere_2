@@ -750,12 +750,9 @@
             askBtn.className = "action-btn";
             askBtn.style.marginTop = "6px";
             askBtn.onclick = () => {
-              fetch("/chat", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ message: `Help me understand this question: ${item.q}` })
+              window.chatbotPost("/chat", {
+                message: `Help me understand this question: ${item.q}`
               })
-                .then(res => res.json())
                 .then(data => {
                   alert(data.reply || "No reply");
                 })

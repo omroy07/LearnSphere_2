@@ -5,7 +5,12 @@ from collections import defaultdict, deque
 
 from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
+from dotenv import load_dotenv
 import google.generativeai as genai
+
+# Load the .env file (GEMINI_API_KEY, GEMINI_MODEL, etc.) before
+# reading any environment variables so `cp .env.example .env` just works.
+load_dotenv()
 
 # -----------------------------
 # Security: API key via env var
@@ -27,7 +32,8 @@ app = Flask(__name__, template_folder="templates", static_folder="static")
 CORS(app)
 
 # Create the model once at startup (cheaper than per request)
-MODEL_NAME = os.environ.get("GEMINI_MODEL", "gemini-1.5-pro")
+# gemini-2.5-flash is a current, widely-available default; override via GEMINI_MODEL.
+MODEL_NAME = os.environ.get("GEMINI_MODEL", "gemini-2.5-flash")
 model = genai.GenerativeModel(MODEL_NAME)
 
 
@@ -243,5 +249,5 @@ def explain_mistake():
 
 if __name__ == "__main__":
     debug_mode = os.environ.get("FLASK_DEBUG", "false").lower() == "true"
-    app.run(debug=debug_mode)
+    app.run(host="0.0.0.0", port=5000, debug=debug_mode)
 

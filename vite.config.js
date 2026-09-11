@@ -45,5 +45,11 @@ export default defineConfig({
   },
   server: {
     open: true,
+    proxy: {
+      // Forward AI Tutor calls to the Flask backend during development,
+      // so a CHATBOT_BASE_URL of "" (same-origin) also works with `npm run dev`.
+      '/chat': 'http://127.0.0.1:5000',
+      '/explain_mistake': 'http://127.0.0.1:5000',
+    },
   },
 });

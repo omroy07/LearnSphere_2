@@ -10,38 +10,78 @@
 <body>
     <h1>Chatbot</h1>
     <div id="chatbox"></div>
-    
+
     <div class="input-container">
-        <input type="text" id="userInput" placeholder="Type a message..." onkeypress="handleKeyPress(event)">
-        <button onclick="sendMessage()">Send</button>
+        <input type="text" id="userInput" placeholder="Type a message...">
+        <button id="sendBtn">Send</button>
     </div>
 
     <script>
-        function sendMessage() {
-            let inputField = document.getElementById("userInput");
-            let message = inputField.value.trim();
+        const chatbox = document.getElementById("chatbox");
+        const inputField = document.getElementById("userInput");
+        const sendBtn = document.getElementById("sendBtn");
 
-            if (message === "") return; // Prevent sending empty messages
+        function addMessage(sender, text) {
+            const msgEl = document.createElement("p");
 
-            fetch("/chat", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ message: message })
-            })
-            .then(response => response.json())
-            .then(data => {
-                let chatbox = document.getElementById("chatbox");
-                chatbox.innerHTML += "<p><b>You:</b> " + message + "</p>";
-                chatbox.innerHTML += "<p><b>Bot:</b> " + data.reply + "</p>";
-                inputField.value = ""; // Clear input after sending
-            });
+            const strong = document.createElement("strong");
+            strong.textContent = sender + ": ";
+            msgEl.appendChild(strong);
+
+            const body = document.createElement("span");
+            if (sender === "You") {
+                body.textContent = text; // Never trust user input as HTML
+            } else {
+                body.innerHTML = text; // Bot replies are HTML-escaped server-side
+            }
+            msgEl.appendChild(body);
+
+            chatbox.appendChild(msgEl);
+            chatbox.scrollTop = chatbox.scrollHeight;
         }
 
-        function handleKeyPress(event) {
+        function setBusy(busy) {
+            sendBtn.disabled = busy;
+            inputField.disabled = busy;
+            inputField.focus();
+        }
+
+        async function sendMessage() {
+            const message = inputField.value.trim();
+            if (!message) return;
+
+            addMessage("You", message);
+            inputField.value = "";
+            setBusy(true);
+
+            try {
+                const response = await fetch("/chat", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ message: message })
+                });
+
+                const data = await response.json().catch(() => ({}));
+
+                if (!response.ok) {
+                    throw new Error(data.error || `Server error: ${response.status}`);
+                }
+
+                addMessage("Bot", data.reply || "Sorry, I didn't understand that.");
+            } catch (error) {
+                console.error("Chatbot error:", error);
+                addMessage("Bot", "Sorry, something went wrong. Please try again later.");
+            } finally {
+                setBusy(false);
+            }
+        }
+
+        sendBtn.addEventListener("click", sendMessage);
+        inputField.addEventListener("keydown", (event) => {
             if (event.key === "Enter") {
                 sendMessage();
             }
-        }
+        });
     </script>
 </body>
 </html>

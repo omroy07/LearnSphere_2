@@ -306,41 +306,31 @@ function triggerMistakeExplanation(payload) {
     chatBox.appendChild(typingEl);
     chatBox.scrollTop = chatBox.scrollHeight;
 
-    fetch("http://127.0.0.1:5000/explain_mistake", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-            question: question,
-            learnerAnswer: userAnswer,
-            correctAnswer: correctAnswer,
-            topic: topicId || "general"
-        }),
-    })
-    .then((response) => {
-        if (!response.ok) {
-            throw new Error(`Server error: ${response.status}`);
-        }
-        return response.json();
+    window.chatbotPost("/explain_mistake", {
+      question: question,
+      learnerAnswer: userAnswer,
+      correctAnswer: correctAnswer,
+      topic: topicId || "general",
     })
     .then((data) => {
-        const typing = document.getElementById("typing-indicator");
-        if (typing) typing.remove();
+      const typing = document.getElementById("typing-indicator");
+      if (typing) typing.remove();
 
-        const reply = data.reply || "Sorry, I couldn't generate an explanation.";
-        appendMessage("Bot", reply, "bot-msg");
+      const reply = data.reply || "Sorry, I couldn't generate an explanation.";
+      appendMessage("Bot", reply, "bot-msg");
 
-        // Save last explanation per topic in localStorage for quick access
-        localStorage.setItem(`learnsphere_last_explanation_${topicId || 'general'}`, reply);
+      // Save last explanation per topic in localStorage for quick access
+      localStorage.setItem(`learnsphere_last_explanation_${topicId || 'general'}`, reply);
     })
     .catch((error) => {
-        console.error("Explain mistake error:", error);
-        const typing = document.getElementById("typing-indicator");
-        if (typing) typing.remove();
-        appendMessage(
-            "Bot",
-            "⚠️ Unable to connect to the AI tutor. Please ensure the backend server is running.",
-            "bot-msg error-msg"
-        );
+      console.error("Explain mistake error:", error);
+      const typing = document.getElementById("typing-indicator");
+      if (typing) typing.remove();
+      appendMessage(
+        "Bot",
+        "⚠️ Unable to connect to the AI tutor. Please ensure the backend server is running.",
+        "bot-msg error-msg"
+      );
     });
 }
 
@@ -367,17 +357,7 @@ function sendMessage() {
     chatBox.appendChild(typingEl);
     chatBox.scrollTop = chatBox.scrollHeight;
 
-    fetch("http://127.0.0.1:5000/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: userInput }),
-    })
-        .then((response) => {
-            if (!response.ok) {
-                throw new Error(`Server error: ${response.status}`);
-            }
-            return response.json();
-        })
+    window.chatbotPost("/chat", { message: userInput })
         .then((data) => {
             const typing = document.getElementById("typing-indicator");
             if (typing) typing.remove();
