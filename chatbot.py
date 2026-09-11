@@ -6,7 +6,7 @@ from collections import defaultdict, deque
 from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
 from dotenv import load_dotenv
-import google.generativeai as genai
+from google import genai
 
 # Load the .env file (GEMINI_API_KEY, GEMINI_MODEL, etc.) before
 # reading any environment variables so `cp .env.example .env` just works.
@@ -23,18 +23,17 @@ if not API_KEY:
         "Set it before running the server."
     )
 
-genai.configure(api_key=API_KEY)
-
 # -----------------------------
 # App setup
 # -----------------------------
 app = Flask(__name__, template_folder="templates", static_folder="static")
 CORS(app)
 
-# Create the model once at startup (cheaper than per request)
+# REST-based Gemini client (no gRPC dependency)
+client = genai.Client(api_key=API_KEY)
+
 # gemini-2.5-flash is a current, widely-available default; override via GEMINI_MODEL.
 MODEL_NAME = os.environ.get("GEMINI_MODEL", "gemini-2.5-flash")
-model = genai.GenerativeModel(MODEL_NAME)
 
 
 # -----------------------------
@@ -79,6 +78,13 @@ def format_response(text: str) -> str:
 def looks_like_abuse(user_text: str) -> bool:
     t = (user_text or "").lower()
     return any(k in t for k in ABUSE_KEYWORDS)
+
+
+def generate_reply(prompt: str, fallback: str) -> str:
+    """Call Gemini and return plain text, or `fallback` if no usable output."""
+    response = client.models.generate_content(model=MODEL_NAME, contents=prompt)
+    text = (response.text or "").strip() if response is not None else ""
+    return text if text else fallback
 
 
 # -----------------------------
@@ -161,17 +167,10 @@ def chat():
         # Structured prompt (reduces injection impact)
         prompt = f"{system_guardrails}\n\nUser message: {user_input}"
 
-        response = model.generate_content(prompt)
-
-        reply_text = ""
-        if response and getattr(response, "candidates", None):
-            cand0 = response.candidates[0] if response.candidates else None
-            parts = getattr(getattr(cand0, "content", None), "parts", None)
-            if parts and len(parts) > 0:
-                reply_text = getattr(parts[0], "text", None) or ""
-
-        if not reply_text:
-            reply_text = "I’m not sure how to respond to that. Can you try rephrasing?"
+        reply_text = generate_reply(
+            prompt,
+            "I’m not sure how to respond to that. Can you try rephrasing?",
+        )
 
         return jsonify({"reply": format_response(reply_text)})
 
@@ -225,17 +224,10 @@ def explain_mistake():
             f"Correct Answer: {correct_answer}"
         )
 
-        response = model.generate_content(prompt)
-
-        reply_text = ""
-        if response and getattr(response, "candidates", None):
-            cand0 = response.candidates[0] if response.candidates else None
-            parts = getattr(getattr(cand0, "content", None), "parts", None)
-            if parts and len(parts) > 0:
-                reply_text = getattr(parts[0], "text", None) or ""
-
-        if not reply_text:
-            reply_text = "I'm not sure how to explain this mistake. Let's review the main concept together."
+        reply_text = generate_reply(
+            prompt,
+            "I'm not sure how to explain this mistake. Let's review the main concept together.",
+        )
 
         return jsonify({"reply": format_response(reply_text)})
 
