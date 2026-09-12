@@ -4,3 +4,14 @@ services:
     build: .
     ports:
       - "8080:80"
+    depends_on:
+      - chatbot
+
+  chatbot:
+    build:
+      context: .
+      dockerfile: Dockerfile.chatbot
+    environment:
+      # Set GEMINI_API_KEY in your .env file (see .env.example)
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      GEMINI_MODEL: ${GEMINI_MODEL:-gemini-2.5-flash}

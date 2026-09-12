@@ -1,0 +1,13 @@
+# AI Tutor (Flask + Google Gemini) service image
+FROM python:3.11-slim
+WORKDIR /app
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY chatbot.py .
+COPY templates ./templates
+COPY static ./static
+
+EXPOSE 5000
+CMD ["python", "chatbot.py"]
