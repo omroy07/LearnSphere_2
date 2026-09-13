@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "lint": "eslint src/**/*.js",
+    "lint": "eslint \"**/*.js\" --ignore-pattern node_modules --ignore-pattern dist",
     "format": "prettier --write \"**/*.{js,css}\"",
     "test": "vitest run"
   },
