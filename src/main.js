@@ -1,7 +1,7 @@
-// src/main.js – Vite entry point
-// Import shared scripts and modules
-import '../quizUtils.js';
-import '../navbar.js';
+// src/main.js – Vite entry point (non-landing pages that import index module)
+import '../variables.css';
+import '../styles.css';
+import '../quizUtils.js';import '../navbar.js';
 import '../script.js';
 import '../accessibility.js';
 import '../progress.js';

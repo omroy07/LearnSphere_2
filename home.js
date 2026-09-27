@@ -5,11 +5,41 @@
  * XSS-safe: all user input is sanitized before being inserted into the DOM.
  */
 
-// ── Logout ────────────────────────────────────────────────────────────────────
-document.getElementById("logoutButton").addEventListener("click", function () {
-    localStorage.removeItem("isLoggedIn");
-    window.location.href = "index.html";
+// ── Auth gate & user greeting ─────────────────────────────────────────────────
+document.addEventListener("DOMContentLoaded", () => {
+    if (window.authIsLoggedIn && !window.authIsLoggedIn()) {
+        window.location.href = "log/login.html";
+        return;
+    }
+
+    const userRaw = localStorage.getItem("user");
+    if (userRaw) {
+        try {
+            const user = JSON.parse(userRaw);
+            const nameEl = document.getElementById("dashboardUserName");
+            if (nameEl && user.name) {
+                nameEl.textContent = user.name;
+            }
+        } catch {
+            /* ignore invalid JSON */
+        }
+    }
 });
+
+// ── Logout ────────────────────────────────────────────────────────────────────
+const logoutButton = document.getElementById("logoutButton");
+if (logoutButton) {
+    logoutButton.addEventListener("click", async function () {
+    if (window.authLogout) {
+        await window.authLogout();
+    } else {
+        localStorage.removeItem("isLoggedIn");
+        localStorage.removeItem("authToken");
+        localStorage.removeItem("user");
+    }
+    window.location.href = "index.html";
+    });
+}
 
 // ── XSS Sanitisation Helper ───────────────────────────────────────────────────
 /**

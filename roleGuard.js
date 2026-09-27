@@ -111,17 +111,29 @@
    * payload signature containing the user's role claim on every backend API request.
    */
   async function validateRoleOnServer(action, token) {
-    if (!token) {
+    const authToken = token || (typeof window !== "undefined" && window.authGetToken ? window.authGetToken() : null);
+    if (!authToken) {
       return { success: false, error: "No token provided" };
     }
-    // Blueprint for server request:
-    // const response = await fetch('/api/verify-permission', {
-    //   method: 'POST',
-    //   headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
-    //   body: JSON.stringify({ action })
-    // });
-    // return response.json();
-    return { success: true, mocked: true, action, role: getCurrentRole() };
+
+    const baseUrl = (typeof window !== "undefined" && window.AUTH_BASE_URL) || "";
+    try {
+      const response = await fetch(`${baseUrl}/api/verify-permission`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${authToken}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ action }),
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        return { success: false, error: data.error || `Server error: ${response.status}` };
+      }
+      return data;
+    } catch (error) {
+      return { success: false, error: error.message || "Verification request failed" };
+    }
   }
 
   const roleGuard = {

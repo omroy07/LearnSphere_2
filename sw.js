@@ -9,7 +9,7 @@
 // Important: Service workers cannot synchronously read manifest.json.
 // Keep a deterministic, deploy-time value so old caches are invalidated.
 // Update this when releasing a new build.
-const CACHE_VERSION = "v5";
+const CACHE_VERSION = "v6";
 const CACHE_NAME = `learnsphere-static-${CACHE_VERSION}`;
 
 // Subject pack caching version. Bump to invalidate old offline packs.
@@ -141,6 +141,16 @@ async function cacheUrlsIndividually(cache, urls) {
 }
 
 self.addEventListener("install", (event) => {
+  const url = self.location;
+  const isViteDev =
+    (url.hostname === "localhost" || url.hostname === "127.0.0.1") &&
+    (url.port === "5173" || url.port === "4173");
+
+  if (isViteDev) {
+    self.skipWaiting();
+    return;
+  }
+
   event.waitUntil(
     (async () => {
       const cache = await caches.open(CACHE_NAME);
@@ -184,8 +194,18 @@ self.addEventListener("activate", (event) => {
 
 
 self.addEventListener("fetch", (event) => {
-  const req = event.request;
   const url = requestUrl(event);
+
+  // Never intercept Vite dev server requests (avoids stale cache-first CSS/JS).
+  if (
+    url &&
+    (url.hostname === "localhost" || url.hostname === "127.0.0.1") &&
+    (url.port === "5173" || url.port === "4173")
+  ) {
+    return;
+  }
+
+  const req = event.request;
 
   // Only handle GET requests
   if (req.method !== "GET") return;

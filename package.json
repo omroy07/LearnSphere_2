@@ -4,16 +4,27 @@
   "description": "LearnSphere front‑end with linting, formatting, and Vite bundling",
   "scripts": {
     "dev": "vite",
+    "auth": "node server/index.js",
+    "dev:full": "concurrently -n auth,vite -c cyan,green \"npm run auth\" \"npm run dev\"",
     "build": "vite build",
     "lint": "eslint src/**/*.js",
     "format": "prettier --write \"**/*.{js,css}\"",
     "test": "vitest run"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "jsonwebtoken": "^9.0.2",
+    "nodemailer": "^6.10.0"
   },
   "devDependencies": {
     "eslint": "^10.11.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-prettier": "^5.1.3",
     "prettier": "^3.9.8",
+    "concurrently": "^9.1.2",
     "vite": "^8.2.0",
     "vitest": "^5.0.1"
   }

@@ -6,12 +6,31 @@ services:
       - "8080:80"
     depends_on:
       - chatbot
+      - auth
+
+  auth:
+    build:
+      context: .
+      dockerfile: Dockerfile.auth
+    environment:
+      JWT_SECRET: ${JWT_SECRET:-change-me-in-production}
+      JWT_EXPIRY_DAYS: ${JWT_EXPIRY_DAYS:-7}
+      APP_BASE_URL: ${APP_BASE_URL:-http://localhost:8080}
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+      SMTP_FROM: ${SMTP_FROM:-noreply@learnsphere.com}
+    volumes:
+      - auth_data:/app/instance
 
   chatbot:
     build:
       context: .
       dockerfile: Dockerfile.chatbot
     environment:
-      # Set GEMINI_API_KEY in your .env file (see .env.example)
       GEMINI_API_KEY: ${GEMINI_API_KEY:-}
       GEMINI_MODEL: ${GEMINI_MODEL:-gemini-2.5-flash}
+
+volumes:
+  auth_data:

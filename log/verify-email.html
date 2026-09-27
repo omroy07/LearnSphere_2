@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Verify your LearnSphere email address.">
+    <title>Verify Email – LearnSphere</title>
+    <link rel="stylesheet" href="../variables.css">
+    <script src="../theme.js"></script>
+    <link rel="stylesheet" href="login.css">
+</head>
+<body class="auth-page">
+
+    <a class="auth-skip" href="#auth-main">Skip to form</a>
+    <header class="auth-top-bar">
+        <a class="auth-brand" href="../index.html">LearnSphere</a>
+        <button type="button" id="themeToggleBtn" class="auth-theme-btn" aria-label="Toggle theme"></button>
+    </header>
+
+    <main id="auth-main" class="auth-main" role="main">
+        <div class="auth-container" role="region" aria-labelledby="verify-heading">
+            <h2 id="verify-heading">Verify Your Email</h2>
+            <p class="auth-subtitle">Click the button below to confirm your email address.</p>
+
+            <div id="auth-message" role="alert" aria-live="polite" aria-atomic="true"></div>
+
+            <button type="button" class="auth-button" id="verifyEmailBtn">
+                Verify Email
+            </button>
+
+            <p class="switch-auth">
+                <a href="login.html">Back to login</a>
+            </p>
+        </div>
+    </main>
+
+    <script src="../authConfig.js"></script>
+    <script src="../authApi.js"></script>
+    <script src="login.js"></script>
+</body>
+</html>

@@ -1,59 +1,61 @@
 /**
  * login.js — LearnSphere Authentication Logic
  *
- * Handles login and registration form submission using localStorage.
- * Note: This is a client-side demo implementation. In production,
- * authentication must be handled server-side with hashed passwords
- * and proper session management.
+ * Handles login, registration, and password reset via the Node.js auth API.
+ * JWT tokens are stored in localStorage; passwords are never stored client-side.
  */
 
 document.addEventListener('DOMContentLoaded', () => {
   const loginForm = document.getElementById('loginForm');
   const registerForm = document.getElementById('registerForm');
+  const forgotForm = document.getElementById('forgotPasswordForm');
+  const resetForm = document.getElementById('resetPasswordForm');
+  const verifyBtn = document.getElementById('verifyEmailBtn');
 
-  // BUG FIX: localStorage always returns strings, never booleans.
-  // Previously: localStorage.getItem("isLoggedIn") === true  → always false
-  // Fixed:      localStorage.getItem("isLoggedIn") === "true" → correct
   if (
     window.location.pathname.includes('login.html') &&
-    localStorage.getItem('isLoggedIn') === 'true'
+    window.authIsLoggedIn &&
+    window.authIsLoggedIn()
   ) {
     window.location.href = '../home.html';
-    return; // Prevent further execution after redirect
+    return;
   }
 
-  // ── Login Form ──────────────────────────────────────────────────
   if (loginForm) {
-    loginForm.addEventListener('submit', e => {
+    loginForm.addEventListener('submit', async e => {
       e.preventDefault();
 
       const email = document.getElementById('email').value.trim();
       const password = document.getElementById('password').value;
+      const submitBtn = document.getElementById('loginSubmitBtn');
 
       if (!email || !password) {
         showError('Please fill in all fields.');
         return;
       }
 
-      const storedUser = JSON.parse(localStorage.getItem('user'));
+      setLoading(submitBtn, true);
 
-      if (storedUser && storedUser.email === email && storedUser.password === password) {
-        localStorage.setItem('isLoggedIn', 'true'); // Store as string "true"
+      try {
+        const data = await window.authLogin(email, password);
+        window.authSetSession(data.token, data.user);
         window.location.href = '../home.html';
-      } else {
-        showError('Invalid email or password. Please try again.');
+      } catch (error) {
+        showError(error.message || 'Login failed. Please try again.');
+      } finally {
+        setLoading(submitBtn, false);
       }
     });
   }
 
-  // ── Registration Form ────────────────────────────────────────────
   if (registerForm) {
-    registerForm.addEventListener('submit', e => {
+    registerForm.addEventListener('submit', async e => {
       e.preventDefault();
 
       const fullname = document.getElementById('fullname').value.trim();
       const email = document.getElementById('email').value.trim();
       const password = document.getElementById('password').value;
+      const submitBtn = document.getElementById('registerSubmitBtn');
 
       if (!fullname || !email || !password) {
         showError('Please fill out all fields.');
@@ -65,52 +67,172 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
 
-      const user = { fullname, email, password };
-      localStorage.setItem('user', JSON.stringify(user));
+      setLoading(submitBtn, true);
 
-      // Show success before redirecting
-      showSuccess('Account created! Redirecting to login...');
-      setTimeout(() => {
-        window.location.href = 'login.html';
-      }, 1500);
+      try {
+        const data = await window.authRegister(fullname, email, password);
+        if (!data.email_verification_sent) {
+          showError(data.error || 'Account created, but the verification email could not be sent.');
+          return;
+        }
+        showSuccess(data.message || 'Account created. Check your email to verify your account, then log in.');
+        setTimeout(() => {
+          window.location.href = 'login.html';
+        }, 2000);
+      } catch (error) {
+        showError(error.message || 'Registration failed. Please try again.');
+      } finally {
+        setLoading(submitBtn, false);
+      }
+    });
+  }
+
+  if (forgotForm) {
+    forgotForm.addEventListener('submit', async e => {
+      e.preventDefault();
+
+      const email = document.getElementById('email').value.trim();
+      const submitBtn = document.getElementById('forgotSubmitBtn');
+
+      if (!email) {
+        showError('Please enter your email address.');
+        return;
+      }
+
+      setLoading(submitBtn, true);
+
+      try {
+        const data = await window.authForgotPassword(email);
+        showSuccess(data.message || 'A password reset link has been sent to your email.');
+        forgotForm.reset();
+      } catch (error) {
+        showError(error.message || 'Unable to send reset link. Please try again.');
+      } finally {
+        setLoading(submitBtn, false);
+      }
+    });
+  }
+
+  if (resetForm) {
+    const tokenInput = document.getElementById('resetToken');
+    const urlToken = new URLSearchParams(window.location.search).get('token');
+    if (tokenInput && urlToken) {
+      tokenInput.value = urlToken;
+    }
+
+    resetForm.addEventListener('submit', async e => {
+      e.preventDefault();
+
+      const token = document.getElementById('resetToken').value.trim();
+      const password = document.getElementById('password').value;
+      const submitBtn = document.getElementById('resetSubmitBtn');
+
+      if (!token || !password) {
+        showError('Please fill in all fields.');
+        return;
+      }
+
+      if (password.length < 6) {
+        showError('Password must be at least 6 characters.');
+        return;
+      }
+
+      setLoading(submitBtn, true);
+
+      try {
+        const data = await window.authResetPassword(token, password);
+        showSuccess(data.message || 'Password reset successfully. Redirecting to login...');
+        setTimeout(() => {
+          window.location.href = 'login.html';
+        }, 2000);
+      } catch (error) {
+        showError(error.message || 'Unable to reset password. Please try again.');
+      } finally {
+        setLoading(submitBtn, false);
+      }
+    });
+  }
+
+  if (verifyBtn) {
+    const urlToken = new URLSearchParams(window.location.search).get('token');
+    if (!urlToken) {
+      showError('No verification token found in the link.');
+      return;
+    }
+
+    verifyBtn.addEventListener('click', async () => {
+      setLoading(verifyBtn, true);
+
+      try {
+        const data = await window.authVerifyEmail(urlToken);
+        showSuccess(data.message || 'Email verified successfully!');
+        verifyBtn.style.display = 'none';
+      } catch (error) {
+        showError(error.message || 'Verification failed. The link may have expired.');
+      } finally {
+        setLoading(verifyBtn, false);
+      }
     });
   }
 });
 
-/**
- * Displays an inline error message instead of using alert().
- * @param {string} message
- */
+function setLoading(button, isLoading) {
+  if (!button) return;
+  button.disabled = isLoading;
+  if (isLoading) {
+    button.dataset.originalText = button.textContent;
+    button.textContent = 'Please wait...';
+  } else if (button.dataset.originalText) {
+    button.textContent = button.dataset.originalText;
+  }
+}
+
 function showError(message) {
+  const host = document.getElementById('auth-message');
+  if (host) {
+    host.className = 'auth-alert auth-alert--error';
+    host.textContent = message;
+    host.hidden = false;
+    return;
+  }
+
   let errorEl = document.getElementById('auth-error');
   if (!errorEl) {
     errorEl = document.createElement('p');
     errorEl.id = 'auth-error';
+    errorEl.className = 'auth-alert auth-alert--error';
     errorEl.setAttribute('role', 'alert');
-    errorEl.setAttribute('aria-live', 'assertive');
-    errorEl.style.cssText = 'color:#ff6b6b;font-size:0.9rem;margin-top:10px;font-weight:bold;';
-    const form = document.querySelector('form');
-    if (form) form.appendChild(errorEl);
+    const container = document.querySelector('.auth-container');
+    if (container) container.prepend(errorEl);
   }
   errorEl.textContent = message;
-  errorEl.style.display = 'block';
+  errorEl.hidden = false;
+
+  const successEl = document.getElementById('auth-success');
+  if (successEl) successEl.hidden = true;
 }
 
-/**
- * Displays an inline success message instead of using alert().
- * @param {string} message
- */
 function showSuccess(message) {
+  const host = document.getElementById('auth-message');
+  if (host) {
+    host.className = 'auth-alert auth-alert--success';
+    host.textContent = message;
+    host.hidden = false;
+    return;
+  }
+
   let successEl = document.getElementById('auth-success');
   if (!successEl) {
     successEl = document.createElement('p');
     successEl.id = 'auth-success';
+    successEl.className = 'auth-alert auth-alert--success';
     successEl.setAttribute('role', 'status');
-    successEl.setAttribute('aria-live', 'polite');
-    successEl.style.cssText = 'color:#66fcf1;font-size:0.9rem;margin-top:10px;font-weight:bold;';
-    const form = document.querySelector('form');
-    if (form) form.appendChild(successEl);
+    const container = document.querySelector('.auth-container');
+    if (container) container.prepend(successEl);
   }
   successEl.textContent = message;
-  successEl.style.display = 'block';
+  successEl.hidden = false;
+
+  const errorEl = document.getElementById('auth-error');
+  if (errorEl) errorEl.hidden = true;
 }

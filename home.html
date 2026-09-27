@@ -234,9 +234,17 @@
 </head>
 <body>
 
+    <header class="dashboard-top-bar">
+        <a class="dashboard-brand" href="index.html">LearnSphere</a>
+        <div class="dashboard-top-actions">
+            <span id="dashboardUserName" class="dashboard-user"></span>
+            <button type="button" id="themeToggleBtn" class="dashboard-theme-btn" aria-label="Toggle theme"></button>
+        </div>
+    </header>
+
     <div class="dashboard-container">
         <div style="display: flex; justify-content: center; align-items: center; gap: 12px; margin-top: 10px; flex-wrap: wrap;">
-            <h1 class="title" style="margin: 0;">Welcome to LearnSphere</h1>
+            <h1 class="title" style="margin: 0;">Welcome back</h1>
             <div id="headerStreakBadge" style="display: inline-flex; align-items: center; gap: 6px; background: rgba(255, 69, 0, 0.1); border: 1px solid rgba(255, 69, 0, 0.35); padding: 6px 14px; border-radius: 20px; font-weight: 700; color: #ff4500; font-size: 0.9rem; vertical-align: middle; box-shadow: 0 4px 15px rgba(255, 69, 0, 0.15); transition: transform 0.2s;">
                 🔥 <span id="headerStreakCount">0</span> Day Streak
             </div>
@@ -309,7 +317,7 @@
                     <span style="font-size: 1.05rem; font-weight: 700; color: var(--accent-color); display: flex; align-items: center; gap: 6px;">
                         <span>🔥</span> Daily Practice Streak
                     </span>
-                    <span id="streakDaysText" style="font-size: 1.1rem; font-weight: 800; color: #fff;">0 Days</span>
+                    <span id="streakDaysText" style="font-size: 1.1rem; font-weight: 800; color: var(--text-color);">0 Days</span>
                 </div>
                 <div class="progress-bar-track" style="margin-top: 12px; height: 10px; background: rgba(255,255,255,0.06); border-radius: 5px; overflow: hidden;">
                     <div id="streakProgressBarFill" style="height: 100%; width: 0%; background: linear-gradient(90deg, #ff8c00, #ff4500); border-radius: 5px; transition: width 0.5s ease;"></div>
@@ -368,7 +376,6 @@
         </section>
 
         <div class="footer-actions" style="margin-top: 30px; display: flex; justify-content: center; gap: 15px; align-items: center; flex-wrap: wrap;">
-            <button id="themeToggleBtn" class="theme-btn" aria-label="Toggle theme" style="background: var(--btn-secondary-bg); color: var(--text-color); border: 1px solid var(--border-color); padding: 10px 15px; border-radius: 5px; cursor: pointer; font-size: 1rem; font-weight: bold; transition: var(--theme-transition);"></button>
 
             <!-- Accessibility controls (keyboard accessible, persistent via accessibility.js) -->
             <div role="group" aria-label="Accessibility options" style="display:flex; gap:10px;">
@@ -401,6 +408,8 @@
 
     <script src="progress.js"></script>
     <script src="chatbotConfig.js"></script>
+    <script src="authConfig.js"></script>
+    <script src="authApi.js"></script>
     <script src="chatbotApi.js"></script>
     <script src="review.js"></script>
     <script src="quizProgress.js"></script>
@@ -456,15 +465,8 @@
         }
       })();
 
-      (function () {
-        if (!('serviceWorker' in navigator)) return;
-        window.addEventListener('load', function () {
-          navigator.serviceWorker.register('/sw.js').catch(function (err) {
-            console.warn('LearnSphere: Service Worker registration failed:', err);
-          });
-        });
-      })();
     </script>
+    <script src="/sw-register.js"></script>
 </body>
 </html>
 

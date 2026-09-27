@@ -1,4 +1,4 @@
-// vite.config.js – Vite configuration for LearnSphere_2
+// vite.config.mjs – Vite configuration for LearnSphere_2
 import { defineConfig } from 'vite';
 import { fileURLToPath } from 'url';
 import { readdirSync, statSync } from 'fs';
@@ -6,12 +6,6 @@ import { join, relative, dirname } from 'path';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
-// LearnSphere is a multi-page static site: every top-level and nested
-// .html file needs to be its own Rollup entry point, or Vite only
-// bundles index.html and every other page (Resources, Courses, all
-// quiz pages, etc.) is silently missing from dist/ and 404s in prod.
-// This walks the repo once at build time and builds that entry map
-// automatically, so newly added .html files don't need manual wiring.
 function findHtmlEntries(dir, entries = {}) {
   const skip = new Set(['node_modules', 'dist', '.git', '.github']);
 
@@ -24,7 +18,6 @@ function findHtmlEntries(dir, entries = {}) {
     if (stats.isDirectory()) {
       findHtmlEntries(fullPath, entries);
     } else if (name.endsWith('.html')) {
-      // Key = path relative to root, without extension, slashes -> dashes
       const relPath = relative(__dirname, fullPath).replace(/\.html$/, '');
       const key = relPath.split(/[\\/]/).join('-') || 'index';
       entries[key] = fullPath;
@@ -35,8 +28,8 @@ function findHtmlEntries(dir, entries = {}) {
 }
 
 export default defineConfig({
-  root: '.', // project root
-  publicDir: 'public', // static assets folder (if any)
+  root: '.',
+  publicDir: 'public',
   build: {
     outDir: 'dist',
     rollupOptions: {
@@ -44,12 +37,26 @@ export default defineConfig({
     },
   },
   server: {
-    open: true,
+    port: 5173,
+    strictPort: true,
+    host: 'localhost',
+    open: '/index.html',
+    hmr: {
+      host: 'localhost',
+      port: 5173,
+      clientPort: 5173,
+    },
     proxy: {
-      // Forward AI Tutor calls to the Flask backend during development,
-      // so a CHATBOT_BASE_URL of "" (same-origin) also works with `npm run dev`.
-      '/chat': 'http://127.0.0.1:5000',
+      '/chat': {
+        target: 'http://127.0.0.1:5000',
+        bypass(req) {
+          const path = (req.url || '').split('?')[0];
+          if (path !== '/chat') return path;
+        },
+      },
       '/explain_mistake': 'http://127.0.0.1:5000',
+      '/api/auth': 'http://127.0.0.1:5001',
+      '/api/verify-permission': 'http://127.0.0.1:5001',
     },
   },
 });

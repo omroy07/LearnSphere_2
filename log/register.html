@@ -9,14 +9,19 @@
     <script src="../theme.js"></script>
     <link rel="stylesheet" href="login.css">
 </head>
-<body>
+<body class="auth-page">
 
-    <main role="main">
+    <a class="auth-skip" href="#auth-main">Skip to form</a>
+    <header class="auth-top-bar">
+        <a class="auth-brand" href="../index.html">LearnSphere</a>
+        <button type="button" id="themeToggleBtn" class="auth-theme-btn" aria-label="Toggle theme"></button>
+    </header>
+
+    <main id="auth-main" class="auth-main" role="main">
         <div class="auth-container" role="region" aria-labelledby="register-heading">
             <h2 id="register-heading">Create an Account</h2>
 
-            <!-- Inline error/success messages injected by login.js -->
-            <div id="auth-message" role="alert" aria-live="assertive" aria-atomic="true"></div>
+            <div id="auth-message" role="alert" aria-live="polite" aria-atomic="true"></div>
 
             <form
                 id="registerForm"
@@ -86,6 +91,8 @@
         </div>
     </main>
 
+    <script src="../authConfig.js"></script>
+    <script src="../authApi.js"></script>
     <script src="login.js"></script>
     <script>
         // Password visibility toggle

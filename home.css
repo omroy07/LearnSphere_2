@@ -91,3 +91,51 @@ button:hover, .logout-button:hover {
     background-color: var(--btn-secondary-hover);
 }
 
+.dashboard-top-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--border-color);
+    background: var(--navbar-bg);
+    backdrop-filter: blur(8px);
+}
+
+.dashboard-brand {
+    color: var(--logo-color);
+    font-weight: 700;
+    font-size: 1.1rem;
+    text-decoration: none;
+}
+
+.dashboard-top-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.dashboard-user {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    max-width: 160px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.dashboard-theme-btn {
+    background: var(--btn-secondary-bg);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 8px 12px;
+    cursor: pointer;
+    font-size: 0.85rem;
+}
+
+.dashboard-container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0 16px 32px;
+}
+

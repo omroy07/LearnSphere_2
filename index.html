@@ -3,6 +3,24 @@
 
 <head>
     <meta charset="UTF-8">
+    <script>
+      (function () {
+        if (!('serviceWorker' in navigator)) return;
+        var port = location.port;
+        if (port !== '5173' && port !== '4173') return;
+        navigator.serviceWorker.getRegistrations().then(function (regs) {
+          regs.forEach(function (reg) { reg.unregister(); });
+        });
+        if (window.caches && caches.keys) {
+          caches.keys().then(function (keys) {
+            keys.forEach(function (key) {
+              if (key.indexOf('learnsphere-') === 0) caches.delete(key);
+            });
+          });
+        }
+      })();
+    </script>
+    <script src="/sw-register.js"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="LearnSphere – An AI-powered educational platform providing world-class education to everyone, anywhere.">
 
@@ -22,10 +40,10 @@
     <meta name="twitter:description" content="An AI-powered educational platform providing world-class education to everyone, anywhere.">
     <meta name="twitter:image" content="https://learnsphere.com/student.png">
 
-    <link rel="stylesheet" href="variables.css">
+    <link rel="stylesheet" href="/variables.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-    <script src="theme.js" defer></script>
-    <link rel="stylesheet" href="styles.css">
+    <script src="/theme.js" defer></script>
+    <link rel="stylesheet" href="/styles.css">
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" href="/student.png">
     <meta name="theme-color" content="#0f1115">
@@ -89,7 +107,7 @@
 
         <div class="buttons">
             <button class="login"><a href="log/login.html">Log in</a></button>
-            <button class="signup"><a href="log/register.html">Sign up</a></button>
+            <!-- <button class="signup"><a href="log/register.html">Sign up</a></button> -->
         </div>
     </header>
 
@@ -188,31 +206,20 @@
         </section>
     </main>
 
-    <script type="module" src="./src/main.js" defer></script>
+    <script type="module" src="./src/landing.js"></script>
 
 
 
     <script>
       (function () {
-        // Offline banner
         const banner = document.getElementById('offline-banner');
         function updateBanner() {
           if (!banner) return;
-          const isOnline = navigator.onLine;
-          banner.style.display = isOnline ? 'none' : 'block';
+          banner.style.display = navigator.onLine ? 'none' : 'block';
         }
-
         window.addEventListener('online', updateBanner);
         window.addEventListener('offline', updateBanner);
         updateBanner();
-
-        // Service Worker registration
-        if (!('serviceWorker' in navigator)) return;
-        window.addEventListener('load', function () {
-          navigator.serviceWorker.register('/sw.js').catch(function (err) {
-            console.warn('LearnSphere: Service Worker registration failed:', err);
-          });
-        });
       })();
     </script>
 
