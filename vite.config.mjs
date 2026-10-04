@@ -55,6 +55,7 @@ export default defineConfig({
         },
       },
       '/explain_mistake': 'http://127.0.0.1:5000',
+      '/api/ai': 'http://127.0.0.1:5000',
       '/api/auth': 'http://127.0.0.1:5001',
       '/api/verify-permission': 'http://127.0.0.1:5001',
     },

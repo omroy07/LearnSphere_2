@@ -34,6 +34,7 @@
 
 | Feature | Description |
 |---------|-------------|
+| 🧠 **AI Learning Assistant** | Personalized curriculum recommendations, semantic search, milestone roadmaps & interactive tutoring |
 | 🤖 **AI Tutor** | Google Gemini-powered chatbot for instant answers |
 | 📊 **Progress Tracking** | LocalStorage-backed topic completion with visual progress bar |
 | 🎮 **Interactive Simulations** | Motion, Projectile, NLM, Ray Optics, Chemical Bonding, Thermodynamics |
@@ -99,15 +100,54 @@ LearnSphere_2/
 
 ---
 
+## 🧠 AI Learning Assistant & Structured Content Engine
+
+LearnSphere includes a personalized AI Learning Assistant that analyzes a learner's background, timeline, and goals (e.g. *"I know basic JavaScript and want to become a React developer in 3 months"*), dynamically searches our structured curriculum database, and generates customized milestone roadmaps.
+
+### 🔄 The End-to-End Flow
+```
+Create Structured Content → Store in SQLite DB → AI Semantic Retrieval → User Query Understanding → Personalized Roadmap & Next Step
+```
+
+### 📚 Structured Content Catalog (8 Technical Tracks)
+1. **JavaScript**: Modern JavaScript: Core to Advanced ES6+ (Beginner to Intermediate)
+2. **React**: Modern Frontend Engineering & State Architecture (Intermediate)
+3. **Node.js**: Scalable Backend Architecture & Express APIs (Intermediate)
+4. **Python**: Python Programming & Algorithmic Problem Solving (Beginner)
+5. **Java**: Object-Oriented Engineering & Spring Boot Microservices (Intermediate)
+6. **SQL**: Relational Database Architecture, CTEs & Index Optimization (Beginner)
+7. **Machine Learning**: Foundations & Applied Scikit-Learn Pipelines (Intermediate)
+8. **Full Stack Web Development**: MERN & Modern Web Architecture Capstone (Advanced)
+
+Each course contains detailed prerequisites, topics covered, estimated hours, curriculum sequence modules, resource types (labs, videos, projects, quizzes), and hands-on capstone projects.
+
+### 🛠️ Architecture & Capabilities
+- **Backend API**: FastAPI with Pydantic validation, CORS, error handling, and OpenAPI documentation (`/docs`).
+- **Storage**: SQLite database (`backend/data/learnsphere_assistant.db`) storing courses, queries, and conversational chat history.
+- **AI & Semantic Search**:
+  - TF-IDF vectorizer + Cosine Similarity scoring over course documents.
+  - Automatic prerequisite dependency chaining and progression ordering.
+  - Google Gemini integration (`gemini-2.5-flash` / `gemini-1.5-flash`) via `google-genai`.
+  - Deterministic semantic fallback engine ensuring 100% functionality offline and without an API key.
+- **Frontend Interface**:
+  - `assistant.html`: Fully responsive UI with dark/light mode support.
+  - Visual milestone timeline, why-recommended explanation, and immediate next step callout.
+  - Interactive follow-up conversational assistant.
+  - Structured content catalog explorer with live search and filtering.
+  - Past guidance history drawer.
+
+---
+
 ## 🖥️ Tech Stack
 
 | Layer | Technology |
 |-------|-----------|
-| Frontend | HTML5, CSS3, Vanilla JavaScript |
-| Backend (AI Tutor) | Python 3, Flask, flask-cors |
-| AI Engine | Google Gemini 1.5 Pro (via `google-generativeai`) |
-| Data Persistence | Browser localStorage (progress, theme, auth) |
-| CI/CD | GitHub Actions (HTML validation, secret scanning) |
+| Frontend | HTML5, CSS3, Vanilla JavaScript, Vite |
+| Backend (AI Assistant) | Python 3, FastAPI, Uvicorn, Pydantic, Scikit-learn |
+| Backend (Auth Server) | Node.js, Express, SQLite |
+| AI Engine | Google Gemini (`google-genai`) + TF-IDF Semantic Retrieval Fallback |
+| Database | SQLite (`learnsphere_assistant.db` & `learnsphere.db`) |
+| Testing | Vitest (51 tests) & Pytest (11 tests) |
 
 ---
 
