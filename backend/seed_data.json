@@ -1,0 +1,580 @@
+[
+  {
+    "id": "course-js-core",
+    "title": "Modern JavaScript: Core to Advanced ES6+",
+    "topic": "JavaScript",
+    "slug": "modern-javascript-core",
+    "difficulty": "Beginner",
+    "description": "Master the world's most popular programming language from basic syntax to advanced asynchronous patterns, closures, event loops, and modern ES6+ features necessary for professional web development.",
+    "prerequisites": ["Basic computer literacy", "Familiarity with HTML & CSS syntax"],
+    "estimated_duration": "4 weeks (5-6 hours/week)",
+    "total_hours": 24,
+    "resource_types": ["Interactive Lab", "Video Lectures", "Project Guided", "Documentation & Cheatsheets", "Assessment Quiz"],
+    "target_roles": ["Frontend Developer", "Full Stack Developer", "Web Developer"],
+    "topics_covered": [
+      "Variables, Data Types, and Type Coercion",
+      "Functions, Scope, Closures, and Execution Context",
+      "Arrays, Objects, and Functional Methods (map, filter, reduce)",
+      "DOM Manipulation and Event Handling",
+      "Asynchronous JS: Callbacks, Promises, async/await",
+      "Fetch API, RESTful Endpoints, and JSON Parsing",
+      "Event Loop, Microtasks, and Browser Runtime",
+      "ES Modules, Tooling (Vite/Webpack), and Clean Code"
+    ],
+    "learning_sequence": [
+      {
+        "step_number": 1,
+        "title": "Module 1: JavaScript Foundations & Execution Model",
+        "duration": "1 week (6 hours)",
+        "summary": "Understand how JavaScript executes code in browsers and Node.js.",
+        "topics": ["Primitive types vs Reference types", "Scope chain & Hoisting", "Functions & Arrow syntax"],
+        "hands_on_project": "Build an Interactive Unit Converter with Dynamic DOM Updates"
+      },
+      {
+        "step_number": 2,
+        "title": "Module 2: Data Structures & Functional Programming",
+        "duration": "1 week (6 hours)",
+        "summary": "Manipulate data collections idiomatically using array transformations.",
+        "topics": ["Array methods: map, filter, reduce, find", "Object destructuring & spread operator", "Pure functions & immutability"],
+        "hands_on_project": "Build an In-Memory Product Catalog with Multi-Filter Search"
+      },
+      {
+        "step_number": 3,
+        "title": "Module 3: Asynchronous JavaScript & Network Requests",
+        "duration": "1 week (6 hours)",
+        "summary": "Tackle asynchronous flows, concurrency, and external API communication.",
+        "topics": ["Promises & Promise.all", "async/await syntax & error handling", "Fetch API & HTTP status codes"],
+        "hands_on_project": "Build a Live Weather & Forecast Dashboard consuming OpenWeather API"
+      },
+      {
+        "step_number": 4,
+        "title": "Module 4: Browser Runtime, Event Loop & Capstone",
+        "duration": "1 week (6 hours)",
+        "summary": "Deep dive into the Event Loop, performance optimization, and modular code architecture.",
+        "topics": ["Macro-tasks vs Micro-tasks", "Debounce & Throttle techniques", "ES Modules and Local Storage"],
+        "hands_on_project": "Capstone: Kanban Task Management Board with Persistence & Drag-and-Drop"
+      }
+    ],
+    "key_skills_acquired": [
+      "Modern ES6+ syntax and best practices",
+      "Asynchronous programming with async/await and promises",
+      "DOM manipulation and responsive event handling",
+      "API communication and data transformation",
+      "Debugging runtime errors and performance bottlenecks"
+    ],
+    "capstone_project": {
+      "title": "Responsive Kanban Task Manager",
+      "description": "A full-featured Kanban board featuring column sorting, state persistence in localStorage, async external sync, and keyboard accessibility.",
+      "skills_demonstrated": ["ES6 Modules", "DOM Manipulation", "Asynchronous Events", "Local Storage"]
+    }
+  },
+  {
+    "id": "course-react-engineering",
+    "title": "React: Modern Frontend Engineering & State Architecture",
+    "topic": "React",
+    "slug": "react-frontend-engineering",
+    "difficulty": "Intermediate",
+    "description": "Learn to design, architect, and deploy declarative, scalable web interfaces using React 18+, modern hooks, state management, client-side routing, and real-world API integration.",
+    "prerequisites": ["Solid JavaScript ES6+ (destructuring, arrow functions, promises)", "DOM basics"],
+    "estimated_duration": "6 weeks (6-8 hours/week)",
+    "total_hours": 40,
+    "resource_types": ["Interactive Lab", "Video Lectures", "Project Guided", "Documentation & Cheatsheets", "Assessment Quiz"],
+    "target_roles": ["React Developer", "Frontend Engineer", "Full Stack Developer", "UI Engineer"],
+    "topics_covered": [
+      "JSX, Virtual DOM, and Component Composition",
+      "State & Props: Unidirectional Data Flow",
+      "Essential Hooks: useState, useEffect, useRef",
+      "Advanced Hooks: useMemo, useCallback, useReducer",
+      "Custom Hooks & Reusable Logic Extraction",
+      "Context API and Global State Management",
+      "Client-Side Routing with React Router v6",
+      "Forms, Validation, and Performance Optimization",
+      "Connecting to REST APIs and handling loading/error states"
+    ],
+    "learning_sequence": [
+      {
+        "step_number": 1,
+        "title": "Module 1: Mental Model of React & Declarative UI",
+        "duration": "1 week (6 hours)",
+        "summary": "Transition from imperative DOM to component-driven thinking.",
+        "topics": ["JSX syntax and compilation", "Functional components & Props", "Rendering lists & Conditional elements"],
+        "hands_on_project": "Build an Interactive Course Card Showcase with Dynamic Props"
+      },
+      {
+        "step_number": 2,
+        "title": "Module 2: State, Lifecycle & Side Effects with Hooks",
+        "duration": "1.5 weeks (10 hours)",
+        "summary": "Master state persistence and side effect management.",
+        "topics": ["useState for interactive inputs", "useEffect lifecycle and cleanup", "Synchronizing with browser APIs and timers"],
+        "hands_on_project": "Build a Pomodoro Productivity Dashboard with Audio Alerts & History"
+      },
+      {
+        "step_number": 3,
+        "title": "Module 3: Advanced Hooks & Custom Hook Architecture",
+        "duration": "1 week (8 hours)",
+        "summary": "Write maintainable, dry code by abstracting logic into reusable custom hooks.",
+        "topics": ["useReducer for complex state", "useMemo & useCallback for memoization", "Building useFetch and useDebounce custom hooks"],
+        "hands_on_project": "Build a Live Searchable Film & Media Explorer with Debounced Querying"
+      },
+      {
+        "step_number": 4,
+        "title": "Module 4: Routing, Navigation & Global State",
+        "duration": "1 week (8 hours)",
+        "summary": "Create multi-page web applications with shared state.",
+        "topics": ["React Router v6 nested routes and params", "Context API + useReducer pattern", "Protected routes & authentication flows"],
+        "hands_on_project": "Build a Multi-Page Learning Portal with Protected Student Dashboard"
+      },
+      {
+        "step_number": 5,
+        "title": "Module 5: Performance Optimization & Capstone Production App",
+        "duration": "1.5 weeks (8 hours)",
+        "summary": "Optimize render cycles, code splitting, lazy loading, and deploy.",
+        "topics": ["React.memo & Profiler", "Lazy loading with Suspense", "Build tooling with Vite & Vercel deployment"],
+        "hands_on_project": "Capstone: Full-featured E-Commerce Dashboard with Shopping Cart & Checkout"
+      }
+    ],
+    "key_skills_acquired": [
+      "Building modular, reusable React components",
+      "Proficient use of built-in and custom React Hooks",
+      "Architecting state with Context and useReducer",
+      "Seamless REST API integration with optimistic UI updates",
+      "Performance tuning and bundle optimization"
+    ],
+    "capstone_project": {
+      "title": "E-Commerce Storefront & Analytics Dashboard",
+      "description": "A production-grade React single page application with product filtering, cart drawer, checkout modal, theme switcher, and persistence.",
+      "skills_demonstrated": ["React 18", "Custom Hooks", "Context API", "React Router", "Responsive CSS"]
+    }
+  },
+  {
+    "id": "course-nodejs-backend",
+    "title": "Node.js & Express: Scalable Backend Architecture",
+    "topic": "Node.js",
+    "slug": "nodejs-express-backend",
+    "difficulty": "Intermediate",
+    "description": "Design and build fast, reliable, and secure RESTful backend services and APIs using Node.js, Express, asynchronous I/O, middleware architecture, and JWT authentication.",
+    "prerequisites": ["Intermediate JavaScript (Async/await, ES modules, error handling)"],
+    "estimated_duration": "5 weeks (6-7 hours/week)",
+    "total_hours": 32,
+    "resource_types": ["Interactive Lab", "Video Lectures", "Project Guided", "Documentation & Cheatsheets", "Assessment Quiz"],
+    "target_roles": ["Backend Developer", "Node.js Engineer", "Full Stack Developer", "API Engineer"],
+    "topics_covered": [
+      "Node.js Architecture: V8 engine, Libuv, and Event Loop",
+      "File System (fs), Streams, Buffers, and Path modules",
+      "Express.js Framework: Router, Controllers, and Service layers",
+      "Middleware Architecture (Logging, Auth, Validation, CORS)",
+      "RESTful API Design Standards & HTTP Status Codes",
+      "Authentication with JSON Web Tokens (JWT) and Password Hashing (bcrypt)",
+      "Database Integration with SQLite / PostgreSQL",
+      "Rate Limiting, Security Headers (Helmet), and Error Handling Middleware"
+    ],
+    "learning_sequence": [
+      {
+        "step_number": 1,
+        "title": "Module 1: Node Runtime & Async Core",
+        "duration": "1 week (6 hours)",
+        "summary": "Understand asynchronous I/O and core Node utilities.",
+        "topics": ["Node REPL and process object", "Event Emitter & Streams", "File system operations (fs/promises)"],
+        "hands_on_project": "Build an Automated Log File Analyzer and Report Generator CLI"
+      },
+      {
+        "step_number": 2,
+        "title": "Module 2: Building Clean REST APIs with Express",
+        "duration": "1.5 weeks (9 hours)",
+        "summary": "Master HTTP routing, parameters, body parsing, and status codes.",
+        "topics": ["Express application setup", "Route parameters, queries, and body parsing", "Controller-Service-Repository pattern"],
+        "hands_on_project": "Build a RESTful Course & Lesson Management API"
+      },
+      {
+        "step_number": 3,
+        "title": "Module 3: Authentication, Security & Middleware",
+        "duration": "1.5 weeks (10 hours)",
+        "summary": "Protect resources with industry-standard tokens and validation.",
+        "topics": ["JWT creation, verification, and expiry", "Password hashing with bcrypt", "CORS, Helmet, Rate Limiting, and Joi/Zod validation"],
+        "hands_on_project": "Build a Secure Role-Based Auth Service (Learner, Teacher, Admin)"
+      },
+      {
+        "step_number": 4,
+        "title": "Module 4: Database Integration & Production Deployment",
+        "duration": "1 week (7 hours)",
+        "summary": "Connect to databases, handle transactions, and deploy services.",
+        "topics": ["Connecting SQLite/PostgreSQL with queries", "Migration scripts & seeders", "Containerization with Docker & cloud deploy"],
+        "hands_on_project": "Capstone: Collaborative Note & Bookmark API with Full CRUD and JWT"
+      }
+    ],
+    "key_skills_acquired": [
+      "Designing robust RESTful web APIs",
+      "Implementing JWT authentication and authorization guards",
+      "Middleware creation for logging, validation, and error trapping",
+      "Relational database integration and query execution",
+      "Backend security practices (sanitization, rate limits, CORS)"
+    ],
+    "capstone_project": {
+      "title": "LearnSphere Content & Review REST API",
+      "description": "A production backend providing endpoints for users, course modules, review submissions, and real-time validation with rate limits.",
+      "skills_demonstrated": ["Node.js", "Express", "SQLite", "JWT Auth", "Input Validation"]
+    }
+  },
+  {
+    "id": "course-python-mastery",
+    "title": "Python Programming & Algorithmic Problem Solving",
+    "topic": "Python",
+    "slug": "python-programming-mastery",
+    "difficulty": "Beginner",
+    "description": "Learn clean, idiomatic Python from scratch. Cover control flow, built-in data structures, object-oriented design, file processing, and algorithmic problem-solving used in web backends and data science.",
+    "prerequisites": ["None - designed for complete beginners and programmers transitioning to Python"],
+    "estimated_duration": "4 weeks (5 hours/week)",
+    "total_hours": 20,
+    "resource_types": ["Interactive Lab", "Video Lectures", "Project Guided", "Documentation & Cheatsheets", "Assessment Quiz"],
+    "target_roles": ["Python Developer", "Software Engineer", "Data Analyst", "Backend Engineer"],
+    "topics_covered": [
+      "Python Basics: Variables, Operators, Dynamic Typing",
+      "Control Structures: Conditionals, Loops, and Iterators",
+      "Collections: Lists, Tuples, Dictionaries, and Sets",
+      "List, Dict, and Generator Comprehensions",
+      "Object-Oriented Programming: Classes, Objects, Inheritance, Magic Methods",
+      "File Handling, JSON, and CSV processing",
+      "Exception Handling and Robust Error Management",
+      "Virtual Environments, Pip, and Code Structuring"
+    ],
+    "learning_sequence": [
+      {
+        "step_number": 1,
+        "title": "Module 1: Python Fundamentals & Logic",
+        "duration": "1 week (5 hours)",
+        "summary": "Learn the syntax, interactive shell, and core flow control.",
+        "topics": ["Variables & Type casting", "If-elif-else statements", "While and For loops with range"],
+        "hands_on_project": "Build an Interactive Text-based Grade Calculator & Stats Analyzer"
+      },
+      {
+        "step_number": 2,
+        "title": "Module 2: Mastering Python Data Structures",
+        "duration": "1 week (5 hours)",
+        "summary": "Harness the power of Python's built-in dictionaries, sets, and lists.",
+        "topics": ["List slicing & sorting", "Dictionary key-value lookups & hashing", "Set operations & comprehensions"],
+        "hands_on_project": "Build a Word Frequency & Text Summary Tool"
+      },
+      {
+        "step_number": 3,
+        "title": "Module 3: Object-Oriented Python Architecture",
+        "duration": "1 week (5 hours)",
+        "summary": "Structure programs using classes, encapsulation, and inheritance.",
+        "topics": ["Class definitions & __init__ constructor", "Instance vs Class variables", "Inheritance, Polymorphism & dunder methods (__str__, __repr__)"],
+        "hands_on_project": "Build a Bank Account & Transaction Ledger Simulation System"
+      },
+      {
+        "step_number": 4,
+        "title": "Module 4: File I/O, Exceptions & Capstone Project",
+        "duration": "1 week (5 hours)",
+        "summary": "Read, process, and write files while handling edge cases safely.",
+        "topics": ["Reading & writing JSON and CSV files", "Try-except-finally blocks", "Structuring Python modules and packages"],
+        "hands_on_project": "Capstone: Automated Student Gradebook & CSV Exporter Tool"
+      }
+    ],
+    "key_skills_acquired": [
+      "Writing idiomatic and PEP 8 compliant Python code",
+      "Manipulating complex data structures with comprehensions",
+      "Object-oriented design and modular program organization",
+      "Robust error handling and file system operations",
+      "Foundational coding for backend and machine learning pipelines"
+    ],
+    "capstone_project": {
+      "title": "CLI Student Performance & Report Card Generator",
+      "description": "A command-line application that ingests student test scores from CSV/JSON, calculates percentiles, identifies learning gaps, and generates formatted reports.",
+      "skills_demonstrated": ["OOP", "Data Structures", "File I/O", "Exception Handling"]
+    }
+  },
+  {
+    "id": "course-java-springboot",
+    "title": "Java: Object-Oriented Engineering & Spring Boot Microservices",
+    "topic": "Java",
+    "slug": "java-oop-springboot",
+    "difficulty": "Intermediate",
+    "description": "Build industrial-strength enterprise applications with Java 21, object-oriented design patterns, the Java Collections Framework, and production-ready Spring Boot microservices.",
+    "prerequisites": ["Basic programming knowledge in any language", "Familiarity with basic data structures"],
+    "estimated_duration": "6 weeks (6-8 hours/week)",
+    "total_hours": 42,
+    "resource_types": ["Interactive Lab", "Video Lectures", "Project Guided", "Documentation & Cheatsheets", "Assessment Quiz"],
+    "target_roles": ["Java Developer", "Enterprise Backend Engineer", "Software Engineer"],
+    "topics_covered": [
+      "Java Syntax, JVM, JRE, and Bytecode Compilation",
+      "Core OOP: Encapsulation, Inheritance, Polymorphism, Abstraction",
+      "Interfaces, Abstract Classes, and Functional Interfaces",
+      "Java Collections Framework (List, Set, Map) and Generics",
+      "Java Streams API and Lambda Expressions",
+      "Exception Handling and Multi-threading Basics",
+      "Maven Project Management and Unit Testing with JUnit 5",
+      "Spring Boot 3: Dependency Injection, Controllers, Services, and Spring Data JPA"
+    ],
+    "learning_sequence": [
+      {
+        "step_number": 1,
+        "title": "Module 1: Java Foundations & Type Safety",
+        "duration": "1 week (6 hours)",
+        "summary": "Understand strong static typing and JVM compilation.",
+        "topics": ["Primitive types vs Reference wrappers", "Methods, parameters, and return types", "Memory management & Garbage collection basics"],
+        "hands_on_project": "Build an Inventory Item Tracking Console Application"
+      },
+      {
+        "step_number": 2,
+        "title": "Module 2: Object-Oriented Architecture & Clean Design",
+        "duration": "1.5 weeks (10 hours)",
+        "summary": "Apply SOLID principles and object composition in Java.",
+        "topics": ["Classes, Constructors & Encapsulation", "Inheritance & Polymorphic dispatch", "Interfaces & Abstract classes"],
+        "hands_on_project": "Build a Vehicle Rental & Pricing Simulation Engine"
+      },
+      {
+        "step_number": 3,
+        "title": "Module 3: Collections Framework & Stream API",
+        "duration": "1 week (8 hours)",
+        "summary": "Master high-performance data processing using Streams.",
+        "topics": ["ArrayList, LinkedList, HashSet, HashMap", "Generics and type boundaries", "Lambda expressions, filter, map, and collect"],
+        "hands_on_project": "Build a Transaction Log Processor with Stream Analytics"
+      },
+      {
+        "step_number": 4,
+        "title": "Module 4: Spring Boot Core & Dependency Injection",
+        "duration": "1.5 weeks (10 hours)",
+        "summary": "Build modern backend services with the Spring framework.",
+        "topics": ["Spring Boot starter dependencies & Maven", "@RestController, @Service, and @Repository annotations", "Inversion of Control & @Autowired"],
+        "hands_on_project": "Build a RESTful Student Registration API with Spring Boot"
+      },
+      {
+        "step_number": 5,
+        "title": "Module 5: Spring Data JPA & Capstone Microservice",
+        "duration": "1 week (8 hours)",
+        "summary": "Persist entities to SQL databases and deploy.",
+        "topics": ["Entity relationships (@OneToMany, @ManyToOne)", "Spring Data JPA Repository interfaces", "Testing endpoints with MockMvc"],
+        "hands_on_project": "Capstone: Hospital Appointment Booking Microservice"
+      }
+    ],
+    "key_skills_acquired": [
+      "Mastery of Java 17/21 type system and JVM mechanics",
+      "Designing complex systems with SOLID design patterns",
+      "Declarative stream processing and generic data collections",
+      "Building enterprise RESTful microservices with Spring Boot",
+      "ORM persistence with Spring Data JPA and Hibernate"
+    ],
+    "capstone_project": {
+      "title": "Course Enrollment & Grading Microservice",
+      "description": "An enterprise-grade Spring Boot microservice handling student registrations, course prerequisite verification, grade submissions, and JPA persistence.",
+      "skills_demonstrated": ["Java 21", "Spring Boot 3", "Spring Data JPA", "H2/PostgreSQL", "JUnit 5"]
+    }
+  },
+  {
+    "id": "course-sql-database",
+    "title": "SQL & Relational Database Architecture",
+    "topic": "SQL",
+    "slug": "sql-database-mastery",
+    "difficulty": "Beginner",
+    "description": "Design efficient relational database schemas, write complex analytical SQL queries, optimize joins, understand ACID transactions, and build scalable data backends for web applications.",
+    "prerequisites": ["No prior database experience required"],
+    "estimated_duration": "4 weeks (4-5 hours/week)",
+    "total_hours": 18,
+    "resource_types": ["Interactive Lab", "Video Lectures", "Project Guided", "Documentation & Cheatsheets", "Assessment Quiz"],
+    "target_roles": ["Backend Developer", "Data Analyst", "Database Administrator", "Full Stack Developer"],
+    "topics_covered": [
+      "Relational Database Concepts and Entity Relationship (ER) Diagrams",
+      "Data Definition Language (DDL): CREATE, ALTER, DROP, Constraints",
+      "Data Manipulation Language (DML): INSERT, UPDATE, DELETE, SELECT",
+      "Filtering, Sorting, and Aggregations (WHERE, ORDER BY, GROUP BY, HAVING)",
+      "Multi-Table Relational Joins (INNER, LEFT, RIGHT, FULL OUTER, CROSS)",
+      "Subqueries, Common Table Expressions (CTEs), and Window Functions",
+      "Indexes, EXPLAIN Query Plans, and Performance Optimization",
+      "Database Transactions, Locks, and ACID Guarantees"
+    ],
+    "learning_sequence": [
+      {
+        "step_number": 1,
+        "title": "Module 1: Relational Modeling & Essential SQL Queries",
+        "duration": "1 week (4 hours)",
+        "summary": "Understand tables, foreign keys, and basic querying.",
+        "topics": ["Primary keys, foreign keys & unique constraints", "SELECT statements, WHERE filters, and string matching (LIKE)", "Sorting with ORDER BY and LIMIT pagination"],
+        "hands_on_project": "Create a School Library Schema & Run Inventory Search Queries"
+      },
+      {
+        "step_number": 2,
+        "title": "Module 2: Aggregations, Grouping & Multi-Table Joins",
+        "duration": "1 week (5 hours)",
+        "summary": "Combine multiple normalized tables and summarize trends.",
+        "topics": ["COUNT, SUM, AVG, MIN, MAX aggregations", "GROUP BY and HAVING filtering", "INNER JOIN vs LEFT/RIGHT JOIN nuances"],
+        "hands_on_project": "Build an E-Commerce Sales Reporting Query Suite"
+      },
+      {
+        "step_number": 3,
+        "title": "Module 3: Advanced SQL: CTEs, Subqueries & Window Functions",
+        "duration": "1 week (5 hours)",
+        "summary": "Write complex analytical queries without slow client-side loops.",
+        "topics": ["Correlated subqueries and EXISTS clauses", "Common Table Expressions (WITH syntax)", "Window functions: ROW_NUMBER, RANK, DENSE_RANK, LAG, LEAD"],
+        "hands_on_project": "Build a Monthly User Churn & Cohort Retention Query Dashboard"
+      },
+      {
+        "step_number": 4,
+        "title": "Module 4: Indexing, Transactions & Capstone Schema Design",
+        "duration": "1 week (4 hours)",
+        "summary": "Optimize query execution time and ensure data integrity.",
+        "topics": ["B-Tree indexes and composite indexes", "Analyzing queries with EXPLAIN", "Transactions: BEGIN, COMMIT, ROLLBACK and ACID properties"],
+        "hands_on_project": "Capstone: Multi-Tenant SaaS Billing & Subscription Database Schema"
+      }
+    ],
+    "key_skills_acquired": [
+      "Designing normalized 3NF database schemas",
+      "Writing performant multi-table joins and analytical CTEs",
+      "Window functions for time-series and cohort ranking",
+      "Index profiling and execution plan optimization",
+      "Transaction management for mission-critical operations"
+    ],
+    "capstone_project": {
+      "title": "Production E-Commerce Schema & Analytics Engine",
+      "description": "A comprehensive database schema for customers, orders, inventory, and payments with optimized indexes and an analytics query suite.",
+      "skills_demonstrated": ["Schema Design", "Complex Joins", "Window Functions", "Index Optimization"]
+    }
+  },
+  {
+    "id": "course-ml-foundations",
+    "title": "Machine Learning Foundations & Applied Scikit-Learn",
+    "topic": "Machine Learning",
+    "slug": "machine-learning-foundations",
+    "difficulty": "Intermediate",
+    "description": "Learn the mathematics, data preprocessing, and algorithm implementations behind modern machine learning. Train, evaluate, and tune supervised and unsupervised models using Python, NumPy, Pandas, and Scikit-Learn.",
+    "prerequisites": ["Python programming proficiency", "Basic algebra and introductory statistics"],
+    "estimated_duration": "6 weeks (6-8 hours/week)",
+    "total_hours": 44,
+    "resource_types": ["Interactive Lab", "Video Lectures", "Project Guided", "Documentation & Cheatsheets", "Assessment Quiz"],
+    "target_roles": ["Machine Learning Engineer", "Data Scientist", "AI Engineer", "Data Analyst"],
+    "topics_covered": [
+      "Machine Learning Workflow: Problem Formulation & Validation Splits",
+      "Data Manipulation with Pandas & Numerical Computing with NumPy",
+      "Feature Engineering, Imputation, One-Hot Encoding, and Scaling",
+      "Supervised Learning: Linear Regression, Logistic Regression",
+      "Tree-based Models: Decision Trees, Random Forests, Gradient Boosting",
+      "Model Evaluation Metrics: Precision, Recall, F1-Score, ROC-AUC, Confusion Matrix",
+      "Hyperparameter Tuning with GridSearchCV and Cross-Validation",
+      "Unsupervised Learning: K-Means Clustering and Dimensionality Reduction (PCA)",
+      "Deploying Models as REST APIs with FastAPI"
+    ],
+    "learning_sequence": [
+      {
+        "step_number": 1,
+        "title": "Module 1: Data Preparation, Pandas & Exploratory Data Analysis (EDA)",
+        "duration": "1 week (6 hours)",
+        "summary": "Clean and preprocess raw datasets for machine learning models.",
+        "topics": ["Pandas DataFrame transformations", "Handling missing values and outliers", "Feature scaling with StandardScaler and MinMaxScaler"],
+        "hands_on_project": "Build an Automated EDA Pipeline for Housing Price Data"
+      },
+      {
+        "step_number": 2,
+        "title": "Module 2: Supervised Learning: Regression & Classification",
+        "duration": "1.5 weeks (10 hours)",
+        "summary": "Train predictive models for continuous and categorical targets.",
+        "topics": ["Cost functions & Gradient descent intuition", "Linear Regression for price prediction", "Logistic Regression for binary classification"],
+        "hands_on_project": "Build a Diabetes Risk Prediction Classifier"
+      },
+      {
+        "step_number": 3,
+        "title": "Module 3: Ensemble Methods & Hyperparameter Optimization",
+        "duration": "1.5 weeks (10 hours)",
+        "summary": "Boost predictive accuracy using Random Forests and cross-validation.",
+        "topics": ["Decision tree splitting criteria (Gini, Entropy)", "Random Forests & Feature Importance", "GridSearchCV and RandomizedSearchCV for tuning"],
+        "hands_on_project": "Build a Customer Churn Predictor with 85%+ ROC-AUC"
+      },
+      {
+        "step_number": 4,
+        "title": "Module 4: Unsupervised Learning & Clustering",
+        "duration": "1 week (8 hours)",
+        "summary": "Discover hidden structures in unlabeled data.",
+        "topics": ["K-Means clustering and Elbow method", "Principal Component Analysis (PCA) for visualization", "Anomaly detection fundamentals"],
+        "hands_on_project": "Customer Segmentation & Behavioral Clustering for Retailers"
+      },
+      {
+        "step_number": 5,
+        "title": "Module 5: Model Deployment & Live API Serving",
+        "duration": "1 week (10 hours)",
+        "summary": "Export trained models and serve them through high-speed APIs.",
+        "topics": ["Model serialization with joblib/pickle", "FastAPI inference endpoint creation", "Input data validation with Pydantic"],
+        "hands_on_project": "Capstone: End-to-End Loan Default Prediction Service with Live API"
+      }
+    ],
+    "key_skills_acquired": [
+      "End-to-end data preprocessing and feature pipeline construction",
+      "Selecting and training appropriate ML algorithms for business tasks",
+      "Rigorous model evaluation and overfitting prevention",
+      "Dimensionality reduction and customer segmentation",
+      "Exporting and deploying machine learning models into production APIs"
+    ],
+    "capstone_project": {
+      "title": "Production Credit Default Predictor & FastAPI Service",
+      "description": "A trained gradient boosted classification pipeline saved with joblib, wrapped in a FastAPI endpoint that receives applicant parameters and returns risk scores with confidence intervals.",
+      "skills_demonstrated": ["Scikit-Learn", "Feature Pipelines", "FastAPI", "ROC-AUC Analysis"]
+    }
+  },
+  {
+    "id": "course-fullstack-capstone",
+    "title": "Full Stack Web Development: Modern Web Applications",
+    "topic": "Full Stack Web Development",
+    "slug": "full-stack-web-development",
+    "difficulty": "Advanced",
+    "description": "Integrate React, Node.js, Express, and SQL into a unified, production-ready full-stack application featuring authentication, state management, REST APIs, automated testing, and CI/CD deployment.",
+    "prerequisites": ["React fundamentals", "Node.js & Express fundamentals", "Basic SQL querying"],
+    "estimated_duration": "6 weeks (8-10 hours/week)",
+    "total_hours": 50,
+    "resource_types": ["Interactive Lab", "Video Lectures", "Project Guided", "Documentation & Cheatsheets", "Assessment Quiz"],
+    "target_roles": ["Full Stack Developer", "Software Engineer", "Web Application Developer"],
+    "topics_covered": [
+      "Full Stack Architecture & Monorepo / Split Repo Workflows",
+      "End-to-End Authentication: Cookies, JWT, and Session Lifecycle",
+      "RESTful API Contract Design and Schema Sharing",
+      "State Management on Frontend: Context API & Optimistic Updates",
+      "Database Schema Design, Migrations & Transactions",
+      "File Uploads, Cloud Storage & Asset Optimization",
+      "Automated Testing: Unit (Vitest/Jest) and Integration Testing (Supertest)",
+      "Containerization with Docker & Cloud Deployment (Vercel + Render)"
+    ],
+    "learning_sequence": [
+      {
+        "step_number": 1,
+        "title": "Module 1: Full-Stack System Design & Project Scaffolding",
+        "duration": "1 week (8 hours)",
+        "summary": "Plan database entities, API endpoints, and clean client-server architecture.",
+        "topics": ["Client-server separation & CORS configuration", "Environment variable management across tiers", "Standardizing JSON error contracts"],
+        "hands_on_project": "Scaffold Monorepo with Vite Frontend and Express Backend"
+      },
+      {
+        "step_number": 2,
+        "title": "Module 2: Complete Authentication & User Sessions",
+        "duration": "1.5 weeks (12 hours)",
+        "summary": "Implement secure sign-up, sign-in, token refresh, and password recovery.",
+        "topics": ["HttpOnly cookies vs LocalStorage tokens", "Route guards on frontend and auth middleware on backend", "Role-based authorization checks"],
+        "hands_on_project": "Build an End-to-End Authentication Module with Protected Dashboards"
+      },
+      {
+        "step_number": 3,
+        "title": "Module 3: Core Business Logic, Data Persistence & CRUD",
+        "duration": "1.5 weeks (14 hours)",
+        "summary": "Connect frontend components directly to database queries.",
+        "topics": ["Pagination, filtering, and search across tiers", "Optimistic UI updates for snappy responsiveness", "Handling concurrency and transaction rollbacks"],
+        "hands_on_project": "Build a Collaborative Course Review & Rating Platform"
+      },
+      {
+        "step_number": 4,
+        "title": "Module 4: Testing, Dockerizing & Production Deployment",
+        "duration": "2 weeks (16 hours)",
+        "summary": "Test all components, package into Docker, and deploy live.",
+        "topics": ["End-to-end API testing with Supertest", "Writing Dockerfiles for frontend & backend", "Deploying with CI/CD GitHub Actions"],
+        "hands_on_project": "Capstone: Launch the Complete LearnSphere Community Platform Live"
+      }
+    ],
+    "key_skills_acquired": [
+      "Connecting React frontends to Node.js backend services seamlessly",
+      "Architecting secure token-based user authentication systems",
+      "Designing resilient database models and transactions",
+      "Writing automated tests across backend APIs and frontend UI",
+      "Building and deploying containerized full-stack web applications"
+    ],
+    "capstone_project": {
+      "title": "LearnSphere Collaborative Learning Platform",
+      "description": "A complete full-stack web application featuring user authentication, course enrollment, interactive roadmaps, real-time reviews, and persistent progress tracking.",
+      "skills_demonstrated": ["React", "Node.js", "Express", "SQLite", "Docker", "REST APIs"]
+    }
+  }
+]

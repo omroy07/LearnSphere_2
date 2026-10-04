@@ -29,6 +29,7 @@
 
         <nav id="navMenu" role="navigation" aria-label="Main navigation">
             <ul>
+                <li><a href="assistant.html" style="color:var(--accent-color); font-weight:700;"><i class="fa-solid fa-sparkles"></i> AI Assistant ✦</a></li>
                 <li><a href="explore.html">Explore</a></li>
                 <li><a href="courses.html">Courses</a></li>
                 <li><a href="review.html">Review Queue</a></li>
@@ -65,17 +66,32 @@
 
     <section class="hero">
         <div class="hero-content">
-            <h1>Our Courses</h1>
-            <p>Browse through our extensive collection of courses.</p>
+            <h1>Our Courses & Learning Tracks</h1>
+            <p>Browse structured technical curricula in JavaScript, React, Node.js, Python, Java, SQL, and Machine Learning.</p>
         </div>
         <div class="hero-image">
             <img src="images/courses.jpg" alt="Various courses available">
         </div>
+    </section>
 
-    <section class="content">
-        <h2>Why LearnSphere?</h2>
-        <p>We offer a variety of courses designed to help you excel in academics and beyond.</p>
-        <button class="cta">Start Learning</button>
+    <!-- AI Learning Assistant Banner -->
+    <section class="content" style="background: linear-gradient(135deg, rgba(2, 132, 199, 0.15), rgba(56, 189, 248, 0.05)); border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 16px; margin: 30px auto; max-width: 1100px; padding: 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px;">
+        <div>
+            <span style="background:rgba(56, 189, 248, 0.2); color:var(--accent-color); padding:4px 12px; border-radius:20px; font-size:0.8rem; font-weight:700; text-transform:uppercase;">AI Assistant</span>
+            <h2 style="margin: 8px 0 6px 0; font-size: 1.5rem;">Need a personalized technical roadmap?</h2>
+            <p style="margin: 0; color: var(--text-muted);">Tell our AI your current level and career goals to get an end-to-end learning sequence.</p>
+        </div>
+        <a href="assistant.html" class="cta" style="text-decoration: none; padding: 12px 24px; border-radius: 10px; font-weight: 700;">
+            <i class="fa-solid fa-wand-magic-sparkles"></i> Open AI Assistant →
+        </a>
+    </section>
+
+    <section class="content" style="max-width: 1100px; margin: 0 auto 40px auto;">
+        <h2>Structured Technical Curriculum</h2>
+        <p style="color: var(--text-muted); margin-bottom: 24px;">Explore our 8 verified technical topics with modules, prerequisites, and hands-on capstone projects.</p>
+        <div id="techCoursesList" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px;">
+            <p style="color: var(--text-muted);">Loading courses...</p>
+        </div>
     </section>
 
     <section class="content" aria-labelledby="offline-pack-title">
@@ -215,6 +231,41 @@
                 }
             }
 
+        })();
+    </script>
+    <script>
+        (async function () {
+            const container = document.getElementById('techCoursesList');
+            if (!container) return;
+            try {
+                const res = await fetch('/api/ai/content');
+                const data = await res.json();
+                const courses = data.courses || [];
+                if (courses.length === 0) {
+                    container.innerHTML = '<p style="color:var(--text-muted);">No courses found.</p>';
+                    return;
+                }
+                container.innerHTML = courses.map(c => `
+                    <div style="background:var(--card-bg); border:1px solid var(--card-border); border-radius:14px; padding:20px; box-shadow:var(--card-shadow); display:flex; flex-direction:column; justify-content:space-between;">
+                        <div>
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                                <span style="font-size:0.78rem; font-weight:700; color:var(--accent-color); text-transform:uppercase;">${c.topic}</span>
+                                <span style="font-size:0.75rem; font-weight:700; padding:2px 8px; border-radius:6px; background:rgba(56,189,248,0.15); color:var(--accent-color);">${c.difficulty}</span>
+                            </div>
+                            <h3 style="font-size:1.15rem; margin-bottom:8px; color:var(--text-color);">${c.title}</h3>
+                            <p style="color:var(--text-muted); font-size:0.9rem; line-height:1.45; margin-bottom:12px;">${c.description}</p>
+                            <div style="font-size:0.8rem; color:var(--text-muted); margin-bottom:12px;">
+                                ⏱️ ${c.estimated_duration} (${c.total_hours} hrs)
+                            </div>
+                        </div>
+                        <a href="assistant.html" class="cta" style="text-decoration:none; text-align:center; padding:8px 12px; border-radius:8px; font-size:0.9rem; margin-top:8px;">
+                            ✨ Plan Path with AI
+                        </a>
+                    </div>
+                `).join('');
+            } catch (err) {
+                container.innerHTML = '<p style="color:var(--text-muted);">Loaded offline mode. <a href="assistant.html" style="color:var(--accent-color);">Visit AI Assistant →</a></p>';
+            }
         })();
     </script>
     <script src="accessibility.js" defer></script>

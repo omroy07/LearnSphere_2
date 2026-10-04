@@ -5,7 +5,9 @@
   "scripts": {
     "dev": "vite",
     "auth": "node server/index.js",
+    "ai": "python chatbot.py",
     "dev:full": "concurrently -n auth,vite -c cyan,green \"npm run auth\" \"npm run dev\"",
+    "dev:all": "concurrently -n ai,auth,vite -c magenta,cyan,green \"npm run ai\" \"npm run auth\" \"npm run dev\"",
     "build": "vite build",
     "lint": "eslint src/**/*.js",
     "format": "prettier --write \"**/*.{js,css}\"",

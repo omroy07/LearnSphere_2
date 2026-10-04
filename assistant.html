@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="LearnSphere AI Learning Assistant — Get personalized learning guidance, curriculum roadmaps, and step-by-step technical paths.">
+    <title>AI Learning Assistant – LearnSphere</title>
+    
+    <link rel="stylesheet" href="variables.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <script src="theme.js"></script>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="assistant.css">
+</head>
+<body>
+
+    <!-- Standard LearnSphere Navigation Header -->
+    <header class="navbar" role="banner">
+        <div class="logo"><a href="index.html" aria-label="LearnSphere Home">LearnSphere</a></div>
+
+        <button
+            class="hamburger"
+            id="hamburgerBtn"
+            aria-label="Toggle navigation menu"
+            aria-expanded="false"
+            aria-controls="navMenu"
+        >
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+
+        <nav id="navMenu" role="navigation" aria-label="Main navigation">
+            <ul>
+                <li><a href="assistant.html" style="color:var(--accent-color); font-weight:700;"><i class="fa-solid fa-sparkles"></i> AI Assistant ✦</a></li>
+                <li><a href="explore.html">Explore</a></li>
+                <li><a href="courses.html">Courses</a></li>
+                <li><a href="review.html">Review Queue</a></li>
+                <li><a href="resources.html">Resources</a></li>
+                <li><a href="community.html">Community</a></li>
+            </ul>
+        </nav>
+
+        <button id="themeToggleBtn" class="theme-btn" aria-label="Toggle theme"></button>
+
+        <div class="buttons" role="group" aria-label="Accessibility options" style="margin-right:10px;">
+            <button
+              type="button"
+              id="reducedMotionToggle"
+              class="a11y-btn"
+              aria-pressed="false"
+              aria-label="Toggle reduced motion"
+            >Reduced motion: Off</button>
+            <button
+              type="button"
+              id="fontSizeToggle"
+              class="a11y-btn"
+              aria-pressed="true"
+              aria-label="Toggle larger text"
+            >Larger text</button>
+        </div>
+
+        <div class="buttons">
+            <button class="login"><a href="log/login.html">Log in</a></button>
+            <button class="signup"><a href="log/register.html">Sign up</a></button>
+        </div>
+    </header>
+
+    <main class="assistant-container">
+        <!-- Hero Section -->
+        <section class="assistant-hero">
+            <div class="ai-badge">
+                <i class="fa-solid fa-brain"></i> AI-Powered Curriculum Engine
+            </div>
+            <h1>Your Personalized Learning Assistant</h1>
+            <p>
+                Describe your technical ambition, current background, and timeframe.
+                Our AI searches LearnSphere's structured content library to build your custom milestone roadmap.
+            </p>
+        </section>
+
+        <!-- View Switcher Tabs -->
+        <nav class="view-tabs" aria-label="Assistant views">
+            <button class="tab-btn active" id="tabRoadmap" type="button">
+                <i class="fa-solid fa-route"></i> Roadmap Planner
+            </button>
+            <button class="tab-btn" id="tabCatalog" type="button">
+                <i class="fa-solid fa-book-open"></i> Explore Content Catalog
+            </button>
+            <button class="tab-btn" id="tabHistory" type="button">
+                <i class="fa-solid fa-clock-rotate-left"></i> Recent Guidance
+            </button>
+        </nav>
+
+        <!-- VIEW 1: Main Assistant & Roadmap Planner -->
+        <div id="assistantMainView">
+            <section class="prompt-card" aria-labelledby="promptHeading">
+                <label for="goalPrompt" class="prompt-label" id="promptHeading">
+                    <i class="fa-solid fa-wand-magic-sparkles" style="color:var(--accent-color); margin-right:8px;"></i>
+                    What is your learning goal?
+                </label>
+                <textarea
+                    id="goalPrompt"
+                    class="prompt-textarea"
+                    placeholder="e.g., I know basic JavaScript and want to become a React developer in 3 months."
+                    rows="3"
+                ></textarea>
+
+                <div class="quick-prompts-label">
+                    <i class="fa-solid fa-bolt" style="color: #f59e0b;"></i> Quick-start goal prompts (click to try):
+                </div>
+                <div class="chips-wrapper" role="group" aria-label="Example goal queries">
+                    <button type="button" class="chip-btn" data-prompt="I know basic JavaScript and want to become a React developer in 3 months.">
+                        ⚡ Basic JS to React Developer (3 Months)
+                    </button>
+                    <button type="button" class="chip-btn" data-prompt="I am a complete beginner and want to learn Python for Machine Learning in 4 months.">
+                        🐍 Beginner to Machine Learning with Python (4 Months)
+                    </button>
+                    <button type="button" class="chip-btn" data-prompt="I know frontend React and want to learn Node.js backend & SQL to become full stack in 6 weeks.">
+                        🌐 Frontend to Full-Stack Node & SQL (6 Weeks)
+                    </button>
+                    <button type="button" class="chip-btn" data-prompt="I want to learn Java OOP and Spring Boot microservices from scratch in 8 weeks.">
+                        ☕ Java OOP & Spring Boot Microservices (8 Weeks)
+                    </button>
+                    <button type="button" class="chip-btn" data-prompt="I am a software engineer needing to master SQL database design, joins, and indexing in 1 month.">
+                        🗄️ SQL Database Architecture & Optimization (1 Month)
+                    </button>
+                </div>
+
+                <!-- Refinement Controls -->
+                <div class="options-row">
+                    <div class="option-group">
+                        <label for="learnerLevel">Current Skill Level</label>
+                        <select id="learnerLevel" class="option-select">
+                            <option value="auto">Auto-detect from description</option>
+                            <option value="beginner">Beginner (Starting from scratch)</option>
+                            <option value="intermediate">Intermediate (Know fundamentals)</option>
+                            <option value="advanced">Advanced (Experienced developer)</option>
+                        </select>
+                    </div>
+
+                    <div class="option-group">
+                        <label for="targetTimeframe">Target Timeframe</label>
+                        <select id="targetTimeframe" class="option-select">
+                            <option value="3 months">3 Months</option>
+                            <option value="6 weeks">6 Weeks</option>
+                            <option value="4 months">4 Months</option>
+                            <option value="6 months">6 Months</option>
+                            <option value="self-paced">Self-Paced (Flexible)</option>
+                        </select>
+                    </div>
+
+                    <div class="option-group">
+                        <label for="weeklyHours">Weekly Commitment</label>
+                        <select id="weeklyHours" class="option-select">
+                            <option value="6">~6 hours/week (Part-time)</option>
+                            <option value="4">~4 hours/week (Light)</option>
+                            <option value="10">~10 hours/week (Standard)</option>
+                            <option value="15">~15 hours/week (Accelerated)</option>
+                            <option value="25">~25 hours/week (Intensive)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="submit-row">
+                    <span style="font-size:0.85rem; color:var(--text-muted);">
+                        Tip: Press <kbd style="background:rgba(255,255,255,0.1); padding:2px 6px; border-radius:4px;">Ctrl+Enter</kbd> to submit
+                    </span>
+                    <button id="generateBtn" class="generate-btn" type="button">
+                        <i class="fa-solid fa-sparkles"></i> Generate Learning Roadmap
+                    </button>
+                </div>
+            </section>
+
+            <!-- Loading State -->
+            <section id="loadingBox" class="loading-box" aria-live="polite">
+                <div class="loading-spinner-wrapper" aria-hidden="true">
+                    <div class="spinner-outer-ring"></div>
+                    <div class="spinner-inner-ring"></div>
+                    <div class="spinner-center-icon">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i>
+                    </div>
+                </div>
+                <h3>Crafting Your Custom Learning Path</h3>
+                <div id="loadingTicker" class="loading-ticker">Analyzing your career ambition and skill profile...</div>
+            </section>
+
+            <!-- Error State -->
+            <section id="errorBox" class="error-box" role="alert">
+                <div style="font-weight:700; margin-bottom:6px;"><i class="fa-solid fa-triangle-exclamation"></i> Recommendation Error</div>
+                <div id="errorMessage">Unable to generate recommendation.</div>
+                <button type="button" onclick="document.getElementById('generateBtn').click()">Try Again</button>
+            </section>
+
+            <!-- Empty State -->
+            <section id="emptyState" class="empty-state">
+                <i class="fa-solid fa-compass-drafting" aria-hidden="true"></i>
+                <h3>No Roadmap Generated Yet</h3>
+                <p>Type your learning goals above or select one of the quick-start templates to see personalized recommendations in action.</p>
+            </section>
+
+            <!-- Results Section (Dynamic) -->
+            <div id="resultsWrapper" class="results-wrapper">
+                <!-- Learner Profile Strip -->
+                <div id="profilePillsContainer" class="profile-pill-strip"></div>
+
+                <!-- Overview & Structured Rationale Takeaways -->
+                <article class="overview-card">
+                    <h2><i class="fa-solid fa-graduation-cap" style="color:var(--accent-color);"></i> Personalized Curriculum Overview</h2>
+                    <div id="summaryText" style="font-size:1.05rem; line-height:1.6; color:var(--text-color); margin-bottom:16px;"></div>
+                    
+                    <h3 style="font-size:1.1rem; color:var(--text-color); margin-top:20px; margin-bottom:12px; display:flex; align-items:center; gap:8px;">
+                        <i class="fa-solid fa-shield-halved" style="color:var(--accent-color);"></i> Why This Path Fits You (Strategic Breakdown)
+                    </h3>
+                    <div id="takeawaysGrid" class="takeaways-grid"></div>
+                </article>
+
+                <!-- Immediate Next Step Card -->
+                <aside class="next-step-card" aria-label="Immediate next step">
+                    <div class="next-step-icon">
+                        <i class="fa-solid fa-rocket"></i>
+                    </div>
+                    <div class="next-step-content" style="flex:1;">
+                        <h3>Your Immediate Next Step for Today</h3>
+                        <div id="nextStepDetailed" class="next-step-detailed">
+                            <div id="immediateNextStepText"></div>
+                        </div>
+                    </div>
+                </aside>
+
+                <!-- Interactive DAG Roadmap Flow Section -->
+                <section aria-labelledby="sequenceHeading">
+                    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:14px; margin-bottom:16px;">
+                        <h2 id="sequenceHeading" class="section-heading" style="margin:0;">
+                            <i class="fa-solid fa-diagram-project" style="color:var(--accent-color);"></i>
+                            Interactive Learning Roadmap (DAG Graph)
+                        </h2>
+
+                        <!-- Graph vs Timeline Toggle -->
+                        <div class="dag-view-toggle" role="group" aria-label="Roadmap display format">
+                            <button type="button" class="dag-view-btn active" id="dagToggleTree">
+                                <i class="fa-solid fa-network-wired"></i> DAG Graph Flow
+                            </button>
+                            <button type="button" class="dag-view-btn" id="dagToggleTimeline">
+                                <i class="fa-solid fa-list-ol"></i> Step-by-Step Milestones
+                            </button>
+                        </div>
+                    </div>
+
+                    <p style="color:var(--text-muted); font-size:0.95rem; margin-top:-6px; margin-bottom:24px;">
+                        Technical topics are connected in a Directed Acyclic Graph (DAG) dependency sequence. Each node represents an actionable curriculum milestone with lessons, hours, and code deliverables.
+                    </p>
+
+                    <!-- VIEW A: Interactive DAG Tree -->
+                    <div id="dagFlowTree" class="dag-flow-tree"></div>
+
+                    <!-- VIEW B: Step-by-Step Phases Timeline -->
+                    <div id="roadmapTimeline" class="roadmap-timeline" style="display:none;"></div>
+                </section>
+
+                <!-- Recommended Courses Detail Cards -->
+                <section aria-labelledby="coursesHeading">
+                    <h2 id="coursesHeading" class="section-heading">
+                        <i class="fa-solid fa-cubes-stacked" style="color:var(--accent-color);"></i>
+                        Matched LearnSphere Courses & Structured Content
+                    </h2>
+                    <div id="recommendedCoursesGrid" class="courses-grid"></div>
+                </section>
+
+                <!-- Alternative Pathways (if any) -->
+                <section style="margin-bottom:30px; display:none;">
+                    <h3 style="color:var(--text-color); font-size:1.1rem; margin-bottom:10px;">
+                        <i class="fa-solid fa-shuffle" style="color:var(--accent-color); margin-right:8px;"></i>
+                        Alternative Pathways & Growth Options
+                    </h3>
+                    <ul id="alternativePathsContainer" style="color:var(--text-muted); line-height:1.7; padding-left:20px;"></ul>
+                </section>
+
+                <!-- Follow-up Conversational Assistant -->
+                <section class="assistant-chat-section" aria-labelledby="chatSectionHeading">
+                    <h2 id="chatSectionHeading" style="font-size:1.3rem; margin-bottom:6px; color:var(--text-color); display:flex; align-items:center; gap:10px;">
+                        <i class="fa-solid fa-comments" style="color:var(--accent-color);"></i>
+                        Ask Follow-up Questions About Your Roadmap
+                    </h2>
+                    <p style="color:var(--text-muted); font-size:0.9rem; margin-bottom:14px;">
+                        Have questions about study pacing, interview preparation, or specific code exercises? Ask below:
+                    </p>
+
+                    <div id="chatMessages" class="chat-messages-container" aria-live="polite"></div>
+
+                    <div id="suggestedChips" class="chips-wrapper" style="margin-bottom:12px;"></div>
+
+                    <div class="chat-input-wrapper">
+                        <input
+                            type="text"
+                            id="chatInput"
+                            class="chat-input"
+                            placeholder="Ask a question about this roadmap (e.g., 'How should I structure my study on weekends?')..."
+                            aria-label="Follow-up question input"
+                        >
+                        <button type="button" id="chatSendBtn" class="chat-send-btn">
+                            <i class="fa-solid fa-paper-plane"></i> Send
+                        </button>
+                    </div>
+                </section>
+            </div>
+        </div>
+
+        <!-- VIEW 2: Structured Content Catalog Browser -->
+        <section id="catalogView" class="catalog-section" aria-labelledby="catalogHeading">
+            <h2 id="catalogHeading" class="section-heading">
+                <i class="fa-solid fa-layer-group" style="color:var(--accent-color);"></i>
+                LearnSphere Technical Curriculum Catalog
+            </h2>
+            <p style="color:var(--text-muted); margin-top:-10px; margin-bottom:20px;">
+                Explore all 8 technical tracks created for LearnSphere. Click any course to have the AI build a custom roadmap around it!
+            </p>
+
+            <div class="catalog-filters">
+                <input
+                    type="search"
+                    id="catalogSearch"
+                    class="catalog-search-input"
+                    placeholder="Search by topic, keyword, or concept (e.g., Hooks, Asynchronous, Docker, SQL)..."
+                    aria-label="Search curriculum"
+                >
+                <select id="catalogTopicFilter" class="option-select" style="max-width:180px;">
+                    <option value="all">All Topics</option>
+                    <option value="JavaScript">JavaScript</option>
+                    <option value="React">React</option>
+                    <option value="Node.js">Node.js</option>
+                    <option value="Python">Python</option>
+                    <option value="Java">Java</option>
+                    <option value="SQL">SQL</option>
+                    <option value="Machine Learning">Machine Learning</option>
+                    <option value="Full Stack Web Development">Full Stack</option>
+                </select>
+
+                <select id="catalogDiffFilter" class="option-select" style="max-width:180px;">
+                    <option value="all">All Difficulties</option>
+                    <option value="Beginner">Beginner</option>
+                    <option value="Intermediate">Intermediate</option>
+                    <option value="Advanced">Advanced</option>
+                </select>
+            </div>
+
+            <div id="allCoursesGrid" class="courses-grid"></div>
+        </section>
+
+        <!-- VIEW 3: Past Queries & Recommendations History -->
+        <section id="historyView" style="display:none;" aria-labelledby="historyHeading">
+            <h2 id="historyHeading" class="section-heading">
+                <i class="fa-solid fa-clock-rotate-left" style="color:var(--accent-color);"></i>
+                Past Learning Queries & Recommendations
+            </h2>
+            <p style="color:var(--text-muted); margin-top:-10px; margin-bottom:20px;">
+                Review your previous guidance sessions stored in the LearnSphere database. Click any session to reload its plan.
+            </p>
+
+            <div id="historyList"></div>
+        </section>
+    </main>
+
+    <!-- Core Scripts -->
+    <script src="navbar.js"></script>
+    <script src="script.js"></script>
+    <script src="assistant.js"></script>
+    <script src="accessibility.js" defer></script>
+</body>
+</html>

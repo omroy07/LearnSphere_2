@@ -13,7 +13,7 @@ window.explainMetric = function(metric, data) {
     case "topic":
       return `Top topics by attempts: ${data.summary}.`; // e.g. "Math (12), Science (8)"
     case "type":
-      return `Question‑type breakdown: ${data.summary}.`;
+      return `Question-type breakdown: ${data.summary}.`;
     case "improvement":
       return `Overall improvement: ${data.summary}.`;
     default:
